@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  nextapp:
+    container_name: next15-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "2025:3000"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+    networks:
+      - webnet
+
+networks:
+  webnet:
+    driver: bridge
