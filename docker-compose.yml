@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   nextapp:
-    container_name: next15-prod
+    container_name: next15-prod_local
     build:
       context: .
       dockerfile: Dockerfile

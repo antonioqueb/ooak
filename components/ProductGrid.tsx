@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ShoppingCart, X } from "lucide-react";
+import { Heart, ShoppingCart, X, Package, TruckIcon, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,13 +13,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+
 // Tipos de productos
 interface Product {
   id: string;
   name: string;
   price: number;
   image: string;
-  images?: string[]; // Galería de imágenes adicionales
+  images?: string[];
   category: string;
   featured?: boolean;
   description?: string;
@@ -33,6 +34,7 @@ interface Product {
   colors?: string;
   inStock?: boolean;
 }
+
 // ========================================
 // 🔧 CONFIGURACIÓN DE PRODUCTOS
 // ========================================
@@ -291,23 +293,22 @@ const STATIC_PRODUCTS: Product[] = [
     inStock: true,
   },
 ];
+
 export function ProductGrid() {
   const products = STATIC_PRODUCTS;
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(
     null
   );
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const sections = [];
-  for (let i = 0; i < products.length; i += 10) {
-    sections.push(products.slice(i, i + 10));
-  }
+
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
+
   return (
-    <section className="py-8 sm:py-12 lg:py-16 bg-white">
-      <div className="container mx-auto px-2 sm:px-1 lg:px-1">
+    <section className="py-8 sm:py-12 lg:py-16 bg-gradient-to-b from-gray-50 to-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Header */}
         <div className="mb-8 sm:mb-12 lg:mb-16 flex flex-col items-center gap-4 sm:gap-6">
           <h1 className="text-center text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-[#6C7466]">
@@ -317,31 +318,19 @@ export function ProductGrid() {
             Transform your spaces with exceptional elements, worthy of the most discerning taste.
           </p>
         </div>
-        {/* Vista Móvil: Lista simple de productos */}
-        <div className="block lg:hidden">
-          <div className="flex flex-col gap-4">
-            {products.map((product) => (
-              <div key={product.id} className="w-full h-[320px] sm:h-[360px]">
-                <ProductCard
-                  product={product}
-                  onProductClick={handleProductClick}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* Vista Desktop: Grid con Bordes Estilo Bento */}
-        <div className="hidden lg:block space-y-0">
-          {sections.map((sectionProducts, sectionIndex) => (
-            <BentoSection
-              key={sectionIndex}
-              products={sectionProducts}
-              isLast={sectionIndex === sections.length - 1}
+
+        {/* Grid tradicional de 3 columnas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
               onProductClick={handleProductClick}
             />
           ))}
         </div>
       </div>
+
       {/* Modal de Detalles del Producto */}
       <ProductModal
         product={selectedProduct}
@@ -354,113 +343,7 @@ export function ProductGrid() {
     </section>
   );
 }
-function BentoSection({
-  products,
-  isLast,
-  onProductClick,
-}: {
-  products: Product[];
-  isLast: boolean;
-  onProductClick: (product: Product) => void;
-}) {
-  const topLeft = products.slice(0, 2);
-  const topRight = products.slice(4, 6);
-  const bottomLeft = products.slice(6, 8);
-  const bottomRight = products.slice(8, 10);
-  return (
-    <div
-      className={cn(
-        "relative flex w-full flex-col border border-[#6C7466]/20",
-        !isLast && "border-b-0"
-      )}
-    >
-      {/* Fila Superior */}
-      <div className="relative flex flex-col lg:flex-row">
-        {/* Top Left - 4 productos */}
-        <div className="border-[#6C7466]/20 border-b lg:border-b-0 lg:border-r lg:w-5/5">
-          <div className="grid grid-cols-2 h-full">
-            {topLeft.map((product, idx) => (
-              <div
-                key={product.id}
-                className={cn(
-                  "border-[#6C7466]/20 min-h-[280px]",
-                  idx === 0 && "border-r border-b",
-                  idx === 1 && "border-b",
-                  idx === 2 && "border-r"
-                )}
-              >
-                <ProductCard
-                  product={product}
-                  onProductClick={onProductClick}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* Top Right - 2 productos */}
-        <div className="lg:w-2/5">
-          <div className="flex flex-col h-full">
-            {topRight.map((product, idx) => (
-              <div
-                key={product.id}
-                className={cn(
-                  "border-[#6C7466]/20 min-h-[280px]",
-                  idx === 0 && "border-b"
-                )}
-              >
-                <ProductCard
-                  product={product}
-                  onProductClick={onProductClick}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      {/* Fila Inferior */}
-      <div className="relative flex flex-col lg:flex-row border-t border-[#6C7466]/20">
-        {/* Bottom Left - 2 productos */}
-        <div className="border-[#6C7466]/20 border-b lg:border-b-0 lg:border-r lg:w-2/5">
-          <div className="flex flex-col h-full">
-            {bottomLeft.map((product, idx) => (
-              <div
-                key={product.id}
-                className={cn(
-                  "border-[#6C7466]/20 min-h-[280px]",
-                  idx === 0 && "border-b"
-                )}
-              >
-                <ProductCard
-                  product={product}
-                  onProductClick={onProductClick}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* Bottom Right - 2 productos */}
-        <div className="lg:w-3/5">
-          <div className="grid grid-cols-2 h-full">
-            {bottomRight.map((product, idx) => (
-              <div
-                key={product.id}
-                className={cn(
-                  "border-[#6C7466]/20 min-h-[280px]",
-                  idx === 0 && "border-r"
-                )}
-              >
-                <ProductCard
-                  product={product}
-                  onProductClick={onProductClick}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 function ProductCard({
   product,
   onProductClick,
@@ -470,107 +353,133 @@ function ProductCard({
 }) {
   const [isHovered, setIsHovered] = React.useState(false);
   const [isFavorite, setIsFavorite] = React.useState(false);
+
   return (
     <div
-      className="group relative overflow-hidden bg-white block h-full w-full cursor-pointer"
+      className="group bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer border border-gray-100 flex flex-col"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onProductClick(product)}
     >
-      <div className="relative w-full h-full">
+      {/* Imagen del producto */}
+      <div className="relative aspect-square overflow-hidden bg-gray-50">
         <Image
           src={product.image}
           alt={product.name}
           fill
           className={cn(
-            "object-cover transition-all duration-700",
-            isHovered && "scale-105"
+            "object-cover transition-all duration-500 p-4",
+            isHovered && "scale-110"
           )}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           priority={product.featured}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
-        <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
-          <Badge className="bg-white/95 backdrop-blur-sm text-[#6C7466] hover:bg-white text-[9px] sm:text-[10px] px-1.5 py-0.5 font-semibold tracking-tight border-0">
+        
+        {/* Badges superiores */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
+          <Badge className="bg-white/95 backdrop-blur-sm text-[#6C7466] hover:bg-white text-xs px-2.5 py-1 font-semibold">
             {product.category}
           </Badge>
+          {product.featured && (
+            <Badge className="bg-amber-500/95 backdrop-blur-sm text-white hover:bg-amber-500 text-xs px-2.5 py-1 font-semibold">
+              ⭐ Destacado
+            </Badge>
+          )}
         </div>
-        {product.featured && (
-          <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-500/95 backdrop-blur-sm flex items-center justify-center text-white text-xs sm:text-sm">
-              ✨
-            </div>
-          </div>
-        )}
+
+        {/* Botón de favorito */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             setIsFavorite(!isFavorite);
           }}
           className={cn(
-            "absolute top-2 right-2 sm:top-3 sm:right-3",
-            product.featured && "top-9 sm:top-11",
-            "w-6 h-6 sm:w-7 sm:h-7 rounded-full backdrop-blur-md transition-all duration-300",
-            "flex items-center justify-center",
+            "absolute top-3 right-3 w-9 h-9 rounded-full backdrop-blur-md transition-all duration-300",
+            "flex items-center justify-center shadow-lg",
             isFavorite
-              ? "bg-red-500/95 scale-110"
-              : "bg-white/20 hover:bg-white/30 hover:scale-110"
+              ? "bg-red-500 scale-110"
+              : "bg-white/90 hover:bg-white hover:scale-110"
           )}
         >
           <Heart
             className={cn(
-              "w-3 h-3 sm:w-3.5 sm:h-3.5 transition-all duration-300",
-              isFavorite ? "fill-white text-white" : "text-white"
+              "w-4 h-4 transition-all duration-300",
+              isFavorite ? "fill-white text-white" : "text-[#6C7466]"
             )}
           />
         </button>
-        <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 lg:p-2">
-          <div
-            className={cn(
-              "transition-all duration-300",
-              isHovered
-                ? "translate-y-0 opacity-100"
-                : "translate-y-0.5 opacity-90"
-            )}
-          >
-            <div className="flex items-end justify-between gap-1.5">
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-bold text-sm sm:text-base lg:text-sm xl:text-base leading-none mb-0.5">
-                  ${product.price.toLocaleString("es-MX")}
-                </p>
-                <p className="text-white/90 text-[10px] sm:text-xs lg:text-[10px] font-medium leading-none">
-                  MXN
-                </p>
-              </div>
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                size="icon"
-                className={cn(
-                  "rounded-full transition-all duration-300 flex-shrink-0",
-                  "bg-white hover:bg-white text-[#6C7466]",
-                  "w-8 h-8 sm:w-9 sm:h-9 lg:w-8 lg:h-8",
-                  "shadow-md hover:shadow-lg",
-                  isHovered ? "scale-105 opacity-100" : "scale-100 opacity-95"
-                )}
-              >
-                <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-3.5 lg:h-3.5" />
-              </Button>
-            </div>
-          </div>
-        </div>
+
+        {/* Botón de acción rápida (solo en hover) */}
         <div
           className={cn(
-            "absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent",
-            "translate-x-[-200%] group-hover:translate-x-[200%]",
-            "transition-transform duration-1000 pointer-events-none"
+            "absolute bottom-3 left-3 right-3 transition-all duration-300",
+            isHovered ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
           )}
-        />
+        >
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            className="w-full bg-[#6C7466] hover:bg-[#6C7466]/90 text-white shadow-lg"
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            Vista Rápida
+          </Button>
+        </div>
+      </div>
+
+      {/* Información del producto */}
+      <div className="p-4 flex-1 flex flex-col">
+        {/* Nombre del producto */}
+        <h3 className="text-lg font-semibold text-[#2B2B2B] mb-2 line-clamp-2 group-hover:text-[#6C7466] transition-colors">
+          {product.name}
+        </h3>
+
+        {/* Dimensiones */}
+        {product.dimensions && (
+          <p className="text-xs text-gray-500 mb-3">
+            {product.dimensions.height}
+          </p>
+        )}
+
+        {/* Indicadores de confianza */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {product.inStock && (
+            <div className="flex items-center gap-1.5 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+              <Package className="w-3 h-3" />
+              <span className="font-medium">En stock</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+            <TruckIcon className="w-3 h-3" />
+            <span className="font-medium">Envío gratis</span>
+          </div>
+        </div>
+
+        {/* Precio y botón de compra */}
+        <div className="mt-auto">
+          <div className="flex items-baseline gap-2 mb-3">
+            <span className="text-2xl font-bold text-[#6C7466]">
+              ${product.price.toLocaleString("es-MX")}
+            </span>
+            <span className="text-sm text-gray-500">MXN</span>
+          </div>
+
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            className="w-full bg-white border-2 border-[#6C7466] text-[#6C7466] hover:bg-[#6C7466] hover:text-white transition-all duration-300"
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            Agregar al carrito
+          </Button>
+        </div>
       </div>
     </div>
   );
 }
+
 function ProductModal({
   product,
   isOpen,
@@ -586,7 +495,6 @@ function ProductModal({
     "measurements" | "shipping" | "returns"
   >("measurements");
 
-  // ✨ NUEVO: Estados para el zoom dinámico
   const [isZooming, setIsZooming] = React.useState(false);
   const [zoomPosition, setZoomPosition] = React.useState({ x: 0, y: 0 });
   const imageRef = React.useRef<HTMLDivElement>(null);
@@ -596,7 +504,6 @@ function ProductModal({
       setSelectedImageIndex(0);
       setShowMoreDescription(false);
       setActiveTab("measurements");
-      // Prevenir scroll del body cuando el modal está abierto
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -606,19 +513,17 @@ function ProductModal({
     };
   }, [isOpen]);
 
-  // ✨ NUEVO: Manejadores del zoom dinámico
-const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-  if (!imageRef.current) return
-  
-  const rect = imageRef.current.getBoundingClientRect()
-  const x = ((e.clientX - rect.left) / rect.width) * 100
-  const y = ((e.clientY - rect.top) / rect.height) * 100
-  
-  // Usar requestAnimationFrame para animación más fluida
-  requestAnimationFrame(() => {
-    setZoomPosition({ x, y })
-  })
-}
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageRef.current) return;
+
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    requestAnimationFrame(() => {
+      setZoomPosition({ x, y });
+    });
+  };
 
   const handleMouseEnter = () => {
     setIsZooming(true);
@@ -630,14 +535,14 @@ const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
 
   if (!product) return null;
   const images = product.images || [product.image];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] h-[95vh] overflow-hidden p-0 bg-white gap-0 border-0">
-        {/* DialogTitle oculto para accesibilidad */}
         <DialogHeader className="sr-only">
           <DialogTitle>{product.name}</DialogTitle>
         </DialogHeader>
-        {/* Botón de Cerrar Prominente */}
+
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-50 w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white hover:bg-gray-100 shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 border-2 border-gray-200"
@@ -648,10 +553,10 @@ const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
             strokeWidth={2.5}
           />
         </button>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 h-full overflow-y-auto lg:overflow-hidden">
-          {/* Sección de Imágenes - Izquierda */}
+          {/* Sección de Imágenes */}
           <div className="bg-[#F8F7F5] p-6 lg:p-12 flex flex-col justify-center items-center overflow-y-auto">
-            {/* Imagen Principal con Zoom Dinámico */}
             <div className="w-full max-w-2xl mb-6 lg:mb-8">
               <div
                 ref={imageRef}
@@ -660,7 +565,6 @@ const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
-                {/* Imagen Normal */}
                 <Image
                   src={images[selectedImageIndex]}
                   alt={product.name}
@@ -673,22 +577,20 @@ const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
                   priority
                 />
 
-                {/* Imagen con Zoom - Solo visible cuando isZooming es true */}
                 {isZooming && (
-                  <div 
+                  <div
                     className="absolute inset-0 pointer-events-none"
                     style={{
                       backgroundImage: `url(${images[selectedImageIndex]})`,
                       backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                      backgroundSize: '250%',
-                      backgroundRepeat: 'no-repeat',
-                      willChange: 'background-position',
-                      imageRendering: 'auto'
+                      backgroundSize: "250%",
+                      backgroundRepeat: "no-repeat",
+                      willChange: "background-position",
+                      imageRendering: "auto",
                     }}
                   />
                 )}
 
-                {/* Indicador de Zoom */}
                 {isZooming && (
                   <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm z-10">
                     🔍 Zoom activo
@@ -696,7 +598,7 @@ const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
                 )}
               </div>
             </div>
-            {/* Galería de Miniaturas */}
+
             <div className="w-full max-w-2xl">
               <div className="grid grid-cols-4 gap-3 lg:gap-4">
                 {images.map((img, index) => (
@@ -723,10 +625,10 @@ const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
               </div>
             </div>
           </div>
-          {/* Sección de Información - Derecha */}
+
+          {/* Sección de Información */}
           <div className="bg-white p-6 lg:p-12 flex flex-col overflow-y-auto">
             <div className="max-w-2xl mx-auto w-full">
-              {/* Header con título y categoría */}
               <div className="mb-6 lg:mb-8">
                 <Badge className="bg-[#6C7466]/10 text-[#6C7466] hover:bg-[#6C7466]/10 text-xs lg:text-sm px-3 py-1.5 mb-4 font-semibold">
                   {product.category}
@@ -740,7 +642,7 @@ const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
                   </p>
                 )}
               </div>
-              {/* Precio */}
+
               <div className="mb-8 lg:mb-10 pb-8 border-b border-gray-200">
                 <p className="text-4xl lg:text-5xl font-bold text-[#6C7466]">
                   ${product.price.toLocaleString("es-MX")}
@@ -749,7 +651,7 @@ const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
                   </span>
                 </p>
               </div>
-              {/* Descripción */}
+
               {product.description && (
                 <div className="mb-8 lg:mb-10">
                   <h3 className="text-lg lg:text-xl font-semibold text-[#2B2B2B] mb-3">
@@ -781,19 +683,18 @@ const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
                   )}
                 </div>
               )}
-              {/* Botones de Acción */}
+
               <div className="mb-8 lg:mb-10 space-y-4">
                 <Button
                   className="w-full bg-[#6C7466] hover:bg-[#6C7466]/90 text-white py-6 lg:py-7 text-base lg:text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Lógica para agregar al carrito
                   }}
                 >
                   <ShoppingCart className="w-5 h-5 lg:w-6 lg:h-6 mr-3" />
                   Agregar al carrito
                 </Button>
-                {/* Stock Status */}
+
                 {product.inStock && (
                   <div className="flex items-center justify-center gap-2 text-sm lg:text-base">
                     <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
@@ -803,9 +704,8 @@ const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
                   </div>
                 )}
               </div>
-              {/* Tabs de Información */}
+
               <div className="border-t border-gray-200">
-                {/* Tab Headers */}
                 <div className="flex border-b border-gray-200">
                   <button
                     onClick={() => setActiveTab("measurements")}
@@ -841,7 +741,7 @@ const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
                     Devoluciones
                   </button>
                 </div>
-                {/* Tab Content */}
+
                 <div className="py-6">
                   {activeTab === "measurements" && product.dimensions && (
                     <div className="space-y-4 animate-in fade-in-0 slide-in-from-top-2 duration-300">
