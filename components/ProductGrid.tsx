@@ -362,7 +362,7 @@ function ProductCard({
 }
 
 // ========================================
-// 🎨 PRODUCT MODAL (AJUSTADO: AMPLIO EN ESCRITORIO)
+// 🎨 PRODUCT MODAL (CORREGIDO: IMAGEN FULL HEIGHT EN ESCRITORIO)
 // ========================================
 function ProductModal({
   product,
@@ -410,8 +410,6 @@ function ProductModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        // 🔧 FIX: AUMENTADO EL ANCHO MÁXIMO (max-w-[95vw] y max-w-[1600px])
-        // Ahora ocupa casi toda la pantalla horizontalmente en escritorio.
         className="w-[95vw] md:max-w-[95vw] lg:max-w-[1600px] h-[90dvh] md:h-[85vh] overflow-hidden p-0 bg-[#FDFBF7] border-0 shadow-2xl gap-0 flex flex-col md:flex-row rounded-none md:rounded-lg"
       >
         <DialogHeader className="sr-only">
@@ -428,13 +426,12 @@ function ProductModal({
 
         {/* LEFT SIDE: Image Gallery */}
         <div
-          // 🔧 FIX: Aumentado el ancho de la imagen en escritorio (md:w-[55%] lg:w-[60%])
-          // Esto hace que la imagen se vea mucho más grande y protagonista.
-          className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-[#EBEBE8] overflow-hidden group"
-          // Mantiene la lógica móvil intacta
-          style={{ height: "40vh", minHeight: "300px", maxHeight: "none" }}
+          // 🔧 CORRECCIÓN AQUÍ:
+          // Se eliminó style={{ height: "40vh" }} que forzaba la altura fija.
+          // Ahora usamos clases: h-[40vh] para móvil y md:h-full para escritorio.
+          className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-[#EBEBE8] overflow-hidden group h-[40vh] min-h-[300px] md:h-full md:min-h-0"
         >
-          {/* Desktop overrides via Tailwind classes (h-full en md) */}
+          {/* Desktop overrides via Tailwind classes */}
           <div
             ref={imageContainerRef}
             className="w-full h-full md:h-full cursor-zoom-in relative"
@@ -483,7 +480,6 @@ function ProductModal({
         </div>
 
         {/* RIGHT SIDE: Details */}
-        {/* El ancho se ajusta automáticamente para llenar el resto (flex-1) */}
         <div className="flex-1 w-full md:w-[45%] lg:w-[40%] flex flex-col h-full bg-[#FDFBF7] overflow-hidden">
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 lg:p-12">
