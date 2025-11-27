@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { BrandStory } from "@/components/brand-story";
 import { FeatureSection } from "@/components/feature-section";
 import { HeroSection } from "@/components/hero-section";
@@ -6,8 +7,8 @@ import { ProductGrid } from "@/components/ProductGrid";
 export default function Home() {
   return (
     <>
-    
-      
+
+
       <main className="container mx-auto px-4 py-12">
         <HeroSection />
         <FeatureSection
@@ -18,7 +19,9 @@ export default function Home() {
           ctaText="Explorar Colección"
         />
         <BrandStory />
-        <ProductGrid />
+        <Suspense fallback={<div>Cargando productos...</div>}>
+          <ProductGrid />
+        </Suspense>
       </main>
     </>
   );

@@ -3,7 +3,8 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ShoppingCart, X, Package, TruckIcon, ShieldCheck } from "lucide-react";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import { Heart, ShoppingCart, X, Package, TruckIcon, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -295,7 +296,29 @@ const STATIC_PRODUCTS: Product[] = [
 ];
 
 export function ProductGrid() {
-  const products = STATIC_PRODUCTS;
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const ITEMS_PER_PAGE = 6;
+  const totalPages = Math.ceil(STATIC_PRODUCTS.length / ITEMS_PER_PAGE);
+
+  const products = STATIC_PRODUCTS.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const createPageURL = (pageNumber: number | string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', pageNumber.toString());
+    return `${pathname}?${params.toString()}`;
+  };
+
+  const handlePageChange = (pageNumber: number) => {
+    replace(createPageURL(pageNumber));
+  };
+
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(
     null
   );
@@ -329,6 +352,49 @@ export function ProductGrid() {
             />
           ))}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="mt-12 flex justify-center items-center gap-4">
+            <Button
+              variant="outline"
+              disabled={currentPage <= 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+              className="flex items-center gap-2 border-[#6C7466] text-[#6C7466] hover:bg-[#6C7466] hover:text-white transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Anterior
+            </Button>
+
+            <div className="flex items-center gap-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  onClick={() => handlePageChange(page)}
+                  className={cn(
+                    "w-10 h-10 p-0 transition-colors",
+                    currentPage === page
+                      ? "bg-[#6C7466] text-white hover:bg-[#6C7466]/90"
+                      : "border-[#6C7466] text-[#6C7466] hover:bg-[#6C7466] hover:text-white"
+                  )}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              disabled={currentPage >= totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+              className="flex items-center gap-2 border-[#6C7466] text-[#6C7466] hover:bg-[#6C7466] hover:text-white transition-colors"
+            >
+              Siguiente
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Modal de Detalles del Producto */}
@@ -374,7 +440,7 @@ function ProductCard({
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           priority={product.featured}
         />
-        
+
         {/* Badges superiores */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           <Badge className="bg-white/95 backdrop-blur-sm text-[#6C7466] hover:bg-white text-xs px-2.5 py-1 font-semibold">
@@ -661,7 +727,7 @@ function ProductModal({
                     {showMoreDescription
                       ? product.description
                       : product.description.substring(0, 200) +
-                        (product.description.length > 200 ? "..." : "")}
+                      (product.description.length > 200 ? "..." : "")}
                   </p>
                   {product.description.length > 200 && (
                     <button

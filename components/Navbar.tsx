@@ -1,10 +1,6 @@
 // components/navbar.tsx
 "use client"
 
-// NOTA: Esta tienda NO maneja cuentas de usuario ni sesiones.
-// Todo el seguimiento de pedidos se realiza por correo electrónico.
-// Los usuarios compran como invitados y reciben links de seguimiento por email.
-
 import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -22,7 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
-// Define la barra superior con enlaces principales
+// ... (Las constantes topBarLinks y collections se mantienen igual) ...
 const topBarLinks = [
   { name: "SHOP", href: "#", hasMenu: true },
   { name: "THE BRAND", href: "/the-brand", hasMenu: false },
@@ -31,37 +27,20 @@ const topBarLinks = [
   { name: "PROJECTS", href: "/projects", hasMenu: false },
 ]
 
-// Define las colecciones principales con sus subcategorías
 const collections = [
   {
     name: "ALLOY COLLECTION",
     href: "/collections/alloy",
-    items: [
-      { name: "Metal Sculptures", href: "/collections/alloy/metal-sculptures" },
-    ]
+    items: [{ name: "Metal Sculptures", href: "/collections/alloy/metal-sculptures" }]
   },
-  {
-    name: "CRYSTAL COLLECTION",
-    href: "/collections/crystal",
-    items: []
-  },
+  { name: "CRYSTAL COLLECTION", href: "/collections/crystal", items: [] },
   {
     name: "EARTH COLLECTION",
     href: "/collections/earth",
-    items: [
-      { name: "Mineral Specimens", href: "/collections/earth/mineral-specimens" },
-    ]
+    items: [{ name: "Mineral Specimens", href: "/collections/earth/mineral-specimens" }]
   },
-  {
-    name: "FOSSILS",
-    href: "/collections/fossils",
-    items: []
-  },
-  {
-    name: "PETRIFIED WOOD",
-    href: "/collections/petrified-wood",
-    items: []
-  },
+  { name: "FOSSILS", href: "/collections/fossils", items: [] },
+  { name: "PETRIFIED WOOD", href: "/collections/petrified-wood", items: [] },
   {
     name: "HERITAGE COLLECTION",
     href: "/collections/heritage",
@@ -74,9 +53,7 @@ const collections = [
   {
     name: "LUMEN COLLECTION",
     href: "/collections/lumen",
-    items: [
-      { name: "Lamps", href: "/collections/lumen/lamps" },
-    ]
+    items: [{ name: "Lamps", href: "/collections/lumen/lamps" }]
   },
   {
     name: "OCEAN COLLECTION",
@@ -110,10 +87,11 @@ export function Navbar() {
 
   React.useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 20)
+      })
     }
-
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
@@ -136,22 +114,38 @@ export function Navbar() {
   }
 
   const showCompactNav = isScrolled && !isHovering
+  
+  // Mantenemos la transición suave optimizada para Safari
+  const smoothTransition = "transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] transform-gpu backface-invisible"
 
   return (
     <header 
-      className="sticky top-0 z-50 w-full backdrop-blur supports-[backdrop-filter]:bg-[#6C7466]/95 transition-all duration-500 ease-in-out"
+      className={cn(
+        // CAMBIO PRINCIPAL AQUÍ: 'fixed' en lugar de 'sticky'
+        "fixed top-0 left-0 right-0 z-50 w-full backdrop-blur supports-[backdrop-filter]:bg-[#6C7466]/95",
+        "will-change-[background-color,backdrop-filter]", 
+        smoothTransition
+      )}
       style={{ backgroundColor: '#6C7466' }}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {/* Logo arriba - Solo visible en desktop */}
+      {/* 
+        Logo grande colapsable
+        Al ser el header 'fixed', cuando esto cambie de altura, el contenido
+        de la página NO se moverá, el header simplemente crecerá sobre él.
+      */}
       <div 
         className={cn(
-          "hidden lg:block border-b border-white/15 transition-all duration-500 ease-in-out",
-          showCompactNav && "max-h-0 overflow-hidden border-none opacity-0"
+          "hidden lg:block border-b border-white/15 overflow-hidden py-6", 
+          "will-change-[max-height,opacity]", 
+          smoothTransition,
+          showCompactNav 
+            ? "max-h-0 opacity-0 border-none py-0" 
+            : "max-h-40 opacity-100"
         )}
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center">
             <Link href="/" className="flex items-center">
               <Image
@@ -167,19 +161,25 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Barra de navegación gruesa con búsqueda y carrito - Solo visible en desktop */}
+      {/* Barra de navegación principal */}
       <div 
         className="hidden lg:block border-b border-white/15"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className={cn(
-            "flex items-center justify-between transition-all duration-500 ease-in-out",
+            "flex items-center justify-between",
+            "will-change-[height]", 
+            smoothTransition,
             showCompactNav ? "h-14" : "h-20"
           )}>
-            {/* Logo compacto cuando hay scroll - CENTRADO */}
+            {/* Logo compacto (Scroll) */}
             <div className={cn(
-              "absolute left-1/2 transform -translate-x-1/2 transition-all duration-500 ease-in-out",
-              showCompactNav ? "opacity-100" : "opacity-0 pointer-events-none"
+              "absolute left-1/2 transform -translate-x-1/2",
+              "will-change-[opacity,transform]", 
+              smoothTransition,
+              showCompactNav 
+                ? "opacity-100 translate-y-0" 
+                : "opacity-0 translate-y-8 pointer-events-none" 
             )}>
               <Link href="/" className="flex items-center">
                 <Image
@@ -193,10 +193,14 @@ export function Navbar() {
               </Link>
             </div>
             
-            {/* Enlaces de navegación - Ocultos en modo compacto */}
+            {/* Enlaces de navegación */}
             <nav className={cn(
-              "flex items-center justify-center gap-8 flex-1 transition-all duration-500 ease-in-out",
-              showCompactNav && "opacity-0 pointer-events-none"
+              "flex items-center justify-center gap-8 flex-1",
+              "will-change-[opacity,transform]",
+              smoothTransition,
+              showCompactNav 
+                ? "opacity-0 -translate-y-4 pointer-events-none" 
+                : "opacity-100 translate-y-0"
             )}>
               {topBarLinks.map((link) => (
                 <div 
@@ -222,12 +226,15 @@ export function Navbar() {
               ))}
             </nav>
 
-            {/* Búsqueda y Carrito - Ocultos en modo compacto */}
+            {/* Iconos Derecha */}
             <div className={cn(
-              "flex items-center gap-2 justify-end transition-all duration-500 ease-in-out",
-              showCompactNav && "opacity-0 pointer-events-none"
+              "flex items-center gap-2 justify-end",
+              "will-change-[opacity,transform]",
+              smoothTransition,
+              showCompactNav 
+                ? "opacity-0 translate-x-8 pointer-events-none" 
+                : "opacity-100 translate-x-0"
             )}>
-              {/* Search Button */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -238,7 +245,6 @@ export function Navbar() {
                 <span className="sr-only">Buscar</span>
               </Button>
 
-              {/* Cart Button */}
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -263,11 +269,11 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Panel SHOP - Funciona en Desktop y Mobile */}
+      {/* Panel SHOP */}
       <Sheet open={isShopPanelOpen} onOpenChange={setIsShopPanelOpen}>
         <SheetContent 
           side="left" 
-          className="w-full sm:w-[400px] overflow-y-auto p-0"
+          className="w-full sm:w-[400px] overflow-y-auto p-0 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]"
           style={{ 
             backgroundColor: '#6C7466',
             color: 'white',
@@ -301,35 +307,41 @@ export function Navbar() {
                     {collection.items.length > 0 && (
                       <ChevronRight 
                         className={cn(
-                          "h-5 w-5 flex-shrink-0 transition-transform duration-200",
+                          "h-5 w-5 flex-shrink-0 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                           selectedCollection?.name === collection.name && "rotate-90"
                         )}
                       />
                     )}
                   </button>
                   
-                  {/* Subcategorías desplegables */}
-                  {selectedCollection?.name === collection.name && collection.items.length > 0 && (
-                    <div className="ml-4 mt-2 space-y-1 animate-in slide-in-from-top-2">
-                      <Link
-                        href={collection.href}
-                        onClick={() => setIsShopPanelOpen(false)}
-                        className="block py-3 px-4 rounded-md text-sm text-white/90 hover:text-white hover:bg-white/10 transition-colors font-medium"
-                      >
-                        VIEW ALL
-                      </Link>
-                      {collection.items.map((item) => (
+                  <div className={cn(
+                    "grid transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-[grid-template-rows]",
+                    selectedCollection?.name === collection.name && collection.items.length > 0
+                      ? "grid-rows-[1fr] opacity-100" 
+                      : "grid-rows-[0fr] opacity-0"
+                  )}>
+                    <div className="overflow-hidden">
+                      <div className="ml-4 mt-2 space-y-1 pb-2">
                         <Link
-                          key={item.name}
-                          href={item.href}
+                          href={collection.href}
                           onClick={() => setIsShopPanelOpen(false)}
-                          className="block py-3 px-4 rounded-md text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                          className="block py-3 px-4 rounded-md text-sm text-white/90 hover:text-white hover:bg-white/10 transition-colors font-medium"
                         >
-                          {item.name}
+                          VIEW ALL
                         </Link>
-                      ))}
+                        {collection.items.map((item) => (
+                          <Link
+                            key={item.name}
+                            href={item.href}
+                            onClick={() => setIsShopPanelOpen(false)}
+                            className="block py-3 px-4 rounded-md text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                          >
+                            {item.name}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               ))}
             </nav>
@@ -337,10 +349,9 @@ export function Navbar() {
         </SheetContent>
       </Sheet>
 
-      {/* Barra principal de navegación MÓVIL */}
+      {/* MÓVIL */}
       <nav className="lg:hidden container mx-auto px-4 sm:px-6">
         <div className="flex h-16 sm:h-20 items-center justify-between">
-          {/* Menú Hamburguesa - IZQUIERDA en móvil */}
           <div className="flex items-center">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -365,8 +376,6 @@ export function Navbar() {
                 <SheetTitle className="text-white text-xl font-bold mb-6">
                   MENU
                 </SheetTitle>
-                
-                {/* Enlaces principales en mobile */}
                 <nav className="flex flex-col gap-3">
                   {topBarLinks.map((link) => (
                     link.hasMenu ? (
@@ -396,7 +405,6 @@ export function Navbar() {
             </Sheet>
           </div>
 
-          {/* Logo - Centro en móvil */}
           <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
             <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
               <Image
@@ -410,9 +418,7 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Búsqueda y Carrito - Derecha en móvil */}
           <div className="flex items-center gap-2">
-            {/* Search Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -422,8 +428,6 @@ export function Navbar() {
               <Search className="h-5 w-5" />
               <span className="sr-only">Buscar</span>
             </Button>
-
-            {/* Cart Button */}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -447,10 +451,15 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Search Bar - Expandable */}
+      {/* Search Bar */}
       {isSearchOpen && (
         <div 
-          className="border-t border-white/20 animate-in slide-in-from-top-2"
+          className={cn(
+            "border-t border-white/20 overflow-hidden",
+            "will-change-[max-height,opacity]",
+            smoothTransition,
+            isSearchOpen ? "max-h-20 opacity-100" : "max-h-0 opacity-0"
+          )}
           style={{ backgroundColor: '#6C7466' }}
         >
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">

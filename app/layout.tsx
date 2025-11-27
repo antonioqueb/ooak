@@ -6,28 +6,26 @@ import "./globals.css"
 import { Navbar } from "@/components/Navbar"
 import { Footer } from "@/components/Footer"
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+// 1. Configuramos las variables para que Tailwind las pueda usar
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+})
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+})
 
 export const metadata: Metadata = {
-  title: "Reflections Copenhagen - Objetos de Cristal de Lujo",
+  title: "One Of A Kind",
   description:
-    "Objetos excepcionales para el hogar que juegan con la luz. Diseño escandinavo de cristal tallado premium.",
-  generator: "v0.app",
+    "One Of A Kind, Unique Artefacts of Exceptional Quality for Your Home Decor and Collections. Handmade and Handcrafted by artisans in Copenhagen, Denmark.",
   icons: {
     icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
+      { url: "/icon-light-32x32.png", media: "(prefers-color-scheme: light)" },
+      { url: "/icon-dark-32x32.png", media: "(prefers-color-scheme: dark)" },
+      { url: "/icon.svg", type: "image/svg+xml" },
     ],
     apple: "/apple-icon.png",
   },
@@ -40,10 +38,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`font-sans antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-[#FDFBF7] text-[#2B2B2B]`}
+      >
         <Navbar />
-        {children}
+
+        {/* 
+           2. WRAPPER PRINCIPAL (<main>)
+           Aquí es donde ocurre la magia de la armonía. 
+           
+           - pt-20 (80px): Espacio para el Navbar en Móvil.
+           - lg:pt-[220px]: Espacio para el Navbar Expandido en Desktop (Logo grande + Menú).
+           - min-h-screen: Asegura que el footer siempre se empuje al final.
+        */}
+        <main className="relative flex flex-col min-h-screen pt-20 lg:pt-[220px]">
+          {children}
+        </main>
+
         <Footer />
+        <Analytics />
       </body>
     </html>
   )
