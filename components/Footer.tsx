@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils"
 const FOOTER_COPY = {
   brandName: "One of a Kind",
   tagline: "Unique pieces from nature that tell ancient stories. Each mineral, gem, and fossil is authentic and carefully selected.",
-  
+
   newsletter: {
     title: "Newsletter",
     description: "Be the first to receive new finds, exclusive offers, and knowledge about the fascinating world of minerals.",
@@ -28,22 +28,22 @@ const FOOTER_COPY = {
   quickLinks: {
     title: "Explore",
     links: [
-      { label: "Full Catalog", href: "/catalog" },
-      { label: "Featured Pieces", href: "/featured" },
-      { label: "Our Story", href: "/about-us" },
-      { label: "Certificates", href: "/authenticity" },
-      { label: "Mineral Care", href: "/care" }
+      { label: "Full Catalog", href: "/collections/alloy" },
+      { label: "Featured Pieces", href: "/collections/crystal" },
+      { label: "Our Story", href: "/the-brand" },
+      { label: "Certificates", href: "/craft-stories" },
+      { label: "Mineral Care", href: "/craft-stories" }
     ]
   },
 
   legalLinks: {
     title: "Legal",
     links: [
-      { label: "Terms and Conditions", href: "/terms-conditions" },
-      { label: "Privacy Policy", href: "/privacy-policy" },
-      { label: "Shipping and Delivery", href: "/shipping-policy" },
-      { label: "Returns and Exchanges", href: "/returns-policy" },
-      { label: "Legal Notice", href: "/legal-notice" }
+      { label: "Terms and Conditions", href: "/legal" },
+      { label: "Privacy Policy", href: "/legal" },
+      { label: "Shipping and Delivery", href: "/legal" },
+      { label: "Returns and Exchanges", href: "/legal" },
+      { label: "Legal Notice", href: "/legal" }
     ]
   },
 
@@ -63,8 +63,8 @@ const FOOTER_COPY = {
   bottom: {
     copyright: "One of a Kind. All rights reserved.",
     links: [
-      { label: "Site Map", href: "/sitemap" },
-      { label: "Accessibility", href: "/accessibility" }
+      { label: "Site Map", href: "/legal" },
+      { label: "Accessibility", href: "/legal" }
     ]
   }
 }
@@ -90,7 +90,7 @@ export function Footer() {
         {/* Main Footer Content */}
         <div className="py-10 sm:py-14 md:py-16 lg:py-20">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12 xl:gap-16">
-            
+
             {/* Company Info */}
             <div className="space-y-4 sm:space-y-5">
               <h3 className="text-[#6C7466] font-bold text-base sm:text-lg tracking-wider">
@@ -100,7 +100,7 @@ export function Footer() {
                 {FOOTER_COPY.tagline}
               </p>
               <div className="flex items-center gap-3 pt-2">
-                <Link 
+                <Link
                   href={FOOTER_COPY.social.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -109,7 +109,7 @@ export function Footer() {
                 >
                   <Facebook className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-[#6C7466]" />
                 </Link>
-                <Link 
+                <Link
                   href={FOOTER_COPY.social.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -118,7 +118,7 @@ export function Footer() {
                 >
                   <Instagram className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-[#6C7466]" />
                 </Link>
-                <Link 
+                <Link
                   href={FOOTER_COPY.social.email}
                   className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#6C7466]/10 hover:bg-[#6C7466]/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
                   aria-label="Email"
@@ -136,7 +136,7 @@ export function Footer() {
               <ul className="space-y-2.5 sm:space-y-3">
                 {FOOTER_COPY.quickLinks.links.map((link) => (
                   <li key={link.href}>
-                    <Link 
+                    <Link
                       href={link.href}
                       className="text-[#6C7466]/70 hover:text-[#6C7466] text-sm sm:text-base transition-colors duration-200 inline-block hover:translate-x-1 transform"
                     >
@@ -155,7 +155,7 @@ export function Footer() {
               <ul className="space-y-2.5 sm:space-y-3">
                 {FOOTER_COPY.legalLinks.links.map((link) => (
                   <li key={link.href}>
-                    <Link 
+                    <Link
                       href={link.href}
                       className="text-[#6C7466]/70 hover:text-[#6C7466] text-sm sm:text-base transition-colors duration-200 inline-block hover:translate-x-1 transform"
                     >
@@ -213,7 +213,7 @@ export function Footer() {
               <span className="text-xs sm:text-sm lg:text-base">{FOOTER_COPY.contact.location}</span>
             </div>
             <div className="hidden sm:block w-px h-4 bg-[#6C7466]/20" />
-            <Link 
+            <Link
               href={`tel:${FOOTER_COPY.contact.phone}`}
               className="flex items-center gap-2 text-[#6C7466]/70 hover:text-[#6C7466] transition-colors group"
             >
@@ -221,7 +221,7 @@ export function Footer() {
               <span className="text-xs sm:text-sm lg:text-base">{FOOTER_COPY.contact.phone}</span>
             </Link>
             <div className="hidden sm:block w-px h-4 bg-[#6C7466]/20" />
-            <Link 
+            <Link
               href={`mailto:${FOOTER_COPY.contact.email}`}
               className="flex items-center gap-2 text-[#6C7466]/70 hover:text-[#6C7466] transition-colors group"
             >
@@ -241,7 +241,7 @@ export function Footer() {
               {FOOTER_COPY.bottom.links.map((link, index) => (
                 <React.Fragment key={link.href}>
                   {index > 0 && <span className="text-[#6C7466]/30 text-xs">•</span>}
-                  <Link 
+                  <Link
                     href={link.href}
                     className="text-[#6C7466]/60 hover:text-[#6C7466] text-xs sm:text-sm transition-colors duration-200"
                   >

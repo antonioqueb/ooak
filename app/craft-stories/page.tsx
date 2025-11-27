@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { Gem, Hammer, ArrowRight, Star } from 'lucide-react';
 
 export default function CraftStoriesPage() {
@@ -110,13 +111,13 @@ export default function CraftStoriesPage() {
 
         {/* 4. Minimal Footer / Next Step */}
         <div className="mt-32 flex justify-center">
-          <button className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-full">
+          <Link href="/collections/alloy" className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-full inline-block">
             <span className="absolute inset-0 w-full h-full bg-[#6C7466]/5 group-hover:bg-[#6C7466] transition-all duration-500 ease-out" />
             <span className="relative flex items-center gap-3 text-[#6C7466] font-bold tracking-[0.15em] text-xs uppercase group-hover:text-white transition-colors">
               Explore the Collection
               <ArrowRight className="w-4 h-4" />
             </span>
-          </button>
+          </Link>
         </div>
 
       </div>

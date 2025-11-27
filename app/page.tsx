@@ -35,13 +35,13 @@ export default function Home() {
             <div className="order-2 lg:order-1 lg:col-span-7 relative group">
               {/* Decorative Big Text behind */}
               <div className="absolute -top-12 -left-12 text-[8rem] md:text-[10rem] font-serif font-bold text-[#6C7466]/5 select-none pointer-events-none z-0 leading-none">
-                LEA
+                JASPER
               </div>
 
               <div className="relative aspect-[4/5] md:aspect-[16/10] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm z-10">
                 <Image
                   src="/producto5.png"
-                  alt="Lea Heart Green Tealight Holder"
+                  alt="Polished Landscape Jasper"
                   fill
                   className="object-cover transition-transform duration-[2s] ease-in-out group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, 60vw"
@@ -68,14 +68,14 @@ export default function Home() {
                 </p>
               </div>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif text-[#6C7466] leading-[0.9] tracking-tight mb-8">
-                Lea Heart <br />
-                <span className="italic font-light text-[#2B2B2B] opacity-80">Green Tealight.</span>
+                Polished <br />
+                <span className="italic font-light text-[#2B2B2B] opacity-80">Landscape Jasper.</span>
               </h1>
               <p className="text-base md:text-lg text-gray-500 font-light leading-relaxed mb-10 max-w-md mx-auto lg:mx-0">
-                The iconic geometric purity you know, now reimagined with deep red and soft pink hearts. A study in contrast, light, and modern romance.
+                Sculpture of polished Landscape Jasper, known for its natural patterns evoking terrestrial landscapes. A study in contrast, light, and modern nature.
               </p>
               <div className="flex justify-center lg:justify-start">
-                <Link href="/shop/lea-heart" className="group relative inline-flex items-center gap-4">
+                <Link href="/product/prod-5" className="group relative inline-flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full border border-[#6C7466]/30 flex items-center justify-center group-hover:bg-[#6C7466] group-hover:border-[#6C7466] transition-all duration-300">
                     <ArrowRight className="w-5 h-5 text-[#6C7466] group-hover:text-white transition-colors" />
                   </div>
