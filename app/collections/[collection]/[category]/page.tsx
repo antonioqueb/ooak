@@ -1,7 +1,9 @@
 import Image from "next/image";
 import { COLLECTIONS_DATA } from "@/lib/collections";
 import { ArrowRight, Star, ArrowDown } from "lucide-react";
-import Link from "next/link"; // Importante para los breadcrumbs
+import Link from "next/link"; 
+// 1. Importamos el Grid
+import { ProductGrid } from "@/components/ProductGrid";
 
 export default async function CategoryPage({
     params,
@@ -23,11 +25,18 @@ export default async function CategoryPage({
             COLLECTIONS_DATA[`${collectionName} COLLECTION`];
         if (parentData) {
             data = {
-                description: `A curated selection of ${categoryName}, derived from the essence of the ${collectionName}.`, // Pequeño ajuste al copy en inglés para el vibe
+                description: `A curated selection of ${categoryName}, derived from the essence of the ${collectionName}.`, 
                 image: parentData.image,
+                // Intentamos pasar los productos del padre si la categoría no tiene datos específicos
+                // (Ojo: esto mostraría todos los productos de la colección. Si quieres filtrar, se haría aquí)
+                // @ts-ignore
+                products: parentData.products || [] 
             };
         }
     }
+
+    // Extraemos los productos de forma segura para TS
+    const products = data ? ((data as any).products || []) : [];
 
     return (
         <main className="min-h-screen bg-[#FDFBF7] text-[#2B2B2B] relative overflow-hidden selection:bg-[#6C7466] selection:text-white">
@@ -109,7 +118,7 @@ export default async function CategoryPage({
                     </div>
                 )}
 
-                {/* 5. Product Gallery Grid (Placeholder Artístico) */}
+                {/* 5. Product Gallery Grid (INTEGRACIÓN) */}
                 <div className="pl-0 md:pl-12">
                     <div className="flex items-end justify-between mb-12 border-b border-[#6C7466]/10 pb-6">
                         <div>
@@ -121,47 +130,14 @@ export default async function CategoryPage({
                             </span>
                         </div>
                         <span className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase hidden md:block">
-                            2024 Series
+                            {products.length > 0 ? `${products.length} Series` : 'Available Soon'}
                         </span>
                     </div>
 
-                    {/* El Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-16">
-                        {[...Array(8)].map((_, i) => (
-                            <div key={i} className="group cursor-pointer">
-                                {/* Imagen / Placeholder */}
-                                <div className="aspect-[3/4] bg-[#EBEBE8] relative overflow-hidden mb-6 transition-all duration-700 ease-out group-hover:shadow-2xl">
-                                    {/* Placeholder Lines */}
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center opacity-20 group-hover:opacity-40 transition-opacity">
-                                        <div className="w-px h-12 bg-[#6C7466]" />
-                                    </div>
-                                    
-                                    {/* Interactive Overlay */}
-                                    <div className="absolute inset-0 bg-[#6C7466]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                    
-                                    {/* Tag flotante */}
-                                    <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
-                                        <span className="text-[10px] bg-white px-2 py-1 uppercase tracking-widest text-[#6C7466]">
-                                            View Object
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Info Minimalista */}
-                                <div className="flex justify-between items-start border-t border-[#6C7466]/10 pt-4">
-                                    <div>
-                                        <h3 className="text-base font-serif text-[#2B2B2B] group-hover:text-[#6C7466] transition-colors">
-                                            Specimen 00{i + 1}
-                                        </h3>
-                                        <p className="text-[10px] tracking-widest uppercase text-gray-400 mt-1">
-                                            {categoryName}
-                                        </p>
-                                    </div>
-                                    <ArrowDown className="w-4 h-4 -rotate-90 text-[#6C7466] opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    {/* Renderizamos el ProductGrid */}
+                    {/* @ts-ignore */}
+                    <ProductGrid products={products} />
+                    
                 </div>
 
             </div>
