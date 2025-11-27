@@ -3,18 +3,18 @@
 import * as React from "react";
 import Image from "next/image";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
-import { 
-  Heart, 
-  X, 
-  Package, 
-  TruckIcon, 
-  ShieldCheck, 
+import {
+  Heart,
+  X,
+  Package,
+  TruckIcon,
+  ShieldCheck,
   ChevronRight,
   Star,
   Plus,
   ArrowRight,
   ArrowLeft,
-  RefreshCcw 
+  RefreshCcw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -108,7 +108,7 @@ const STATIC_PRODUCTS: Product[] = [
     colors: "Dark Brown / Smoke Grey",
     inStock: true,
   },
-   {
+  {
     id: "prod-5",
     name: "Polished Landscape Jasper",
     price: 3600,
@@ -204,23 +204,23 @@ export function ProductGrid() {
   return (
     <section className="relative py-24 md:py-32 bg-[#FDFBF7] text-[#2B2B2B] overflow-hidden selection:bg-[#6C7466] selection:text-white">
       {/* Background Atmosphere */}
-      <div 
-        className="absolute inset-0 opacity-[0.03] pointer-events-none z-0 mix-blend-multiply" 
-        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E")` }} 
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none z-0 mix-blend-multiply"
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E")` }}
       />
       <div className="hidden md:block absolute top-0 left-12 w-px h-full bg-[#6C7466]/10 z-0" />
       <div className="hidden md:block absolute top-0 right-12 w-px h-full bg-[#6C7466]/10 z-0" />
 
       <div className="container mx-auto px-6 relative z-10">
-        
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 md:pl-12">
           <div className="max-w-2xl">
             <div className="flex items-center gap-3 mb-4">
-                <Star className="w-4 h-4 text-[#6C7466] animate-spin-slow" />
-                <span className="text-xs font-bold tracking-[0.25em] text-[#6C7466] uppercase">
-                  The Collection
-                </span>
+              <Star className="w-4 h-4 text-[#6C7466] animate-spin-slow" />
+              <span className="text-xs font-bold tracking-[0.25em] text-[#6C7466] uppercase">
+                The Collection
+              </span>
             </div>
             <h1 className="text-5xl md:text-7xl font-serif text-[#6C7466] leading-[0.9]">
               Natural <br />
@@ -228,7 +228,7 @@ export function ProductGrid() {
             </h1>
           </div>
           <p className="text-sm font-light text-gray-500 max-w-xs mt-6 md:mt-0 leading-relaxed md:text-right">
-             Transform your sanctuary with exceptional elements.
+            Transform your sanctuary with exceptional elements.
           </p>
         </div>
 
@@ -320,10 +320,10 @@ function ProductCard({
           priority={product.featured}
         />
         <div className="absolute inset-0 bg-[#6C7466]/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-        
+
         <div className="absolute top-3 left-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-             {product.featured && <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-bold tracking-widest uppercase text-[#6C7466]">Featured</span>}
-             {product.inStock && <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-bold tracking-widest uppercase text-gray-400">In Stock</span>}
+          {product.featured && <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-bold tracking-widest uppercase text-[#6C7466]">Featured</span>}
+          {product.inStock && <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-bold tracking-widest uppercase text-gray-400">In Stock</span>}
         </div>
 
         <button
@@ -340,18 +340,18 @@ function ProductCard({
         </button>
 
         <button className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#6C7466] shadow-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#6C7466] hover:text-white">
-            <Plus className="w-5 h-5" />
+          <Plus className="w-5 h-5" />
         </button>
       </div>
 
       <div className="flex flex-col">
         <div className="flex justify-between items-baseline">
-            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-1 truncate max-w-[70%]">
-                {product.category}
-            </span>
-            <span className="text-sm font-medium text-[#2B2B2B]">
-                ${product.price.toLocaleString("en-US")}
-            </span>
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-1 truncate max-w-[70%]">
+            {product.category}
+          </span>
+          <span className="text-sm font-medium text-[#2B2B2B]">
+            ${product.price.toLocaleString("en-US")}
+          </span>
         </div>
         <h3 className="text-lg font-serif text-[#2B2B2B] leading-tight group-hover:text-[#6C7466] transition-colors duration-300 line-clamp-2">
           {product.name}
@@ -362,7 +362,7 @@ function ProductCard({
 }
 
 // ========================================
-// 🎨 PRODUCT MODAL (AJUSTADO PARA LAPTOPS Y MOVIL)
+// 🎨 PRODUCT MODAL (AJUSTADO: AMPLIO EN ESCRITORIO)
 // ========================================
 function ProductModal({
   product,
@@ -409,16 +409,16 @@ function ProductModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
-        // 🔧 FIX: Ajuste de altura para laptops pequeñas (h-[85vh] y max-h-[800px])
-        // 🔧 FIX: Padding reducido en móvil (p-0)
-        className="w-[95vw] max-w-6xl h-[90dvh] md:h-[85vh] max-h-[800px] overflow-hidden p-0 bg-[#FDFBF7] border-0 shadow-2xl gap-0 flex flex-col md:flex-row rounded-none md:rounded-lg"
+      <DialogContent
+        // 🔧 FIX: AUMENTADO EL ANCHO MÁXIMO (max-w-[95vw] y max-w-[1600px])
+        // Ahora ocupa casi toda la pantalla horizontalmente en escritorio.
+        className="w-[95vw] md:max-w-[95vw] lg:max-w-[1600px] h-[90dvh] md:h-[85vh] overflow-hidden p-0 bg-[#FDFBF7] border-0 shadow-2xl gap-0 flex flex-col md:flex-row rounded-none md:rounded-lg"
       >
         <DialogHeader className="sr-only">
           <DialogTitle>{product.name}</DialogTitle>
         </DialogHeader>
 
-        {/* Floating Close Button - Visible on both desktop and mobile */}
+        {/* Floating Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-50 p-2 bg-white/50 hover:bg-white rounded-full transition-colors backdrop-blur-md shadow-sm"
@@ -426,157 +426,153 @@ function ProductModal({
           <X className="w-5 h-5 text-[#2B2B2B]" strokeWidth={1.5} />
         </button>
 
-        {/* 
-           🔧 FIX: Estructura Flexbox para móvil 
-           Móvil: flex-col (Imagen arriba fija, Texto abajo scroll)
-           Desktop: flex-row (Imagen izquierda, Texto derecha)
-        */}
-        
         {/* LEFT SIDE: Image Gallery */}
-        <div 
-          className="relative w-full md:w-1/2 shrink-0 bg-[#EBEBE8] overflow-hidden group"
-          // 🔧 FIX: Altura mínima y fija en móvil para asegurar visibilidad
+        <div
+          // 🔧 FIX: Aumentado el ancho de la imagen en escritorio (md:w-[55%] lg:w-[60%])
+          // Esto hace que la imagen se vea mucho más grande y protagonista.
+          className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-[#EBEBE8] overflow-hidden group"
+          // Mantiene la lógica móvil intacta
           style={{ height: "40vh", minHeight: "300px", maxHeight: "none" }}
         >
-             {/* Desktop overrides via Tailwind classes */}
-             <div 
-                ref={imageContainerRef}
-                className="w-full h-full md:h-full cursor-zoom-in relative"
-                onMouseMove={handleMouseMove}
-                onMouseEnter={() => setIsZooming(true)}
-                onMouseLeave={() => setIsZooming(false)}
-             >
-                <div 
-                    className="w-full h-full relative"
-                    style={{
-                        transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`,
-                        transform: isZooming ? "scale(2)" : "scale(1)",
-                        // 🔧 FIX: Transición suave para el zoom
-                        transition: "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform-origin 0.1s ease-out"
-                    }}
-                >
-                    <Image
-                        src={images[selectedImageIndex]}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        priority
-                    />
-                </div>
-                
-                {/* Overlay only when NOT zooming */}
-                <div className={cn(
-                    "absolute inset-0 bg-[#6C7466]/5 mix-blend-multiply pointer-events-none transition-opacity duration-300",
-                    isZooming ? "opacity-0" : "opacity-100"
-                )} />
+          {/* Desktop overrides via Tailwind classes (h-full en md) */}
+          <div
+            ref={imageContainerRef}
+            className="w-full h-full md:h-full cursor-zoom-in relative"
+            onMouseMove={handleMouseMove}
+            onMouseEnter={() => setIsZooming(true)}
+            onMouseLeave={() => setIsZooming(false)}
+          >
+            <div
+              className="w-full h-full relative"
+              style={{
+                transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`,
+                transform: isZooming ? "scale(2)" : "scale(1)",
+                transition: "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform-origin 0.1s ease-out"
+              }}
+            >
+              <Image
+                src={images[selectedImageIndex]}
+                alt={product.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 60vw"
+                priority
+              />
             </div>
-            
-            {/* Thumbnails */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 px-3 py-1.5 bg-white/30 backdrop-blur-md rounded-full z-20">
-                {images.map((img, index) => (
-                  <button
-                    key={index}
-                    onClick={(e) => { e.stopPropagation(); setSelectedImageIndex(index); }}
-                    className={cn(
-                      "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                      selectedImageIndex === index ? "bg-[#2B2B2B] scale-150" : "bg-white/80 hover:bg-white"
-                    )}
-                  />
-                ))}
-            </div>
+
+            {/* Overlay only when NOT zooming */}
+            <div className={cn(
+              "absolute inset-0 bg-[#6C7466]/5 mix-blend-multiply pointer-events-none transition-opacity duration-300",
+              isZooming ? "opacity-0" : "opacity-100"
+            )} />
+          </div>
+
+          {/* Thumbnails */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 px-3 py-1.5 bg-white/30 backdrop-blur-md rounded-full z-20">
+            {images.map((img, index) => (
+              <button
+                key={index}
+                onClick={(e) => { e.stopPropagation(); setSelectedImageIndex(index); }}
+                className={cn(
+                  "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                  selectedImageIndex === index ? "bg-[#2B2B2B] scale-150" : "bg-white/80 hover:bg-white"
+                )}
+              />
+            ))}
+          </div>
         </div>
 
         {/* RIGHT SIDE: Details */}
-        <div className="flex-1 w-full md:w-1/2 flex flex-col h-full bg-[#FDFBF7] overflow-hidden">
-            {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 lg:p-10">
-                
-                {/* Breadcrumb */}
-                <div className="flex items-center gap-3 mb-4 md:mb-6">
-                    <span className="h-px w-6 md:w-8 bg-[#6C7466]"></span>
-                    <span className="text-[10px] md:text-xs font-bold tracking-[0.25em] text-[#6C7466] uppercase truncate">
-                        {product.category}
-                    </span>
-                </div>
+        {/* El ancho se ajusta automáticamente para llenar el resto (flex-1) */}
+        <div className="flex-1 w-full md:w-[45%] lg:w-[40%] flex flex-col h-full bg-[#FDFBF7] overflow-hidden">
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 lg:p-12">
 
-                {/* Header Info */}
-                <h2 className="text-2xl md:text-4xl font-serif text-[#2B2B2B] mb-2 md:mb-4 leading-[1.1]">
-                  {product.name}
-                </h2>
-                <p className="text-xl md:text-2xl font-light text-[#6C7466] mb-6 md:mb-8">
-                  ${product.price.toLocaleString("en-US")} <span className="text-xs text-gray-400">MXN</span>
-                </p>
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <span className="h-px w-6 md:w-8 bg-[#6C7466]"></span>
+              <span className="text-[10px] md:text-xs font-bold tracking-[0.25em] text-[#6C7466] uppercase truncate">
+                {product.category}
+              </span>
+            </div>
 
-                {/* Description */}
-                <div className="mb-8 text-gray-500 font-light leading-relaxed text-sm md:text-base">
-                    <p>
-                      {showMoreDescription
-                        ? product.description
-                        : product.description?.substring(0, 150) + (product.description && product.description.length > 150 ? "..." : "")}
-                    </p>
-                    {product.description && product.description.length > 150 && (
-                      <button
-                        onClick={() => setShowMoreDescription(!showMoreDescription)}
-                        className="text-[#6C7466] text-[10px] md:text-xs font-bold uppercase tracking-widest mt-2 flex items-center gap-2 hover:text-[#2B2B2B] transition-colors"
-                      >
-                        {showMoreDescription ? "Read Less" : "Read More"}
-                        <ChevronRight className={cn("w-3 h-3 transition-transform", showMoreDescription && "rotate-90")} />
-                      </button>
+            {/* Header Info */}
+            <h2 className="text-2xl md:text-4xl lg:text-5xl font-serif text-[#2B2B2B] mb-2 md:mb-4 leading-[1.1]">
+              {product.name}
+            </h2>
+            <p className="text-xl md:text-2xl lg:text-3xl font-light text-[#6C7466] mb-6 md:mb-8">
+              ${product.price.toLocaleString("en-US")} <span className="text-xs text-gray-400">MXN</span>
+            </p>
+
+            {/* Description */}
+            <div className="mb-8 text-gray-500 font-light leading-relaxed text-sm md:text-base">
+              <p>
+                {showMoreDescription
+                  ? product.description
+                  : product.description?.substring(0, 180) + (product.description && product.description.length > 180 ? "..." : "")}
+              </p>
+              {product.description && product.description.length > 180 && (
+                <button
+                  onClick={() => setShowMoreDescription(!showMoreDescription)}
+                  className="text-[#6C7466] text-[10px] md:text-xs font-bold uppercase tracking-widest mt-2 flex items-center gap-2 hover:text-[#2B2B2B] transition-colors"
+                >
+                  {showMoreDescription ? "Read Less" : "Read More"}
+                  <ChevronRight className={cn("w-3 h-3 transition-transform", showMoreDescription && "rotate-90")} />
+                </button>
+              )}
+            </div>
+
+            {/* Tabs */}
+            <div className="border-t border-b border-[#6C7466]/10 py-4 md:py-6 mb-6">
+              <div className="flex gap-6 mb-4 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                {["measurements", "shipping", "returns"].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab as any)}
+                    className={cn(
+                      "text-[10px] md:text-xs font-bold tracking-widest uppercase transition-colors whitespace-nowrap pb-1 border-b-2",
+                      activeTab === tab ? "text-[#2B2B2B] border-[#2B2B2B]" : "text-gray-400 border-transparent hover:text-[#2B2B2B]"
                     )}
-                </div>
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
 
-                {/* Tabs */}
-                <div className="border-t border-b border-[#6C7466]/10 py-4 md:py-6 mb-6">
-                   <div className="flex gap-6 mb-4 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                      {["measurements", "shipping", "returns"].map((tab) => (
-                          <button 
-                            key={tab}
-                            onClick={() => setActiveTab(tab as any)}
-                            className={cn(
-                                "text-[10px] md:text-xs font-bold tracking-widest uppercase transition-colors whitespace-nowrap pb-1 border-b-2", 
-                                activeTab === tab ? "text-[#2B2B2B] border-[#2B2B2B]" : "text-gray-400 border-transparent hover:text-[#2B2B2B]"
-                            )}
-                          >
-                            {tab}
-                          </button>
-                      ))}
-                   </div>
-
-                   <div className="min-h-[80px]">
-                      {activeTab === "measurements" && (
-                         <div className="grid grid-cols-2 gap-3 text-sm animate-in fade-in slide-in-from-left-2 duration-300">
-                             <div><span className="block text-[10px] text-gray-400 uppercase">Dimensions</span><span className="text-[#2B2B2B]">{product.dimensions?.height} x {product.dimensions?.width}</span></div>
-                             <div><span className="block text-[10px] text-gray-400 uppercase">Weight</span><span className="text-[#2B2B2B]">{product.dimensions?.weight}</span></div>
-                             <div className="col-span-2"><span className="block text-[10px] text-gray-400 uppercase">Material</span><span className="text-[#2B2B2B]">{product.material}</span></div>
-                         </div>
-                      )}
-                      {activeTab === "shipping" && (
-                         <div className="space-y-2 text-sm text-gray-500 font-light animate-in fade-in slide-in-from-left-2 duration-300">
-                            <p className="flex items-center gap-2"><TruckIcon className="w-3.5 h-3.5 text-[#6C7466]" /> CDMX: 2-3 days</p>
-                            <p className="flex items-center gap-2"><Package className="w-3.5 h-3.5 text-[#6C7466]" /> National: 3-5 days</p>
-                         </div>
-                      )}
-                      {activeTab === "returns" && (
-                         <div className="space-y-2 text-sm text-gray-500 font-light animate-in fade-in slide-in-from-left-2 duration-300">
-                             <p className="flex items-center gap-2"><RefreshCcw className="w-3.5 h-3.5 text-[#6C7466]" /> 30-day return window</p>
-                         </div>
-                      )}
-                   </div>
-                </div>
+              <div className="min-h-[80px]">
+                {activeTab === "measurements" && (
+                  <div className="grid grid-cols-2 gap-3 text-sm animate-in fade-in slide-in-from-left-2 duration-300">
+                    <div><span className="block text-[10px] text-gray-400 uppercase">Dimensions</span><span className="text-[#2B2B2B]">{product.dimensions?.height} x {product.dimensions?.width}</span></div>
+                    <div><span className="block text-[10px] text-gray-400 uppercase">Weight</span><span className="text-[#2B2B2B]">{product.dimensions?.weight}</span></div>
+                    <div className="col-span-2"><span className="block text-[10px] text-gray-400 uppercase">Material</span><span className="text-[#2B2B2B]">{product.material}</span></div>
+                  </div>
+                )}
+                {activeTab === "shipping" && (
+                  <div className="space-y-2 text-sm text-gray-500 font-light animate-in fade-in slide-in-from-left-2 duration-300">
+                    <p className="flex items-center gap-2"><TruckIcon className="w-3.5 h-3.5 text-[#6C7466]" /> CDMX: 2-3 days</p>
+                    <p className="flex items-center gap-2"><Package className="w-3.5 h-3.5 text-[#6C7466]" /> National: 3-5 days</p>
+                  </div>
+                )}
+                {activeTab === "returns" && (
+                  <div className="space-y-2 text-sm text-gray-500 font-light animate-in fade-in slide-in-from-left-2 duration-300">
+                    <p className="flex items-center gap-2"><RefreshCcw className="w-3.5 h-3.5 text-[#6C7466]" /> 30-day return window</p>
+                  </div>
+                )}
+              </div>
             </div>
+          </div>
 
-            {/* Footer Actions (Fixed at bottom right) */}
-            <div className="p-6 md:p-8 border-t border-[#6C7466]/10 bg-[#FDFBF7] shrink-0">
-                <Button className="w-full bg-[#2B2B2B] text-white hover:bg-[#6C7466] transition-colors h-12 md:h-14 rounded-none text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-3">
-                    Add to Cart — ${product.price.toLocaleString("en-US")}
-                </Button>
-                <div className="flex justify-center items-center gap-3 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest">
-                    <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Secure</span>
-                    <span>•</span>
-                    <span>Worldwide Shipping</span>
-                </div>
+          {/* Footer Actions (Fixed at bottom right) */}
+          <div className="p-6 md:p-8 lg:p-10 border-t border-[#6C7466]/10 bg-[#FDFBF7] shrink-0">
+            <Button className="w-full bg-[#2B2B2B] text-white hover:bg-[#6C7466] transition-colors h-12 md:h-14 rounded-none text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-3">
+              Add to Cart — ${product.price.toLocaleString("en-US")}
+            </Button>
+            <div className="flex justify-center items-center gap-3 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest">
+              <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Secure</span>
+              <span>•</span>
+              <span>Worldwide Shipping</span>
             </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
