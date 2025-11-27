@@ -153,8 +153,8 @@ export function Navbar() {
               <Image
                 src="/logo.png"
                 alt="OOAK Logo"
-                width={400}
-                height={200}
+                width={490}
+                height={290}
                 className="h-24 w-auto"
                 priority
               />
@@ -187,8 +187,8 @@ export function Navbar() {
                 <Image
                   src="/logo.png"
                   alt="OOAK Logo"
-                  width={400}
-                  height={200}
+                  width={490}
+                  height={290}
                   className="h-10 w-auto"
                   priority
                 />
@@ -410,8 +410,8 @@ export function Navbar() {
               <Image
                 src="/logo.png"
                 alt="OOAK Logo"
-                width={400}
-                height={200}
+                width={490}
+                height={290}
                 className="h-12 sm:h-14 w-auto"
                 priority
               />
