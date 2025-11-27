@@ -362,7 +362,7 @@ function ProductCard({
 }
 
 // ========================================
-// 🎨 PRODUCT MODAL (CORREGIDO: IMAGEN FULL HEIGHT EN ESCRITORIO)
+// 🎨 PRODUCT MODAL
 // ========================================
 function ProductModal({
   product,
@@ -407,6 +407,17 @@ function ProductModal({
   if (!product) return null;
   const images = product.images || [product.image];
 
+  // 🔹 NUEVAS FUNCIONES PARA NAVEGACIÓN 🔹
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -426,11 +437,26 @@ function ProductModal({
 
         {/* LEFT SIDE: Image Gallery */}
         <div
-          // 🔧 CORRECCIÓN AQUÍ:
-          // Se eliminó style={{ height: "40vh" }} que forzaba la altura fija.
-          // Ahora usamos clases: h-[40vh] para móvil y md:h-full para escritorio.
           className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-[#EBEBE8] overflow-hidden group h-[40vh] min-h-[300px] md:h-full md:min-h-0"
         >
+          {/* 🔹 NUEVOS BOTONES DE NAVEGACIÓN MÓVIL (Y ESCRITORIO) 🔹 */}
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={handlePrevImage}
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-30 p-2.5 bg-white/40 backdrop-blur-md rounded-full hover:bg-white text-[#2B2B2B] shadow-sm transition-all active:scale-95 opacity-100 md:opacity-0 md:group-hover:opacity-100"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleNextImage}
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-30 p-2.5 bg-white/40 backdrop-blur-md rounded-full hover:bg-white text-[#2B2B2B] shadow-sm transition-all active:scale-95 opacity-100 md:opacity-0 md:group-hover:opacity-100"
+              >
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </>
+          )}
+
           {/* Desktop overrides via Tailwind classes */}
           <div
             ref={imageContainerRef}
