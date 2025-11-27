@@ -9,62 +9,62 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
 // ========================================
-// 📝 CONFIGURACIÓN DE TEXTOS
+// 📝 TEXT CONFIGURATION
 // ========================================
 const FOOTER_COPY = {
   brandName: "One of a Kind",
-  tagline: "Piezas únicas de la naturaleza que cuentan historias milenarias. Cada mineral, gema y fósil es auténtico y cuidadosamente seleccionado.",
+  tagline: "Unique pieces from nature that tell ancient stories. Each mineral, gem, and fossil is authentic and carefully selected.",
   
   newsletter: {
     title: "Newsletter",
-    description: "Recibe primero nuevos hallazgos, ofertas exclusivas y conocimiento sobre el fascinante mundo de los minerales.",
-    placeholder: "tu@email.com",
-    buttonDefault: "Suscribirse",
-    buttonSuccess: "¡Suscrito!",
-    privacyText: "Al suscribirte, aceptas nuestra",
-    privacyLink: "Política de Privacidad"
+    description: "Be the first to receive new finds, exclusive offers, and knowledge about the fascinating world of minerals.",
+    placeholder: "your@email.com",
+    buttonDefault: "Subscribe",
+    buttonSuccess: "Subscribed!",
+    privacyText: "By subscribing, you accept our",
+    privacyLink: "Privacy Policy"
   },
 
   quickLinks: {
-    title: "Explorar",
+    title: "Explore",
     links: [
-      { label: "Catálogo Completo", href: "/catalogo" },
-      { label: "Piezas Destacadas", href: "/destacadas" },
-      { label: "Nuestra Historia", href: "/sobre-nosotros" },
-      { label: "Certificados", href: "/autenticidad" },
-      { label: "Cuidado de Minerales", href: "/cuidados" }
+      { label: "Full Catalog", href: "/catalog" },
+      { label: "Featured Pieces", href: "/featured" },
+      { label: "Our Story", href: "/about-us" },
+      { label: "Certificates", href: "/authenticity" },
+      { label: "Mineral Care", href: "/care" }
     ]
   },
 
   legalLinks: {
     title: "Legal",
     links: [
-      { label: "Términos y Condiciones", href: "/terminos-condiciones" },
-      { label: "Política de Privacidad", href: "/politica-privacidad" },
-      { label: "Envíos y Entregas", href: "/politica-envios" },
-      { label: "Devoluciones y Cambios", href: "/politica-devoluciones" },
-      { label: "Aviso Legal", href: "/aviso-legal" }
+      { label: "Terms and Conditions", href: "/terms-conditions" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Shipping and Delivery", href: "/shipping-policy" },
+      { label: "Returns and Exchanges", href: "/returns-policy" },
+      { label: "Legal Notice", href: "/legal-notice" }
     ]
   },
 
   contact: {
-    title: "Contacto",
-    location: "García, Nuevo León, México",
+    title: "Contact",
+    location: "García, Nuevo León, Mexico",
     phone: "+52 81 1234 5678",
-    email: "hola@oneofakind.mx"
+    email: "hello@oneofakind.mx"
   },
 
   social: {
     facebook: "https://facebook.com/oneofakind",
     instagram: "https://instagram.com/oneofakind",
-    email: "mailto:hola@oneofakind.mx"
+    email: "mailto:hello@oneofakind.mx"
   },
 
   bottom: {
-    copyright: "One of a Kind. Todos los derechos reservados.",
+    copyright: "One of a Kind. All rights reserved.",
     links: [
-      { label: "Mapa del Sitio", href: "/mapa-sitio" },
-      { label: "Accesibilidad", href: "/accesibilidad" }
+      { label: "Site Map", href: "/sitemap" },
+      { label: "Accessibility", href: "/accessibility" }
     ]
   }
 }
@@ -197,7 +197,7 @@ export function Footer() {
               </form>
               <p className="text-[#6C7466]/50 text-xs sm:text-sm leading-relaxed">
                 {FOOTER_COPY.newsletter.privacyText}{" "}
-                <Link href="/politica-privacidad" className="underline hover:text-[#6C7466] transition-colors">
+                <Link href="/privacy-policy" className="underline hover:text-[#6C7466] transition-colors">
                   {FOOTER_COPY.newsletter.privacyLink}
                 </Link>
               </p>
