@@ -18,7 +18,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
-// ... (Las constantes topBarLinks y collections se mantienen igual) ...
 const topBarLinks = [
   { name: "SHOP", href: "#", hasMenu: true },
   { name: "THE BRAND", href: "/the-brand", hasMenu: false },
@@ -37,10 +36,12 @@ const collections = [
   {
     name: "EARTH COLLECTION",
     href: "/collections/earth",
-    items: [{ name: "Mineral Specimens", href: "/collections/earth/mineral-specimens" }]
+    items: [
+      { name: "Mineral Specimens", href: "/collections/earth/mineral-specimens" },
+      { name: "Fossils", href: "/collections/fossils" },
+      { name: "Petrified Wood", href: "/collections/petrified-wood" }
+    ]
   },
-  { name: "FOSSILS", href: "/collections/fossils", items: [] },
-  { name: "PETRIFIED WOOD", href: "/collections/petrified-wood", items: [] },
   {
     name: "HERITAGE COLLECTION",
     href: "/collections/heritage",
