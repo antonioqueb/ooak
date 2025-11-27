@@ -16,8 +16,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Product } from "@/lib/products";
+import { useCart } from "@/context/cart-context";
 
 export function ProductView({ product }: { product: Product }) {
+    const { addItem } = useCart();
     const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
     const [activeTab, setActiveTab] = React.useState<"measurements" | "shipping" | "returns">("measurements");
     const [showMoreDescription, setShowMoreDescription] = React.useState(false);
@@ -209,7 +211,10 @@ export function ProductView({ product }: { product: Product }) {
 
                 {/* Footer Actions (Fixed at bottom right on desktop, fixed bottom on mobile) */}
                 <div className="p-6 md:p-8 lg:p-10 border-t border-[#6C7466]/10 bg-[#FDFBF7] shrink-0 sticky bottom-0 z-40">
-                    <Button className="w-full bg-[#2B2B2B] text-white hover:bg-[#6C7466] transition-colors h-12 md:h-14 rounded-none text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-3">
+                    <Button
+                        onClick={() => addItem(product)}
+                        className="w-full bg-[#2B2B2B] text-white hover:bg-[#6C7466] transition-colors h-12 md:h-14 rounded-none text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-3"
+                    >
                         Add to Cart — ${product.price.toLocaleString("en-US")}
                     </Button>
                     <div className="flex justify-center items-center gap-3 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest">

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { useCart } from "@/context/cart-context"
 
 const topBarLinks = [
   { name: "SHOP", href: "#", hasMenu: true },
@@ -83,7 +84,7 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [isHovering, setIsHovering] = React.useState(false)
   const pathname = usePathname()
-  const [cartItemsCount, setCartItemsCount] = React.useState(3)
+  const { cartCount, toggleCart } = useCart()
   const shopMenuTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
   React.useEffect(() => {
@@ -115,16 +116,16 @@ export function Navbar() {
   }
 
   const showCompactNav = isScrolled && !isHovering
-  
+
   // Mantenemos la transición suave optimizada para Safari
   const smoothTransition = "transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] transform-gpu backface-invisible"
 
   return (
-    <header 
+    <header
       className={cn(
         // CAMBIO PRINCIPAL AQUÍ: 'fixed' en lugar de 'sticky'
         "fixed top-0 left-0 right-0 z-50 w-full backdrop-blur supports-[backdrop-filter]:bg-[#6C7466]/95",
-        "will-change-[background-color,backdrop-filter]", 
+        "will-change-[background-color,backdrop-filter]",
         smoothTransition
       )}
       style={{ backgroundColor: '#6C7466' }}
@@ -136,13 +137,13 @@ export function Navbar() {
         Al ser el header 'fixed', cuando esto cambie de altura, el contenido
         de la página NO se moverá, el header simplemente crecerá sobre él.
       */}
-      <div 
+      <div
         className={cn(
-          "hidden lg:block border-b border-white/15 overflow-hidden py-6", 
-          "will-change-[max-height,opacity]", 
+          "hidden lg:block border-b border-white/15 overflow-hidden py-6",
+          "will-change-[max-height,opacity]",
           smoothTransition,
-          showCompactNav 
-            ? "max-h-0 opacity-0 border-none py-0" 
+          showCompactNav
+            ? "max-h-0 opacity-0 border-none py-0"
             : "max-h-40 opacity-100"
         )}
       >
@@ -163,24 +164,24 @@ export function Navbar() {
       </div>
 
       {/* Barra de navegación principal */}
-      <div 
+      <div
         className="hidden lg:block border-b border-white/15"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className={cn(
             "flex items-center justify-between",
-            "will-change-[height]", 
+            "will-change-[height]",
             smoothTransition,
             showCompactNav ? "h-14" : "h-20"
           )}>
             {/* Logo compacto (Scroll) */}
             <div className={cn(
               "absolute left-1/2 transform -translate-x-1/2",
-              "will-change-[opacity,transform]", 
+              "will-change-[opacity,transform]",
               smoothTransition,
-              showCompactNav 
-                ? "opacity-100 translate-y-0" 
-                : "opacity-0 translate-y-8 pointer-events-none" 
+              showCompactNav
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-8 pointer-events-none"
             )}>
               <Link href="/" className="flex items-center">
                 <Image
@@ -193,18 +194,18 @@ export function Navbar() {
                 />
               </Link>
             </div>
-            
+
             {/* Enlaces de navegación */}
             <nav className={cn(
               "flex items-center justify-center gap-8 flex-1",
               "will-change-[opacity,transform]",
               smoothTransition,
-              showCompactNav 
-                ? "opacity-0 -translate-y-4 pointer-events-none" 
+              showCompactNav
+                ? "opacity-0 -translate-y-4 pointer-events-none"
                 : "opacity-100 translate-y-0"
             )}>
               {topBarLinks.map((link) => (
-                <div 
+                <div
                   key={link.name}
                   className="relative"
                 >
@@ -232,8 +233,8 @@ export function Navbar() {
               "flex items-center gap-2 justify-end",
               "will-change-[opacity,transform]",
               smoothTransition,
-              showCompactNav 
-                ? "opacity-0 translate-x-8 pointer-events-none" 
+              showCompactNav
+                ? "opacity-0 translate-x-8 pointer-events-none"
                 : "opacity-100 translate-x-0"
             )}>
               <Button
@@ -246,24 +247,22 @@ export function Navbar() {
                 <span className="sr-only">Buscar</span>
               </Button>
 
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative text-white hover:bg-white/10 hover:text-white h-10 w-10" 
-                asChild
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative text-white hover:bg-white/10 hover:text-white h-10 w-10"
+                onClick={toggleCart}
               >
-                <Link href="/cart">
-                  <ShoppingCart className="h-5 w-5" />
-                  {cartItemsCount > 0 && (
-                    <Badge
-                      variant="destructive"
-                      className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
-                    >
-                      {cartItemsCount}
-                    </Badge>
-                  )}
-                  <span className="sr-only">Carrito de compras</span>
-                </Link>
+                <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+                  >
+                    {cartCount}
+                  </Badge>
+                )}
+                <span className="sr-only">Carrito de compras</span>
               </Button>
             </div>
           </div>
@@ -272,10 +271,10 @@ export function Navbar() {
 
       {/* Panel SHOP */}
       <Sheet open={isShopPanelOpen} onOpenChange={setIsShopPanelOpen}>
-        <SheetContent 
-          side="left" 
+        <SheetContent
+          side="left"
           className="w-full sm:w-[400px] overflow-y-auto p-0 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]"
-          style={{ 
+          style={{
             backgroundColor: '#6C7466',
             color: 'white',
             borderColor: 'rgba(255, 255, 255, 0.2)'
@@ -285,7 +284,7 @@ export function Navbar() {
             <SheetTitle className="text-white text-xl font-bold mb-6">
               SHOP
             </SheetTitle>
-            
+
             <nav className="flex flex-col gap-2">
               {collections.map((collection) => (
                 <div key={collection.name}>
@@ -306,7 +305,7 @@ export function Navbar() {
                       {collection.name}
                     </span>
                     {collection.items.length > 0 && (
-                      <ChevronRight 
+                      <ChevronRight
                         className={cn(
                           "h-5 w-5 flex-shrink-0 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                           selectedCollection?.name === collection.name && "rotate-90"
@@ -314,11 +313,11 @@ export function Navbar() {
                       />
                     )}
                   </button>
-                  
+
                   <div className={cn(
                     "grid transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-[grid-template-rows]",
                     selectedCollection?.name === collection.name && collection.items.length > 0
-                      ? "grid-rows-[1fr] opacity-100" 
+                      ? "grid-rows-[1fr] opacity-100"
                       : "grid-rows-[0fr] opacity-0"
                   )}>
                     <div className="overflow-hidden">
@@ -365,10 +364,10 @@ export function Navbar() {
                   <span className="sr-only">Abrir menú</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent 
-                side="left" 
+              <SheetContent
+                side="left"
                 className="w-[300px] sm:w-[400px] overflow-y-auto p-6"
-                style={{ 
+                style={{
                   backgroundColor: '#6C7466',
                   color: 'white',
                   borderColor: 'rgba(255, 255, 255, 0.2)'
@@ -429,24 +428,22 @@ export function Navbar() {
               <Search className="h-5 w-5" />
               <span className="sr-only">Buscar</span>
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="relative text-white hover:bg-white/10 hover:text-white h-10 w-10" 
-              asChild
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative text-white hover:bg-white/10 hover:text-white h-10 w-10"
+              onClick={toggleCart}
             >
-              <Link href="/cart">
-                <ShoppingCart className="h-5 w-5" />
-                {cartItemsCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
-                  >
-                    {cartItemsCount}
-                  </Badge>
-                )}
-                <span className="sr-only">Carrito de compras</span>
-              </Link>
+              <ShoppingCart className="h-5 w-5" />
+              {cartCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+                >
+                  {cartCount}
+                </Badge>
+              )}
+              <span className="sr-only">Carrito de compras</span>
             </Button>
           </div>
         </div>
@@ -454,7 +451,7 @@ export function Navbar() {
 
       {/* Search Bar */}
       {isSearchOpen && (
-        <div 
+        <div
           className={cn(
             "border-t border-white/20 overflow-hidden",
             "will-change-[max-height,opacity]",
