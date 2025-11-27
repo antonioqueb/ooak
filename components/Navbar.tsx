@@ -351,7 +351,7 @@ export function Navbar() {
 
       {/* MÓVIL */}
       <nav className="lg:hidden container mx-auto px-4 sm:px-6">
-        <div className="flex h-16 sm:h-20 items-center justify-between">
+        <div className="flex h-[84px] sm:h-[104px] items-center justify-between">
           <div className="flex items-center">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -412,7 +412,7 @@ export function Navbar() {
                 alt="OOAK Logo"
                 width={490}
                 height={290}
-                className="h-12 sm:h-14 w-auto"
+                className="h-[62px] sm:h-[72px] w-auto"
                 priority
               />
             </Link>
