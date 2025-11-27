@@ -24,7 +24,7 @@ export default async function CategoryPage({
             COLLECTIONS_DATA[`${collectionName} COLLECTION`];
         if (parentData) {
             data = {
-                description: `A curated selection of ${categoryName}, derived from the essence of the ${collectionName}.`,
+                description: parentData.description,
                 image: parentData.image,
                 // Intentamos pasar los productos del padre si la categoría no tiene datos específicos
                 // (Ojo: esto mostraría todos los productos de la colección. Si quieres filtrar, se haría aquí)
