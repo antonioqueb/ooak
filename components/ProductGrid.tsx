@@ -2,9 +2,23 @@
 "use client";
 import * as React from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
-import { Heart, ShoppingCart, X, Package, TruckIcon, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
+import { 
+  Heart, 
+  ShoppingCart, 
+  X, 
+  Package, 
+  TruckIcon, 
+  ShieldCheck, 
+  ChevronLeft, 
+  ChevronRight,
+  Star,
+  Plus,
+  ArrowRight,
+  ArrowLeft,
+  Ruler,
+  RefreshCcw 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +29,9 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
-// Tipos de productos
+// ========================================
+// 🔧 TYPES & INTERFACES
+// ========================================
 interface Product {
   id: string;
   name: string;
@@ -37,12 +53,12 @@ interface Product {
 }
 
 // ========================================
-// 🔧 CONFIGURACIÓN DE PRODUCTOS
+// 🔧 DATA CONFIGURATION (Translated to English)
 // ========================================
 const STATIC_PRODUCTS: Product[] = [
   {
     id: "prod-1",
-    name: "Fluorita Verde en Base Acrílica",
+    name: "Green Fluorite on Acrylic Base",
     price: 3850,
     image: "/producto1.png",
     images: [
@@ -51,10 +67,10 @@ const STATIC_PRODUCTS: Product[] = [
       "/producto1.png",
       "/producto1.png",
     ],
-    category: "Minerales y Cristales",
+    category: "Minerals & Crystals",
     featured: true,
     description:
-      "Una pieza excepcional de Fluorita Verde natural montada sobre una base acrílica transparente. Su geometría natural y tonalidades translúcidas capturan la luz con profundidad, generando destellos que evocan serenidad y equilibrio. Ideal para espacios que buscan un toque de lujo mineral auténtico.",
+      "An exceptional piece of natural Green Fluorite mounted on a transparent acrylic base. Its natural geometry and translucent tones capture light with depth, generating sparkles that evoke serenity and balance. Ideal for spaces seeking a touch of authentic mineral luxury.",
     dimensions: {
       height: "17.5 cm / 6.9 in",
       width: "12.3 cm / 4.8 in",
@@ -62,13 +78,13 @@ const STATIC_PRODUCTS: Product[] = [
       weight: "2.4 kg / 5.3 lb",
     },
     material:
-      "Fluorita natural montada sobre base acrílica de alta transparencia",
-    colors: "Verde esmeralda / Blanco translúcido",
+      "Natural Fluorite on high-transparency acrylic base",
+    colors: "Emerald Green / Translucent White",
     inStock: true,
   },
   {
     id: "prod-2",
-    name: "Ammonite Fósil Pulido",
+    name: "Polished Fossil Ammonite",
     price: 4200,
     image: "/producto2.png",
     images: [
@@ -77,23 +93,23 @@ const STATIC_PRODUCTS: Product[] = [
       "/producto2.png",
       "/producto2.png",
     ],
-    category: "Fósiles y Paleontología",
+    category: "Fossils & Paleontology",
     featured: true,
     description:
-      "Auténtico fósil de ammonite, cuidadosamente pulido para resaltar su estructura espiral y los tonos terrosos naturales del mineral. Esta pieza milenaria combina historia y estética, ideal para coleccionistas o como acento decorativo de alto nivel.",
+      "Authentic ammonite fossil, carefully polished to highlight its spiral structure and the natural earthy tones of the mineral. This millennial piece combines history and aesthetics, ideal for collectors or as a high-level decorative accent.",
     dimensions: {
       height: "19.2 cm / 7.6 in",
       width: "15.8 cm / 6.2 in",
       depth: "6.0 cm / 2.4 in",
       weight: "3.1 kg / 6.8 lb",
     },
-    material: "Fósil natural mineralizado sobre base acrílica pulida",
-    colors: "Ámbar, marrón, gris metálico",
+    material: "Mineralized natural fossil on polished acrylic base",
+    colors: "Amber, Brown, Metallic Grey",
     inStock: true,
   },
   {
     id: "prod-3",
-    name: "Amazonita Natural en Bruto",
+    name: "Raw Natural Amazonite",
     price: 3100,
     image: "/producto3.png",
     images: [
@@ -102,23 +118,23 @@ const STATIC_PRODUCTS: Product[] = [
       "/producto3.png",
       "/producto3.png",
     ],
-    category: "Gemas y Minerales",
+    category: "Gems & Minerals",
     featured: true,
     description:
-      "Pieza de Amazonita natural en bruto, reconocida por su color verde azulado con vetas blancas que evocan serenidad. Su textura cruda resalta la pureza mineral y su presencia imponente la convierte en un acento de diseño contemporáneo y natural.",
+      "Piece of natural raw Amazonite, recognized for its blue-green color with white veins evoking serenity. Its raw texture highlights mineral purity and its imposing presence makes it a contemporary and natural design accent.",
     dimensions: {
       height: "14.0 cm / 5.5 in",
       width: "20.0 cm / 7.9 in",
       depth: "10.5 cm / 4.1 in",
       weight: "4.2 kg / 9.3 lb",
     },
-    material: "Amazonita natural sin pulir sobre base acrílica transparente",
-    colors: "Verde turquesa / Blanco / Marrón claro",
+    material: "Unpolished natural Amazonite on transparent acrylic base",
+    colors: "Turquoise Green / White / Light Brown",
     inStock: true,
   },
   {
     id: "prod-4",
-    name: "Cuarzo Ahumado Natural",
+    name: "Natural Smoky Quartz",
     price: 5400,
     image: "/producto4.png",
     images: [
@@ -127,23 +143,23 @@ const STATIC_PRODUCTS: Product[] = [
       "/producto4.png",
       "/producto4.png",
     ],
-    category: "Gemas y Minerales",
+    category: "Gems & Minerals",
     featured: true,
     description:
-      "Cristal de Cuarzo Ahumado natural de alta pureza con terminaciones naturales y transparencias profundas. Su tono marrón ahumado y reflejos dorados aportan elegancia y presencia a cualquier entorno, ideal para colecciones exclusivas o espacios contemporáneos.",
+      "High-purity natural Smoky Quartz crystal with natural terminations and deep transparencies. Its smoky brown tone and golden reflections bring elegance and presence to any environment, ideal for exclusive collections or contemporary spaces.",
     dimensions: {
       height: "16.0 cm / 6.3 in",
       width: "18.5 cm / 7.3 in",
       depth: "10.0 cm / 3.9 in",
       weight: "3.6 kg / 7.9 lb",
     },
-    material: "Cuarzo Ahumado natural sobre base acrílica de exhibición",
-    colors: "Marrón oscuro / Gris humo / Dorado tenue",
+    material: "Natural Smoky Quartz on display acrylic base",
+    colors: "Dark Brown / Smoke Grey / Faint Gold",
     inStock: true,
   },
   {
     id: "prod-5",
-    name: "Jaspe Paisaje Pulido",
+    name: "Polished Landscape Jasper",
     price: 3600,
     image: "/producto5.png",
     images: [
@@ -152,23 +168,23 @@ const STATIC_PRODUCTS: Product[] = [
       "/producto5.png",
       "/producto5.png",
     ],
-    category: "Gemas y Minerales",
+    category: "Gems & Minerals",
     featured: true,
     description:
-      "Escultura de Jaspe Paisaje pulido, conocida por sus patrones naturales que evocan paisajes terrestres y tonos cálidos de la naturaleza. Cada veta cuenta una historia geológica única, combinando arte natural y sofisticación mineral.",
+      "Sculpture of polished Landscape Jasper, known for its natural patterns evoking terrestrial landscapes and warm nature tones. Each vein tells a unique geological story, combining natural art and mineral sophistication.",
     dimensions: {
       height: "18.0 cm / 7.1 in",
       width: "12.0 cm / 4.7 in",
       depth: "9.0 cm / 3.5 in",
       weight: "3.0 kg / 6.6 lb",
     },
-    material: "Jaspe natural pulido sobre base acrílica transparente",
-    colors: "Arena, gris, ámbar y tonos rojizos",
+    material: "Polished natural Jasper on transparent acrylic base",
+    colors: "Sand, Grey, Amber, Reddish tones",
     inStock: true,
   },
   {
     id: "prod-6",
-    name: "Geoda de Amatista Natural",
+    name: "Natural Amethyst Geode",
     price: 4800,
     image: "/producto6.png",
     images: [
@@ -177,23 +193,23 @@ const STATIC_PRODUCTS: Product[] = [
       "/producto6.png",
       "/producto6.png",
     ],
-    category: "Gemas y Minerales",
+    category: "Gems & Minerals",
     featured: true,
     description:
-      "Impresionante geoda de amatista natural con cristales de formación profunda en tonos lavanda y violeta claro. Su cavidad interna refleja la luz creando un efecto hipnótico. Perfecta para decoración exclusiva o colecciones de minerales finos.",
+      "Impressive natural amethyst geode with deep formation crystals in lavender and light violet tones. Its internal cavity reflects light creating a hypnotic effect. Perfect for exclusive decoration or fine mineral collections.",
     dimensions: {
       height: "22.0 cm / 8.7 in",
       width: "25.0 cm / 9.8 in",
       depth: "14.0 cm / 5.5 in",
       weight: "6.5 kg / 14.3 lb",
     },
-    material: "Amatista natural con base acrílica de exhibición",
-    colors: "Violeta, lavanda y gris piedra",
+    material: "Natural Amethyst with display acrylic base",
+    colors: "Violet, Lavender, Stone Grey",
     inStock: true,
   },
   {
     id: "prod-7",
-    name: "Septaria Geoda Pulida",
+    name: "Polished Septarian Geode",
     price: 6900,
     image: "/producto7.png",
     images: [
@@ -202,10 +218,10 @@ const STATIC_PRODUCTS: Product[] = [
       "/producto7.png",
       "/producto7.png",
     ],
-    category: "Gemas y Minerales",
+    category: "Gems & Minerals",
     featured: true,
     description:
-      "Geoda de Septaria pulida con cavidad interna de cristales negros y vetas naturales en tonos ocres y dorados. Su forma ovoide y fracturas naturales le otorgan un aspecto orgánico y sofisticado. Ideal como pieza escultórica o decorativa de alto impacto visual.",
+      "Polished Septarian geode with internal cavity of black crystals and natural veins in ochre and golden tones. Its ovoid shape and natural fractures give it an organic and sophisticated look. Ideal as a sculptural piece or high visual impact decor.",
     dimensions: {
       height: "20.5 cm / 8.1 in",
       width: "14.0 cm / 5.5 in",
@@ -213,13 +229,13 @@ const STATIC_PRODUCTS: Product[] = [
       weight: "4.8 kg / 10.6 lb",
     },
     material:
-      "Septaria natural con cristales internos y base acrílica de soporte",
-    colors: "Negro, ocre, dorado y beige",
+      "Natural Septarian with internal crystals and support acrylic base",
+    colors: "Black, Ochre, Gold, Beige",
     inStock: true,
   },
   {
     id: "prod-8",
-    name: "Septaria Esfera Pulida",
+    name: "Polished Septarian Sphere",
     price: 7200,
     image: "/producto8.png",
     images: [
@@ -228,10 +244,10 @@ const STATIC_PRODUCTS: Product[] = [
       "/producto8.png",
       "/producto8.png",
     ],
-    category: "Gemas y Minerales",
+    category: "Gems & Minerals",
     featured: true,
     description:
-      "Obra mineral de Septaria pulida con cavidad interna de cristales oscuros que brillan bajo la luz. Su acabado liso y forma ovoide reflejan equilibrio y fuerza natural, convirtiéndola en una pieza central de sofisticación y energía terrestre.",
+      "Mineral work of polished Septarian with internal cavity of dark crystals that shine under light. Its smooth finish and ovoid shape reflect balance and natural strength, making it a centerpiece of sophistication and terrestrial energy.",
     dimensions: {
       height: "21.0 cm / 8.3 in",
       width: "14.8 cm / 5.8 in",
@@ -239,13 +255,13 @@ const STATIC_PRODUCTS: Product[] = [
       weight: "5.0 kg / 11.0 lb",
     },
     material:
-      "Septaria natural pulida con núcleo cristalino sobre base acrílica",
-    colors: "Negro, dorado, marrón y beige",
+      "Polished natural Septarian with crystalline core on acrylic base",
+    colors: "Black, Gold, Brown, Beige",
     inStock: true,
   },
   {
     id: "prod-9",
-    name: "Ammonite Fósil Premium",
+    name: "Premium Ammonite Fossil",
     price: 8800,
     image: "/producto9.png",
     images: [
@@ -254,23 +270,23 @@ const STATIC_PRODUCTS: Product[] = [
       "/producto9.png",
       "/producto9.png",
     ],
-    category: "Fósiles",
+    category: "Fossils",
     featured: true,
     description:
-      "Fósil de ammonite de grado museístico, pulido para resaltar los tonos dorados y verdosos de su estructura espiral. Esta pieza milenaria combina valor histórico y belleza natural, perfecta para coleccionistas y espacios que aprecian la elegancia orgánica del pasado geológico.",
+      "Museum-grade ammonite fossil, polished to highlight the golden and greenish tones of its spiral structure. This millennial piece combines historical value and natural beauty, perfect for collectors and spaces that appreciate the organic elegance of the geological past.",
     dimensions: {
       height: "23.0 cm / 9.1 in",
       width: "18.0 cm / 7.1 in",
       depth: "7.5 cm / 3.0 in",
       weight: "4.7 kg / 10.4 lb",
     },
-    material: "Fósil natural de ammonite sobre base acrílica pulida",
-    colors: "Dorado, ámbar, beige y gris pizarra",
+    material: "Natural ammonite fossil on polished acrylic base",
+    colors: "Gold, Amber, Beige, Slate Grey",
     inStock: true,
   },
   {
     id: "prod-10",
-    name: "Amazonita Bruta Monumental",
+    name: "Monumental Raw Amazonite",
     price: 6400,
     image: "/producto10.png",
     images: [
@@ -279,29 +295,32 @@ const STATIC_PRODUCTS: Product[] = [
       "/producto10.png",
       "/producto10.png",
     ],
-    category: "Gemas y Minerales",
+    category: "Gems & Minerals",
     featured: true,
     description:
-      "Pieza monumental de Amazonita en estado natural, con tonos verdes y azules que evocan tranquilidad y pureza. Su textura cruda resalta la belleza orgánica del mineral, ideal para espacios que buscan armonía y lujo natural.",
+      "Monumental piece of Amazonite in its natural state, with green and blue tones evoking tranquility and purity. Its raw texture highlights the organic beauty of the mineral, ideal for spaces seeking harmony and natural luxury.",
     dimensions: {
       height: "19.0 cm / 7.5 in",
       width: "26.0 cm / 10.2 in",
       depth: "14.5 cm / 5.7 in",
       weight: "7.8 kg / 17.2 lb",
     },
-    material: "Amazonita natural sin pulir sobre base acrílica de exhibición",
-    colors: "Verde esmeralda, turquesa y matices beige",
+    material: "Unpolished natural Amazonite on display acrylic base",
+    colors: "Emerald Green, Turquoise, Beige nuances",
     inStock: true,
   },
 ];
 
+// ========================================
+// 🧩 MAIN COMPONENT
+// ========================================
 export function ProductGrid() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
 
   const currentPage = Number(searchParams.get('page')) || 1;
-  const ITEMS_PER_PAGE = 6;
+  const ITEMS_PER_PAGE = 8; // Increased for better gallery view
   const totalPages = Math.ceil(STATIC_PRODUCTS.length / ITEMS_PER_PAGE);
 
   const products = STATIC_PRODUCTS.slice(
@@ -330,20 +349,40 @@ export function ProductGrid() {
   };
 
   return (
-    <section className="py-8 sm:py-12 lg:py-16 bg-gradient-to-b from-gray-50 to-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8 sm:mb-12 lg:mb-16 flex flex-col items-center gap-4 sm:gap-6">
-          <h1 className="text-center text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-[#6C7466]">
-            Exclusive Natural Treasures
-          </h1>
-          <p className="text-center text-sm sm:text-base lg:text-lg text-[#6C7466]/70 max-w-3xl">
-            Transform your spaces with exceptional elements, worthy of the most discerning taste.
+    <section className="relative py-24 md:py-32 bg-[#FDFBF7] text-[#2B2B2B] overflow-hidden selection:bg-[#6C7466] selection:text-white">
+      
+      {/* 1. Global Atmosphere (Matches Landing Page Style) */}
+      <div 
+        className="absolute inset-0 opacity-[0.03] pointer-events-none z-0 mix-blend-multiply" 
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E")` }} 
+      />
+      {/* Architectural Lines */}
+      <div className="hidden md:block absolute top-0 left-12 w-px h-full bg-[#6C7466]/10 z-0" />
+      <div className="hidden md:block absolute top-0 right-12 w-px h-full bg-[#6C7466]/10 z-0" />
+
+      <div className="container mx-auto px-6 relative z-10">
+        
+        {/* 2. Editorial Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 md:pl-12">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 mb-4">
+                <Star className="w-4 h-4 text-[#6C7466] animate-spin-slow" />
+                <span className="text-xs font-bold tracking-[0.25em] text-[#6C7466] uppercase">
+                  The Collection
+                </span>
+            </div>
+            <h1 className="text-5xl md:text-7xl font-serif text-[#6C7466] leading-[0.9]">
+              Natural <br />
+              <span className="italic font-light opacity-80 text-[#2B2B2B]">Treasures.</span>
+            </h1>
+          </div>
+          <p className="text-sm font-light text-gray-500 max-w-xs mt-6 md:mt-0 leading-relaxed md:text-right">
+             Transform your sanctuary with exceptional elements, worthy of the most discerning taste.
           </p>
         </div>
 
-        {/* Grid tradicional de 3 columnas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        {/* 3. Gallery Grid (4 Columns) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 md:pl-12">
           {products.map((product) => (
             <ProductCard
               key={product.id}
@@ -353,51 +392,48 @@ export function ProductGrid() {
           ))}
         </div>
 
-        {/* Pagination Controls */}
+        {/* 4. Minimalist Pagination */}
         {totalPages > 1 && (
-          <div className="mt-12 flex justify-center items-center gap-4">
-            <Button
-              variant="outline"
+          <div className="mt-24 flex justify-center items-center gap-8 md:pl-12">
+            <button
               disabled={currentPage <= 1}
               onClick={() => handlePageChange(currentPage - 1)}
-              className="flex items-center gap-2 border-[#6C7466] text-[#6C7466] hover:bg-[#6C7466] hover:text-white transition-colors"
+              className="group flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-[#6C7466] disabled:opacity-30 disabled:cursor-not-allowed hover:text-[#2B2B2B] transition-colors"
             >
-              <ChevronLeft className="w-4 h-4" />
-              Anterior
-            </Button>
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              Prev
+            </button>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button
+                <button
                   key={page}
-                  variant={currentPage === page ? "default" : "outline"}
                   onClick={() => handlePageChange(page)}
                   className={cn(
-                    "w-10 h-10 p-0 transition-colors",
+                    "w-8 h-8 flex items-center justify-center text-xs font-serif transition-all duration-300 rounded-full",
                     currentPage === page
-                      ? "bg-[#6C7466] text-white hover:bg-[#6C7466]/90"
-                      : "border-[#6C7466] text-[#6C7466] hover:bg-[#6C7466] hover:text-white"
+                      ? "bg-[#6C7466] text-white"
+                      : "text-gray-400 hover:text-[#6C7466]"
                   )}
                 >
                   {page}
-                </Button>
+                </button>
               ))}
             </div>
 
-            <Button
-              variant="outline"
+            <button
               disabled={currentPage >= totalPages}
               onClick={() => handlePageChange(currentPage + 1)}
-              className="flex items-center gap-2 border-[#6C7466] text-[#6C7466] hover:bg-[#6C7466] hover:text-white transition-colors"
+              className="group flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-[#6C7466] disabled:opacity-30 disabled:cursor-not-allowed hover:text-[#2B2B2B] transition-colors"
             >
-              Siguiente
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+              Next
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
         )}
       </div>
 
-      {/* Modal de Detalles del Producto */}
+      {/* 5. Luxury Detail Modal */}
       <ProductModal
         product={selectedProduct}
         isOpen={isModalOpen}
@@ -410,6 +446,9 @@ export function ProductGrid() {
   );
 }
 
+// ========================================
+// 🎨 PRODUCT CARD (Gallery Style)
+// ========================================
 function ProductCard({
   product,
   onProductClick,
@@ -417,135 +456,82 @@ function ProductCard({
   product: Product;
   onProductClick: (product: Product) => void;
 }) {
-  const [isHovered, setIsHovered] = React.useState(false);
   const [isFavorite, setIsFavorite] = React.useState(false);
 
   return (
     <div
-      className="group bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer border border-gray-100 flex flex-col"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="group cursor-pointer flex flex-col gap-4"
       onClick={() => onProductClick(product)}
     >
-      {/* Imagen del producto */}
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
+      {/* Image Container (Floating, no border) */}
+      <div className="relative aspect-[3/4] overflow-hidden bg-[#EBEBE8] rounded-sm">
         <Image
           src={product.image}
           alt={product.name}
           fill
-          className={cn(
-            "object-cover transition-all duration-500 p-4",
-            isHovered && "scale-110"
-          )}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-110"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           priority={product.featured}
         />
 
-        {/* Badges superiores */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-          <Badge className="bg-white/95 backdrop-blur-sm text-[#6C7466] hover:bg-white text-xs px-2.5 py-1 font-semibold">
-            {product.category}
-          </Badge>
-          {product.featured && (
-            <Badge className="bg-amber-500/95 backdrop-blur-sm text-white hover:bg-amber-500 text-xs px-2.5 py-1 font-semibold">
-              ⭐ Destacado
-            </Badge>
-          )}
+        {/* Atmospheric Overlay */}
+        <div className="absolute inset-0 bg-[#6C7466]/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        
+        {/* Floating Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+             {product.featured && (
+                <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-bold tracking-widest uppercase text-[#6C7466]">
+                    Featured
+                </span>
+             )}
+             {product.inStock && (
+                <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-bold tracking-widest uppercase text-gray-400">
+                    In Stock
+                </span>
+             )}
         </div>
 
-        {/* Botón de favorito */}
+        {/* Favorite Button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             setIsFavorite(!isFavorite);
           }}
           className={cn(
-            "absolute top-3 right-3 w-9 h-9 rounded-full backdrop-blur-md transition-all duration-300",
-            "flex items-center justify-center shadow-lg",
-            isFavorite
-              ? "bg-red-500 scale-110"
-              : "bg-white/90 hover:bg-white hover:scale-110"
+            "absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 delay-75",
+            isFavorite ? "bg-red-500 text-white" : "bg-white text-[#6C7466] hover:bg-[#6C7466] hover:text-white"
           )}
         >
-          <Heart
-            className={cn(
-              "w-4 h-4 transition-all duration-300",
-              isFavorite ? "fill-white text-white" : "text-[#6C7466]"
-            )}
-          />
+          <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
         </button>
 
-        {/* Botón de acción rápida (solo en hover) */}
-        <div
-          className={cn(
-            "absolute bottom-3 left-3 right-3 transition-all duration-300",
-            isHovered ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
-          )}
-        >
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            className="w-full bg-[#6C7466] hover:bg-[#6C7466]/90 text-white shadow-lg"
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            Vista Rápida
-          </Button>
-        </div>
+        {/* Quick View Button (Subtle Plus Icon) */}
+        <button className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#6C7466] shadow-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#6C7466] hover:text-white">
+            <Plus className="w-5 h-5" />
+        </button>
       </div>
 
-      {/* Información del producto */}
-      <div className="p-4 flex-1 flex flex-col">
-        {/* Nombre del producto */}
-        <h3 className="text-lg font-semibold text-[#2B2B2B] mb-2 line-clamp-2 group-hover:text-[#6C7466] transition-colors">
+      {/* Minimal Info */}
+      <div className="flex flex-col">
+        <div className="flex justify-between items-baseline">
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-1 truncate max-w-[70%]">
+                {product.category}
+            </span>
+            <span className="text-sm font-medium text-[#2B2B2B]">
+                ${product.price.toLocaleString("en-US")}
+            </span>
+        </div>
+        <h3 className="text-lg font-serif text-[#2B2B2B] leading-tight group-hover:text-[#6C7466] transition-colors duration-300 line-clamp-2">
           {product.name}
         </h3>
-
-        {/* Dimensiones */}
-        {product.dimensions && (
-          <p className="text-xs text-gray-500 mb-3">
-            {product.dimensions.height}
-          </p>
-        )}
-
-        {/* Indicadores de confianza */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {product.inStock && (
-            <div className="flex items-center gap-1.5 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
-              <Package className="w-3 h-3" />
-              <span className="font-medium">En stock</span>
-            </div>
-          )}
-          <div className="flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-            <TruckIcon className="w-3 h-3" />
-            <span className="font-medium">Envío gratis</span>
-          </div>
-        </div>
-
-        {/* Precio y botón de compra */}
-        <div className="mt-auto">
-          <div className="flex items-baseline gap-2 mb-3">
-            <span className="text-2xl font-bold text-[#6C7466]">
-              ${product.price.toLocaleString("es-MX")}
-            </span>
-            <span className="text-sm text-gray-500">MXN</span>
-          </div>
-
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            className="w-full bg-white border-2 border-[#6C7466] text-[#6C7466] hover:bg-[#6C7466] hover:text-white transition-all duration-300"
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            Agregar al carrito
-          </Button>
-        </div>
       </div>
     </div>
   );
 }
 
+// ========================================
+// 🎨 PRODUCT MODAL (Magazine/Editorial Layout)
+// ========================================
 function ProductModal({
   product,
   isOpen,
@@ -556,20 +542,20 @@ function ProductModal({
   onClose: () => void;
 }) {
   const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
+  const [activeTab, setActiveTab] = React.useState<"measurements" | "shipping" | "returns">("measurements");
   const [showMoreDescription, setShowMoreDescription] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState<
-    "measurements" | "shipping" | "returns"
-  >("measurements");
 
+  // Zoom logic states
   const [isZooming, setIsZooming] = React.useState(false);
   const [zoomPosition, setZoomPosition] = React.useState({ x: 0, y: 0 });
   const imageRef = React.useRef<HTMLDivElement>(null);
 
+  // Reset state on open
   React.useEffect(() => {
     if (isOpen) {
       setSelectedImageIndex(0);
-      setShowMoreDescription(false);
       setActiveTab("measurements");
+      setShowMoreDescription(false);
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -581,346 +567,194 @@ function ProductModal({
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageRef.current) return;
-
     const rect = imageRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-
     requestAnimationFrame(() => {
       setZoomPosition({ x, y });
     });
   };
 
-  const handleMouseEnter = () => {
-    setIsZooming(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsZooming(false);
-  };
+  const handleMouseEnter = () => setIsZooming(true);
+  const handleMouseLeave = () => setIsZooming(false);
 
   if (!product) return null;
   const images = product.images || [product.image];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] h-[95vh] overflow-hidden p-0 bg-white gap-0 border-0">
+      <DialogContent className="max-w-[95vw] lg:max-w-6xl h-[90vh] overflow-hidden p-0 bg-[#FDFBF7] border-0 shadow-2xl rounded-none md:rounded-lg">
         <DialogHeader className="sr-only">
           <DialogTitle>{product.name}</DialogTitle>
         </DialogHeader>
 
+        {/* Floating Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-50 w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white hover:bg-gray-100 shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 border-2 border-gray-200"
-          aria-label="Cerrar"
+          className="absolute top-6 right-6 z-50 p-2 bg-white/50 hover:bg-white rounded-full transition-colors backdrop-blur-md"
         >
-          <X
-            className="w-6 h-6 lg:w-7 lg:h-7 text-[#2B2B2B]"
-            strokeWidth={2.5}
-          />
+          <X className="w-6 h-6 text-[#2B2B2B]" strokeWidth={1.5} />
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 h-full overflow-y-auto lg:overflow-hidden">
-          {/* Sección de Imágenes */}
-          <div className="bg-[#F8F7F5] p-6 lg:p-12 flex flex-col justify-center items-center overflow-y-auto">
-            <div className="w-full max-w-2xl mb-6 lg:mb-8">
-              <div
+        <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+          
+          {/* LEFT SIDE: Immersive Gallery with Zoom */}
+          <div className="bg-[#EBEBE8] relative h-1/2 lg:h-full flex flex-col justify-center items-center">
+             <div 
                 ref={imageRef}
-                className="relative aspect-square bg-white rounded-2xl overflow-hidden shadow-sm cursor-crosshair"
+                className="relative w-full h-full cursor-crosshair"
                 onMouseMove={handleMouseMove}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
-              >
+             >
                 <Image
                   src={images[selectedImageIndex]}
                   alt={product.name}
                   fill
                   className={cn(
-                    "object-contain p-6 lg:p-8 transition-opacity duration-150",
-                    isZooming && "opacity-0"
+                    "object-cover transition-opacity duration-200",
+                    isZooming ? "opacity-0" : "opacity-100"
                   )}
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   priority
                 />
-
+                
+                {/* Zoom Lens Effect */}
                 {isZooming && (
                   <div
                     className="absolute inset-0 pointer-events-none"
                     style={{
                       backgroundImage: `url(${images[selectedImageIndex]})`,
                       backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                      backgroundSize: "250%",
+                      backgroundSize: "200%", // Zoom Level
                       backgroundRepeat: "no-repeat",
-                      willChange: "background-position",
-                      imageRendering: "auto",
                     }}
                   />
                 )}
-
-                {isZooming && (
-                  <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm z-10">
-                    🔍 Zoom activo
-                  </div>
+                
+                {/* Minimal Overlay when not zooming */}
+                {!isZooming && (
+                   <div className="absolute inset-0 bg-[#6C7466]/5 mix-blend-multiply pointer-events-none" />
                 )}
-              </div>
             </div>
-
-            <div className="w-full max-w-2xl">
-              <div className="grid grid-cols-4 gap-3 lg:gap-4">
+            
+            {/* Floating Thumbnails */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 px-4 py-2 bg-white/30 backdrop-blur-md rounded-full z-20">
                 {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
                     className={cn(
-                      "relative aspect-square rounded-xl overflow-hidden transition-all duration-300",
-                      "bg-white shadow-sm hover:shadow-md",
-                      selectedImageIndex === index
-                        ? "ring-4 ring-[#6C7466] scale-105"
-                        : "ring-2 ring-gray-200 hover:ring-[#6C7466]/50"
+                      "w-2 h-2 rounded-full transition-all duration-300",
+                      selectedImageIndex === index ? "bg-[#2B2B2B] scale-125" : "bg-white/60 hover:bg-white"
                     )}
-                  >
-                    <Image
-                      src={img}
-                      alt={`${product.name} - vista ${index + 1}`}
-                      fill
-                      className="object-cover p-2"
-                      sizes="150px"
-                    />
-                  </button>
+                  />
                 ))}
-              </div>
             </div>
           </div>
 
-          {/* Sección de Información */}
-          <div className="bg-white p-6 lg:p-12 flex flex-col overflow-y-auto">
-            <div className="max-w-2xl mx-auto w-full">
-              <div className="mb-6 lg:mb-8">
-                <Badge className="bg-[#6C7466]/10 text-[#6C7466] hover:bg-[#6C7466]/10 text-xs lg:text-sm px-3 py-1.5 mb-4 font-semibold">
-                  {product.category}
-                </Badge>
-                <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-[#2B2B2B] mb-3 leading-tight">
+          {/* RIGHT SIDE: Editorial Details */}
+          <div className="p-8 lg:p-12 overflow-y-auto bg-[#FDFBF7] custom-scrollbar flex flex-col h-1/2 lg:h-full">
+            
+            <div className="flex-1">
+                {/* Category & Breadcrumb vibe */}
+                <div className="flex items-center gap-3 mb-6">
+                    <span className="h-px w-8 bg-[#6C7466]"></span>
+                    <span className="text-xs font-bold tracking-[0.25em] text-[#6C7466] uppercase">
+                        {product.category}
+                    </span>
+                </div>
+
+                {/* Title */}
+                <h2 className="text-3xl md:text-5xl font-serif text-[#2B2B2B] mb-4 leading-[0.95]">
                   {product.name}
                 </h2>
-                {product.dimensions && (
-                  <p className="text-sm lg:text-base text-gray-500">
-                    {product.dimensions.height}
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-8 lg:mb-10 pb-8 border-b border-gray-200">
-                <p className="text-4xl lg:text-5xl font-bold text-[#6C7466]">
-                  ${product.price.toLocaleString("es-MX")}
-                  <span className="text-xl lg:text-2xl text-gray-500 font-normal ml-2">
-                    MXN
-                  </span>
+                
+                {/* Price */}
+                <p className="text-2xl font-light text-[#6C7466] mb-8">
+                  ${product.price.toLocaleString("en-US")} <span className="text-sm text-gray-400">MXN</span>
                 </p>
-              </div>
 
-              {product.description && (
-                <div className="mb-8 lg:mb-10">
-                  <h3 className="text-lg lg:text-xl font-semibold text-[#2B2B2B] mb-3">
-                    Descripción
-                  </h3>
-                  <p className="text-[#2B2B2B]/80 text-sm lg:text-base leading-relaxed">
-                    {showMoreDescription
-                      ? product.description
-                      : product.description.substring(0, 200) +
-                      (product.description.length > 200 ? "..." : "")}
-                  </p>
-                  {product.description.length > 200 && (
-                    <button
-                      onClick={() =>
-                        setShowMoreDescription(!showMoreDescription)
-                      }
-                      className="text-[#6C7466] text-sm lg:text-base font-semibold mt-3 flex items-center gap-2 hover:text-[#6C7466]/80 transition-colors"
-                    >
-                      {showMoreDescription ? "Ver menos" : "Leer más"}
-                      <span
-                        className={cn(
-                          "transition-transform duration-200",
-                          showMoreDescription && "rotate-180"
-                        )}
+                {/* Description with Expand/Collapse logic preserved */}
+                <div className="mb-10 text-gray-500 font-light leading-relaxed">
+                    <p className="text-sm md:text-base">
+                      {showMoreDescription
+                        ? product.description
+                        : product.description?.substring(0, 200) + (product.description && product.description.length > 200 ? "..." : "")}
+                    </p>
+                    {product.description && product.description.length > 200 && (
+                      <button
+                        onClick={() => setShowMoreDescription(!showMoreDescription)}
+                        className="text-[#6C7466] text-xs font-bold uppercase tracking-widest mt-3 flex items-center gap-2 hover:text-[#2B2B2B] transition-colors"
                       >
-                        ▼
-                      </span>
-                    </button>
-                  )}
-                </div>
-              )}
-
-              <div className="mb-8 lg:mb-10 space-y-4">
-                <Button
-                  className="w-full bg-[#6C7466] hover:bg-[#6C7466]/90 text-white py-6 lg:py-7 text-base lg:text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                >
-                  <ShoppingCart className="w-5 h-5 lg:w-6 lg:h-6 mr-3" />
-                  Agregar al carrito
-                </Button>
-
-                {product.inStock && (
-                  <div className="flex items-center justify-center gap-2 text-sm lg:text-base">
-                    <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-green-700 font-medium">
-                      Disponible en stock
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="border-t border-gray-200">
-                <div className="flex border-b border-gray-200">
-                  <button
-                    onClick={() => setActiveTab("measurements")}
-                    className={cn(
-                      "flex-1 py-4 text-sm lg:text-base font-semibold uppercase tracking-wide transition-colors",
-                      activeTab === "measurements"
-                        ? "text-[#6C7466] border-b-2 border-[#6C7466]"
-                        : "text-gray-500 hover:text-[#6C7466]"
+                        {showMoreDescription ? "Read Less" : "Read More"}
+                        <ChevronRight className={cn("w-3 h-3 transition-transform", showMoreDescription && "rotate-90")} />
+                      </button>
                     )}
-                  >
-                    Medidas
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("shipping")}
-                    className={cn(
-                      "flex-1 py-4 text-sm lg:text-base font-semibold uppercase tracking-wide transition-colors",
-                      activeTab === "shipping"
-                        ? "text-[#6C7466] border-b-2 border-[#6C7466]"
-                        : "text-gray-500 hover:text-[#6C7466]"
-                    )}
-                  >
-                    Envío
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("returns")}
-                    className={cn(
-                      "flex-1 py-4 text-sm lg:text-base font-semibold uppercase tracking-wide transition-colors",
-                      activeTab === "returns"
-                        ? "text-[#6C7466] border-b-2 border-[#6C7466]"
-                        : "text-gray-500 hover:text-[#6C7466]"
-                    )}
-                  >
-                    Devoluciones
-                  </button>
                 </div>
 
-                <div className="py-6">
-                  {activeTab === "measurements" && product.dimensions && (
-                    <div className="space-y-4 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                      <div className="grid grid-cols-2 gap-4 text-sm lg:text-base">
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <span className="text-gray-600 block mb-1">
-                            Altura
-                          </span>
-                          <span className="font-semibold text-[#2B2B2B]">
-                            {product.dimensions.height}
-                          </span>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <span className="text-gray-600 block mb-1">
-                            Ancho
-                          </span>
-                          <span className="font-semibold text-[#2B2B2B]">
-                            {product.dimensions.width}
-                          </span>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <span className="text-gray-600 block mb-1">
-                            Profundidad
-                          </span>
-                          <span className="font-semibold text-[#2B2B2B]">
-                            {product.dimensions.depth}
-                          </span>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <span className="text-gray-600 block mb-1">Peso</span>
-                          <span className="font-semibold text-[#2B2B2B]">
-                            {product.dimensions.weight}
-                          </span>
-                        </div>
-                      </div>
-                      {product.material && (
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <span className="text-gray-600 block mb-1">
-                            Material
-                          </span>
-                          <span className="font-semibold text-[#2B2B2B]">
-                            {product.material}
-                          </span>
-                        </div>
+                {/* Technical Tabs (Restyled) */}
+                <div className="border-t border-b border-[#6C7466]/10 py-6 mb-8">
+                   <div className="flex gap-8 mb-6 overflow-x-auto">
+                      <button 
+                        onClick={() => setActiveTab("measurements")}
+                        className={cn("text-xs font-bold tracking-widest uppercase transition-colors whitespace-nowrap", activeTab === "measurements" ? "text-[#2B2B2B]" : "text-gray-400 hover:text-[#2B2B2B]")}
+                      >
+                        Specs
+                      </button>
+                      <button 
+                         onClick={() => setActiveTab("shipping")}
+                         className={cn("text-xs font-bold tracking-widest uppercase transition-colors whitespace-nowrap", activeTab === "shipping" ? "text-[#2B2B2B]" : "text-gray-400 hover:text-[#2B2B2B]")}
+                      >
+                        Shipping
+                      </button>
+                      <button 
+                         onClick={() => setActiveTab("returns")}
+                         className={cn("text-xs font-bold tracking-widest uppercase transition-colors whitespace-nowrap", activeTab === "returns" ? "text-[#2B2B2B]" : "text-gray-400 hover:text-[#2B2B2B]")}
+                      >
+                        Returns
+                      </button>
+                   </div>
+
+                   {/* Tab Content */}
+                   <div className="min-h-[100px]">
+                      {activeTab === "measurements" && (
+                         <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-left-2 duration-300">
+                             <div><span className="block text-[10px] text-gray-400 uppercase">Dimensions</span><span className="text-sm text-[#2B2B2B]">{product.dimensions?.height} x {product.dimensions?.width}</span></div>
+                             <div><span className="block text-[10px] text-gray-400 uppercase">Weight</span><span className="text-sm text-[#2B2B2B]">{product.dimensions?.weight}</span></div>
+                             <div className="col-span-2"><span className="block text-[10px] text-gray-400 uppercase">Material</span><span className="text-sm text-[#2B2B2B]">{product.material}</span></div>
+                             <div className="col-span-2"><span className="block text-[10px] text-gray-400 uppercase">Colors</span><span className="text-sm text-[#2B2B2B]">{product.colors}</span></div>
+                         </div>
                       )}
-                      {product.colors && (
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <span className="text-gray-600 block mb-1">
-                            Colores
-                          </span>
-                          <span className="font-semibold text-[#2B2B2B]">
-                            {product.colors}
-                          </span>
-                        </div>
+                      {activeTab === "shipping" && (
+                         <div className="space-y-2 text-sm text-gray-500 font-light animate-in fade-in slide-in-from-left-2 duration-300">
+                            <p className="flex items-center gap-2"><TruckIcon className="w-4 h-4 text-[#6C7466]" /> CDMX & Metro Area: 2-3 business days</p>
+                            <p className="flex items-center gap-2"><Package className="w-4 h-4 text-[#6C7466]" /> Rest of Mexico: 3-5 business days</p>
+                            <p className="text-xs text-gray-400 mt-2">Express shipping available at checkout.</p>
+                         </div>
                       )}
-                    </div>
-                  )}
-                  {activeTab === "shipping" && (
-                    <div className="space-y-4 text-sm lg:text-base text-[#2B2B2B]/80 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                      <p className="leading-relaxed">
-                        Ofrecemos envío a toda la República Mexicana. Los
-                        tiempos de entrega varían según tu ubicación:
-                      </p>
-                      <ul className="space-y-2 ml-4">
-                        <li className="flex items-start">
-                          <span className="text-[#6C7466] mr-2">•</span>
-                          <span>
-                            Ciudad de México y Área Metropolitana: 2-3 días
-                            hábiles
-                          </span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-[#6C7466] mr-2">•</span>
-                          <span>Resto del país: 3-5 días hábiles</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-[#6C7466] mr-2">•</span>
-                          <span>
-                            Envío express disponible con costo adicional
-                          </span>
-                        </li>
-                      </ul>
-                    </div>
-                  )}
-                  {activeTab === "returns" && (
-                    <div className="space-y-4 text-sm lg:text-base text-[#2B2B2B]/80 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                      <p className="leading-relaxed">
-                        Aceptamos devoluciones dentro de los 30 días posteriores
-                        a la compra. El producto debe estar en su estado
-                        original y sin usar.
-                      </p>
-                      <ul className="space-y-2 ml-4">
-                        <li className="flex items-start">
-                          <span className="text-[#6C7466] mr-2">•</span>
-                          <span>
-                            Reembolso completo en compras con defectos de
-                            fábrica
-                          </span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-[#6C7466] mr-2">•</span>
-                          <span>Cambio sin costo adicional</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-[#6C7466] mr-2">•</span>
-                          <span>Proceso de devolución simple y rápido</span>
-                        </li>
-                      </ul>
-                    </div>
-                  )}
+                      {activeTab === "returns" && (
+                         <div className="space-y-2 text-sm text-gray-500 font-light animate-in fade-in slide-in-from-left-2 duration-300">
+                             <p className="flex items-center gap-2"><RefreshCcw className="w-4 h-4 text-[#6C7466]" /> 30-day return window</p>
+                             <p>Items must be in original, unused condition.</p>
+                         </div>
+                      )}
+                   </div>
                 </div>
-              </div>
             </div>
+
+            {/* Actions Footer */}
+            <div className="mt-auto space-y-4">
+                <Button className="w-full bg-[#2B2B2B] text-white hover:bg-[#6C7466] transition-colors h-14 rounded-none text-xs font-bold tracking-[0.2em] uppercase">
+                    Add to Cart — ${product.price.toLocaleString("en-US")}
+                </Button>
+                <div className="flex justify-center items-center gap-4 text-[10px] text-gray-400 uppercase tracking-widest">
+                    <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Secure Checkout</span>
+                    <span>•</span>
+                    <span>Worldwide Shipping</span>
+                </div>
+            </div>
+
           </div>
         </div>
       </DialogContent>
