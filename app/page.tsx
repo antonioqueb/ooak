@@ -4,9 +4,9 @@ import Image from "next/image";
 import { ArrowRight, Star } from "lucide-react";
 import { ProductGrid } from "@/components/ProductGrid";
 
-// Configuración de la API (Idealmente mover a .env)
+// Configuración de la API
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://46.202.88.177:8010";
-const PLACEHOLDER_IMG = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; // Imagen transparente 1x1
+const PLACEHOLDER_IMG = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 interface PageData {
   data: {
@@ -16,7 +16,7 @@ interface PageData {
       title: string;
     };
     product_grid: {
-      items: Array<any>; // Simplificado para brevedad
+      items: Array<any>;
       title: string;
     };
     sections: Array<{
@@ -38,7 +38,6 @@ interface PageData {
 
 async function getPageData(): Promise<PageData | null> {
   try {
-    // Agregamos 'no-store' para evitar cacheo agresivo durante desarrollo/pruebas
     const res = await fetch(`${API_URL}/api/v1/page?url=/`, {
       next: { revalidate: 60 }, 
     });
@@ -58,7 +57,6 @@ async function getPageData(): Promise<PageData | null> {
 export default async function Home() {
   const pageData = await getPageData();
 
-  // Manejo de error si la API está caída
   if (!pageData || !pageData.data) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
@@ -68,7 +66,6 @@ export default async function Home() {
   }
 
   const { sections } = pageData.data;
-
   const heroSection = sections.find((s) => s.type === "hero");
   const featureSection = sections.find((s) => s.type === "feature");
   const brandSection = sections.find((s) => s.type === "brand_story");
@@ -100,13 +97,13 @@ export default async function Home() {
 
                 <div className="relative aspect-[4/5] md:aspect-[16/10] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm z-10">
                   <Image
-                    /* PROTECCIÓN: Usar fallback si viene vacío */
                     src={heroSection.content.image.src || PLACEHOLDER_IMG}
                     alt={heroSection.content.image.alt || "Hero Image"}
                     fill
                     className="object-cover transition-transform duration-[2s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 60vw"
                     priority
+                    unoptimized={true} /* <--- ESTO SOLUCIONA EL ERROR 400 */
                   />
                   <div className="absolute inset-0 bg-[#6C7466]/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
@@ -122,6 +119,7 @@ export default async function Home() {
               </div>
 
               <div className="order-1 lg:order-2 lg:col-span-5 lg:pl-12 flex flex-col justify-center text-center lg:text-left">
+                {/* ... contenido del hero ... */}
                 <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
                   <span className="h-px w-6 bg-[#6C7466]"></span>
                   <p className="text-xs font-bold tracking-[0.25em] text-[#6C7466]/80 uppercase">
@@ -165,6 +163,7 @@ export default async function Home() {
           {featureSection && (
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-24 items-center">
               <div className="order-1 lg:col-span-5 lg:text-right flex flex-col items-center lg:items-end">
+                {/* ... contenido del feature ... */}
                 <span className="text-xs font-bold tracking-[0.25em] text-[#6C7466]/60 uppercase mb-6 flex items-center gap-4">
                   {featureSection.content.subtitle}{" "}
                   <span className="w-8 h-px bg-[#6C7466]/40"></span>
@@ -193,12 +192,12 @@ export default async function Home() {
                 <div className="absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm translate-x-4 translate-y-4 transition-transform duration-500 group-hover:translate-x-2 group-hover:translate-y-2" />
                 <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm">
                   <Image
-                    /* PROTECCIÓN DE IMAGEN */
                     src={featureSection.content.image.src || PLACEHOLDER_IMG}
                     alt={featureSection.content.image.alt || "Feature Image"}
                     fill
                     className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
+                    unoptimized={true} /* <--- ESTO SOLUCIONA EL ERROR 400 */
                   />
                   <div className="absolute inset-0 bg-[#6C7466]/5 mix-blend-multiply transition-opacity duration-500 group-hover:opacity-0" />
                 </div>
@@ -213,12 +212,12 @@ export default async function Home() {
                 <div className="absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm -translate-x-4 translate-y-4 transition-transform duration-500 group-hover:-translate-x-2 group-hover:translate-y-2" />
                 <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm">
                   <Image
-                    /* PROTECCIÓN DE IMAGEN */
                     src={brandSection.content.image.src || PLACEHOLDER_IMG}
                     alt={brandSection.content.image.alt || "Brand Image"}
                     fill
                     className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
+                    unoptimized={true} /* <--- ESTO SOLUCIONA EL ERROR 400 */
                   />
                   <div className="absolute inset-0 bg-[#6C7466]/5 mix-blend-multiply transition-opacity duration-500 group-hover:opacity-0" />
                   {brandSection.content.image.show_badge && (
@@ -232,6 +231,7 @@ export default async function Home() {
               </div>
 
               <div className="order-1 lg:order-2 lg:col-span-6 lg:col-start-7 flex flex-col items-center lg:items-start text-center lg:text-left">
+                {/* ... contenido del brand ... */}
                 <span className="text-xs font-bold tracking-[0.25em] text-[#6C7466]/60 uppercase mb-6 flex items-center gap-4">
                   <span className="w-8 h-px bg-[#6C7466]/40"></span>{" "}
                   {brandSection.content.subtitle}
