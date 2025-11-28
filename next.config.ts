@@ -8,7 +8,8 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "46.202.88.177",
         port: "8010",
-        pathname: "/**",
+        pathname: '/web/image/**',
+        
       },
     ],
   },

@@ -4,6 +4,10 @@ import Image from "next/image";
 import { ArrowRight, Star } from "lucide-react";
 import { ProductGrid } from "@/components/ProductGrid";
 
+// Configuración de la API (Idealmente mover a .env)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://46.202.88.177:8010";
+const PLACEHOLDER_IMG = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; // Imagen transparente 1x1
+
 interface PageData {
   data: {
     meta: {
@@ -12,42 +16,18 @@ interface PageData {
       title: string;
     };
     product_grid: {
-      items: Array<{
-        category: string;
-        currency: string;
-        id: number;
-        image: string;
-        is_featured: boolean;
-        is_new: boolean;
-        name: string;
-        price: number;
-        slug: string;
-      }>;
+      items: Array<any>; // Simplificado para brevedad
       title: string;
     };
     sections: Array<{
       content: {
         background_text?: string;
-        badge?: {
-          icon: string;
-          text: string;
-        };
-        cta: {
-          href: string;
-          sub_text?: string;
-          text: string;
-        };
+        badge?: { icon: string; text: string };
+        cta: { href: string; sub_text?: string; text: string };
         description: string;
-        image: {
-          alt: string;
-          src: string;
-          show_badge?: boolean;
-        };
+        image: { alt: string; src: string; show_badge?: boolean };
         subtitle: string;
-        title: {
-          highlight: string;
-          normal: string;
-        };
+        title: { highlight: string; normal: string };
       };
       id: string;
       layout: "image_left" | "image_right";
@@ -56,21 +36,38 @@ interface PageData {
   };
 }
 
-async function getPageData(): Promise<PageData> {
-  const res = await fetch("http://46.202.88.177:8010/api/v1/page?url=/", {
-    next: { revalidate: 60 },
-  });
+async function getPageData(): Promise<PageData | null> {
+  try {
+    // Agregamos 'no-store' para evitar cacheo agresivo durante desarrollo/pruebas
+    const res = await fetch(`${API_URL}/api/v1/page?url=/`, {
+      next: { revalidate: 60 }, 
+    });
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch page data");
+    if (!res.ok) {
+      console.error("Error fetching page data:", res.statusText);
+      return null;
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error("Network error fetching page data:", error);
+    return null;
   }
-
-  return res.json();
 }
 
 export default async function Home() {
   const pageData = await getPageData();
-  const { sections, product_grid } = pageData.data;
+
+  // Manejo de error si la API está caída
+  if (!pageData || !pageData.data) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
+        <p className="text-[#6C7466]">Temporarily unavailable. Please try again later.</p>
+      </main>
+    );
+  }
+
+  const { sections } = pageData.data;
 
   const heroSection = sections.find((s) => s.type === "hero");
   const featureSection = sections.find((s) => s.type === "feature");
@@ -90,6 +87,7 @@ export default async function Home() {
         <div className="hidden lg:block absolute top-0 right-1/4 w-px h-full bg-[#6C7466]/10 z-0" />
 
         <div className="container mx-auto max-w-7xl relative z-10 space-y-32 md:space-y-48">
+          
           {/* HERO SECTION */}
           {heroSection && (
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
@@ -102,8 +100,9 @@ export default async function Home() {
 
                 <div className="relative aspect-[4/5] md:aspect-[16/10] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm z-10">
                   <Image
-                    src={heroSection.content.image.src}
-                    alt={heroSection.content.image.alt}
+                    /* PROTECCIÓN: Usar fallback si viene vacío */
+                    src={heroSection.content.image.src || PLACEHOLDER_IMG}
+                    alt={heroSection.content.image.alt || "Hero Image"}
                     fill
                     className="object-cover transition-transform duration-[2s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 60vw"
@@ -140,7 +139,7 @@ export default async function Home() {
                 </p>
                 <div className="flex justify-center lg:justify-start">
                   <Link
-                    href={heroSection.content.cta.href}
+                    href={heroSection.content.cta.href || "#"}
                     className="group relative inline-flex items-center gap-4"
                   >
                     <div className="w-12 h-12 rounded-full border border-[#6C7466]/30 flex items-center justify-center group-hover:bg-[#6C7466] group-hover:border-[#6C7466] transition-all duration-300">
@@ -180,7 +179,7 @@ export default async function Home() {
                   {featureSection.content.description}
                 </p>
                 <Link
-                  href={featureSection.content.cta.href}
+                  href={featureSection.content.cta.href || "#"}
                   className="group flex items-center gap-3 text-sm font-bold tracking-[0.2em] uppercase text-[#2B2B2B] hover:text-[#6C7466] transition-colors"
                 >
                   <span className="bg-[#6C7466]/10 p-2 rounded-full group-hover:bg-[#6C7466] group-hover:text-white transition-all duration-300">
@@ -194,8 +193,9 @@ export default async function Home() {
                 <div className="absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm translate-x-4 translate-y-4 transition-transform duration-500 group-hover:translate-x-2 group-hover:translate-y-2" />
                 <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm">
                   <Image
-                    src={featureSection.content.image.src}
-                    alt={featureSection.content.image.alt}
+                    /* PROTECCIÓN DE IMAGEN */
+                    src={featureSection.content.image.src || PLACEHOLDER_IMG}
+                    alt={featureSection.content.image.alt || "Feature Image"}
                     fill
                     className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -213,8 +213,9 @@ export default async function Home() {
                 <div className="absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm -translate-x-4 translate-y-4 transition-transform duration-500 group-hover:-translate-x-2 group-hover:translate-y-2" />
                 <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm">
                   <Image
-                    src={brandSection.content.image.src}
-                    alt={brandSection.content.image.alt}
+                    /* PROTECCIÓN DE IMAGEN */
+                    src={brandSection.content.image.src || PLACEHOLDER_IMG}
+                    alt={brandSection.content.image.alt || "Brand Image"}
                     fill
                     className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -245,7 +246,7 @@ export default async function Home() {
                   {brandSection.content.description}
                 </p>
                 <Link
-                  href={brandSection.content.cta.href}
+                  href={brandSection.content.cta.href || "#"}
                   className="group flex items-center gap-3 text-sm font-bold tracking-[0.2em] uppercase text-[#2B2B2B] hover:text-[#6C7466] transition-colors"
                 >
                   <span>{brandSection.content.cta.text}</span>
