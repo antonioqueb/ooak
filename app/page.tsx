@@ -2,65 +2,86 @@ import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Star } from "lucide-react";
-import { ProductGrid } from "@/components/ProductGrid";
+// import { ProductGrid } from "@/components/ProductGrid"; // Comentado ya que se eliminó del backend
 
 // Configuración de la API
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://46.202.88.177:8010";
 const PLACEHOLDER_IMG = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
+// Interfaz actualizada para coincidir con la respuesta de tu nuevo endpoint /api/v1/home
 interface PageData {
   data: {
-    meta: {
+    seo: {
+      title: string;
       description: string;
-      keywords: boolean | string;
-      title: string;
-    };
-    product_grid: {
-      items: Array<any>;
-      title: string;
+      keywords: string;
+      image: string;
     };
     sections: Array<{
+      id: string;
+      type: "hero" | "feature" | "brand_story";
+      layout: "image_left" | "image_right" | "centered" | "fullwidth";
       content: {
         background_text?: string;
         badge?: { icon: string; text: string };
-        cta: { href: string; sub_text?: string; text: string };
-        description: string;
-        image: { alt: string; src: string; show_badge?: boolean };
         subtitle: string;
-        title: { highlight: string; normal: string };
+        title: { normal: string; highlight: string };
+        description: string;
+        cta: { text: string; sub_text?: string; href: string };
+        image: { src: string; alt: string; show_badge?: boolean };
       };
-      id: string;
-      layout: "image_left" | "image_right";
-      type: "hero" | "feature" | "brand_story";
     }>;
   };
 }
 
-async function getPageData(): Promise<PageData | null> {
+// Función para obtener datos
+async function getHomeData(): Promise<PageData | null> {
   try {
-    const res = await fetch(`${API_URL}/api/v1/page?url=/`, {
-      next: { revalidate: 60 }, 
+    // CAMBIO: Ahora apuntamos al nuevo endpoint único
+    const res = await fetch(`${API_URL}/api/v1/home`, {
+      next: { revalidate: 60 }, // Revalidar cada 60 segundos
     });
 
     if (!res.ok) {
-      console.error("Error fetching page data:", res.statusText);
+      console.error("Error fetching home data:", res.statusText);
       return null;
     }
 
     return res.json();
   } catch (error) {
-    console.error("Network error fetching page data:", error);
+    console.error("Network error fetching home data:", error);
     return null;
   }
 }
 
+// NUEVO: Generar Metadatos SEO dinámicos para Next.js
+export async function generateMetadata() {
+  const pageData = await getHomeData();
+  
+  if (!pageData?.data?.seo) return {};
+
+  const { seo } = pageData.data;
+
+  return {
+    title: seo.title,
+    description: seo.description,
+    keywords: seo.keywords,
+    openGraph: {
+      images: seo.image ? [seo.image] : [],
+    },
+  };
+}
+
 export default async function Home() {
-  const pageData = await getPageData();
+  const pageData = await getHomeData();
 
   if (!pageData || !pageData.data) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
-        <p className="text-[#6C7466]">Temporarily unavailable. Please try again later.</p>
+        <div className="text-center">
+            <h1 className="text-2xl font-serif text-[#6C7466] mb-2">Service Unavailable</h1>
+            <p className="text-[#6C7466]/70">Could not load content configuration.</p>
+        </div>
       </main>
     );
   }
@@ -103,11 +124,11 @@ export default async function Home() {
                     className="object-cover transition-transform duration-[2s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 60vw"
                     priority
-                    unoptimized={true} /* <--- ESTO SOLUCIONA EL ERROR 400 */
+                    unoptimized={true} 
                   />
                   <div className="absolute inset-0 bg-[#6C7466]/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-                  {heroSection.content.badge && (
+                  {heroSection.content.badge && heroSection.content.badge.text && (
                     <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
                       <span className="flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-[#6C7466]">
                         <Star className="w-3 h-3 fill-[#6C7466]" />
@@ -119,7 +140,6 @@ export default async function Home() {
               </div>
 
               <div className="order-1 lg:order-2 lg:col-span-5 lg:pl-12 flex flex-col justify-center text-center lg:text-left">
-                {/* ... contenido del hero ... */}
                 <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
                   <span className="h-px w-6 bg-[#6C7466]"></span>
                   <p className="text-xs font-bold tracking-[0.25em] text-[#6C7466]/80 uppercase">
@@ -163,7 +183,6 @@ export default async function Home() {
           {featureSection && (
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-24 items-center">
               <div className="order-1 lg:col-span-5 lg:text-right flex flex-col items-center lg:items-end">
-                {/* ... contenido del feature ... */}
                 <span className="text-xs font-bold tracking-[0.25em] text-[#6C7466]/60 uppercase mb-6 flex items-center gap-4">
                   {featureSection.content.subtitle}{" "}
                   <span className="w-8 h-px bg-[#6C7466]/40"></span>
@@ -197,7 +216,7 @@ export default async function Home() {
                     fill
                     className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    unoptimized={true} /* <--- ESTO SOLUCIONA EL ERROR 400 */
+                    unoptimized={true}
                   />
                   <div className="absolute inset-0 bg-[#6C7466]/5 mix-blend-multiply transition-opacity duration-500 group-hover:opacity-0" />
                 </div>
@@ -217,7 +236,7 @@ export default async function Home() {
                     fill
                     className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    unoptimized={true} /* <--- ESTO SOLUCIONA EL ERROR 400 */
+                    unoptimized={true}
                   />
                   <div className="absolute inset-0 bg-[#6C7466]/5 mix-blend-multiply transition-opacity duration-500 group-hover:opacity-0" />
                   {brandSection.content.image.show_badge && (
@@ -231,7 +250,6 @@ export default async function Home() {
               </div>
 
               <div className="order-1 lg:order-2 lg:col-span-6 lg:col-start-7 flex flex-col items-center lg:items-start text-center lg:text-left">
-                {/* ... contenido del brand ... */}
                 <span className="text-xs font-bold tracking-[0.25em] text-[#6C7466]/60 uppercase mb-6 flex items-center gap-4">
                   <span className="w-8 h-px bg-[#6C7466]/40"></span>{" "}
                   {brandSection.content.subtitle}
@@ -260,10 +278,12 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* PRODUCT GRID */}
+      {/* PRODUCT GRID - COMENTADO PORQUE LA API YA NO DEVUELVE ESTA DATA */}
+      {/* 
       <Suspense fallback={<div className="h-96 flex items-center justify-center text-[#6C7466]">Loading Treasures...</div>}>
         <ProductGrid />
-      </Suspense>
+      </Suspense> 
+      */}
     </main>
   );
 }
