@@ -1,14 +1,31 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Star } from "lucide-react";
-// import { ProductGrid } from "@/components/ProductGrid"; // Comentado ya que se eliminó del backend
+import { ArrowRight, Star, AlertTriangle } from "lucide-react";
 
 // Configuración de la API
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://46.202.88.177:8010";
 const PLACEHOLDER_IMG = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
-// Interfaz actualizada para coincidir con la respuesta de tu nuevo endpoint /api/v1/home
+// --- INTERFACES (Tipado estricto para detectar errores) ---
+
+interface SectionContent {
+  background_text?: string;
+  badge?: { icon: string; text: string };
+  subtitle: string;
+  title: { normal: string; highlight: string };
+  description: string;
+  cta: { text: string; sub_text?: string; href: string };
+  image: { src: string; alt: string; show_badge?: boolean };
+}
+
+interface Section {
+  id: string;
+  type: "hero" | "feature" | "brand_story";
+  layout: string;
+  content: SectionContent;
+}
+
 interface PageData {
   data: {
     seo: {
@@ -17,48 +34,69 @@ interface PageData {
       keywords: string;
       image: string;
     };
-    sections: Array<{
-      id: string;
-      type: "hero" | "feature" | "brand_story";
-      layout: "image_left" | "image_right" | "centered" | "fullwidth";
-      content: {
-        background_text?: string;
-        badge?: { icon: string; text: string };
-        subtitle: string;
-        title: { normal: string; highlight: string };
-        description: string;
-        cta: { text: string; sub_text?: string; href: string };
-        image: { src: string; alt: string; show_badge?: boolean };
-      };
-    }>;
+    sections: Section[];
   };
 }
 
-// Función para obtener datos
+// --- FETCHING DE DATOS CON DEBUG ---
+
 async function getHomeData(): Promise<PageData | null> {
+  const endpoint = `${API_URL}/api/v1/home`;
+  
+  // LOG 1: Verificar a dónde estamos apuntando
+  console.log(`🚀 [DEBUG] Iniciando petición a: ${endpoint}`);
+
   try {
-    // CAMBIO: Ahora apuntamos al nuevo endpoint único
-    const res = await fetch(`${API_URL}/api/v1/home`, {
-      next: { revalidate: 60 }, // Revalidar cada 60 segundos
+    const res = await fetch(endpoint, {
+      next: { revalidate: 0 }, // 0 = Sin caché para pruebas (cambiar a 60 en producción)
+      cache: "no-store", 
     });
 
+    // LOG 2: Estado HTTP
+    console.log(`📡 [DEBUG] Status HTTP: ${res.status} ${res.statusText}`);
+
     if (!res.ok) {
-      console.error("Error fetching home data:", res.statusText);
+      const text = await res.text();
+      console.error(`❌ [DEBUG] Error del servidor: ${text}`);
       return null;
     }
 
-    return res.json();
+    const json = await res.json();
+
+    // LOG 3: Inspeccionar la estructura recibida
+    console.log("📦 [DEBUG] Estructura Root recibida (Keys):", Object.keys(json));
+    
+    if (json.data) {
+      console.log("📦 [DEBUG] Estructura 'data' interna (Keys):", Object.keys(json.data));
+      if (Array.isArray(json.data.sections)) {
+         console.log(`✅ [DEBUG] Se encontraron ${json.data.sections.length} secciones.`);
+         // Imprimir tipos de secciones encontradas
+         const types = json.data.sections.map((s: any) => s.type);
+         console.log(`ℹ️ [DEBUG] Tipos de secciones: ${types.join(", ")}`);
+      } else {
+         console.error("⚠️ [DEBUG] 'sections' no es un array o no existe en json.data");
+      }
+    } else {
+      console.error("⚠️ [DEBUG] La propiedad 'data' no existe en la respuesta JSON.");
+    }
+
+    return json;
+
   } catch (error) {
-    console.error("Network error fetching home data:", error);
+    console.error("❌ [DEBUG] Error CRÍTICO de red o parsing:", error);
     return null;
   }
 }
 
-// NUEVO: Generar Metadatos SEO dinámicos para Next.js
+// --- METADATA ---
+
 export async function generateMetadata() {
   const pageData = await getHomeData();
   
-  if (!pageData?.data?.seo) return {};
+  if (!pageData?.data?.seo) return {
+    title: "Jasper Home",
+    description: "Welcome to Jasper"
+  };
 
   const { seo } = pageData.data;
 
@@ -72,29 +110,43 @@ export async function generateMetadata() {
   };
 }
 
+// --- COMPONENTE PRINCIPAL ---
+
 export default async function Home() {
   const pageData = await getHomeData();
 
-  if (!pageData || !pageData.data) {
+  // 1. VALIDACIÓN DE SEGURIDAD: Si no hay datos, mostrar error visual
+  if (!pageData || !pageData.data || !Array.isArray(pageData.data.sections)) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
-        <div className="text-center">
+      <main className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] p-4">
+        <div className="text-center max-w-md bg-white p-8 rounded-lg shadow-sm border border-red-100">
+            <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
             <h1 className="text-2xl font-serif text-[#6C7466] mb-2">Service Unavailable</h1>
-            <p className="text-[#6C7466]/70">Could not load content configuration.</p>
+            <p className="text-[#6C7466]/70 mb-4">
+              We could not load the content configuration from the server.
+            </p>
+            <div className="bg-gray-100 p-3 rounded text-left text-xs font-mono text-gray-500 overflow-auto">
+              <p>Check server console logs for [DEBUG] messages.</p>
+              <p className="mt-2">Posible causa: API URL incorrecta o formato JSON inesperado.</p>
+            </div>
         </div>
       </main>
     );
   }
 
   const { sections } = pageData.data;
+  
+  // Buscar secciones con seguridad (optional chaining)
   const heroSection = sections.find((s) => s.type === "hero");
   const featureSection = sections.find((s) => s.type === "feature");
   const brandSection = sections.find((s) => s.type === "brand_story");
 
+  // 2. RENDERIZADO
   return (
     <main className="min-h-screen bg-[#FDFBF7] text-[#2B2B2B] selection:bg-[#6C7466] selection:text-white">
       <div className="relative pt-32 pb-24 md:pt-40 md:pb-32 px-6 overflow-hidden">
-        {/* Global Atmosphere */}
+        
+        {/* Global Atmosphere (Background Noise) */}
         <div
           className="absolute inset-0 opacity-[0.03] pointer-events-none z-0 mix-blend-multiply"
           style={{
@@ -106,8 +158,8 @@ export default async function Home() {
 
         <div className="container mx-auto max-w-7xl relative z-10 space-y-32 md:space-y-48">
           
-          {/* HERO SECTION */}
-          {heroSection && (
+          {/* --- HERO SECTION --- */}
+          {heroSection ? (
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
               <div className="order-2 lg:order-1 lg:col-span-7 relative group">
                 {heroSection.content.background_text && (
@@ -118,8 +170,8 @@ export default async function Home() {
 
                 <div className="relative aspect-[4/5] md:aspect-[16/10] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm z-10">
                   <Image
-                    src={heroSection.content.image.src || PLACEHOLDER_IMG}
-                    alt={heroSection.content.image.alt || "Hero Image"}
+                    src={heroSection.content.image?.src || PLACEHOLDER_IMG}
+                    alt={heroSection.content.image?.alt || "Hero Image"}
                     fill
                     className="object-cover transition-transform duration-[2s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 60vw"
@@ -157,7 +209,7 @@ export default async function Home() {
                 </p>
                 <div className="flex justify-center lg:justify-start">
                   <Link
-                    href={heroSection.content.cta.href || "#"}
+                    href={heroSection.content.cta?.href || "#"}
                     className="group relative inline-flex items-center gap-4"
                   >
                     <div className="w-12 h-12 rounded-full border border-[#6C7466]/30 flex items-center justify-center group-hover:bg-[#6C7466] group-hover:border-[#6C7466] transition-all duration-300">
@@ -165,9 +217,9 @@ export default async function Home() {
                     </div>
                     <div className="flex flex-col text-left">
                       <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#2B2B2B] group-hover:text-[#6C7466] transition-colors">
-                        {heroSection.content.cta.text}
+                        {heroSection.content.cta?.text}
                       </span>
-                      {heroSection.content.cta.sub_text && (
+                      {heroSection.content.cta?.sub_text && (
                         <span className="text-[10px] text-gray-400 font-light tracking-wide group-hover:translate-x-1 transition-transform duration-300">
                           {heroSection.content.cta.sub_text}
                         </span>
@@ -177,9 +229,12 @@ export default async function Home() {
                 </div>
               </div>
             </div>
+          ) : (
+            // Fallback visual si falta el Hero pero hay datos
+            <div className="text-center p-10 border border-dashed border-gray-300">Hero Section Missing in API Data</div>
           )}
 
-          {/* FEATURE SECTION */}
+          {/* --- FEATURE SECTION --- */}
           {featureSection && (
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-24 items-center">
               <div className="order-1 lg:col-span-5 lg:text-right flex flex-col items-center lg:items-end">
@@ -197,13 +252,13 @@ export default async function Home() {
                   {featureSection.content.description}
                 </p>
                 <Link
-                  href={featureSection.content.cta.href || "#"}
+                  href={featureSection.content.cta?.href || "#"}
                   className="group flex items-center gap-3 text-sm font-bold tracking-[0.2em] uppercase text-[#2B2B2B] hover:text-[#6C7466] transition-colors"
                 >
                   <span className="bg-[#6C7466]/10 p-2 rounded-full group-hover:bg-[#6C7466] group-hover:text-white transition-all duration-300">
                     <ArrowRight className="w-4 h-4 rotate-180" />
                   </span>
-                  <span>{featureSection.content.cta.text}</span>
+                  <span>{featureSection.content.cta?.text}</span>
                 </Link>
               </div>
 
@@ -211,8 +266,8 @@ export default async function Home() {
                 <div className="absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm translate-x-4 translate-y-4 transition-transform duration-500 group-hover:translate-x-2 group-hover:translate-y-2" />
                 <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm">
                   <Image
-                    src={featureSection.content.image.src || PLACEHOLDER_IMG}
-                    alt={featureSection.content.image.alt || "Feature Image"}
+                    src={featureSection.content.image?.src || PLACEHOLDER_IMG}
+                    alt={featureSection.content.image?.alt || "Feature Image"}
                     fill
                     className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -224,22 +279,22 @@ export default async function Home() {
             </div>
           )}
 
-          {/* BRAND STORY SECTION */}
+          {/* --- BRAND STORY SECTION --- */}
           {brandSection && (
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-24 items-center">
               <div className="order-2 lg:order-1 lg:col-span-5 relative group">
                 <div className="absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm -translate-x-4 translate-y-4 transition-transform duration-500 group-hover:-translate-x-2 group-hover:translate-y-2" />
                 <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm">
                   <Image
-                    src={brandSection.content.image.src || PLACEHOLDER_IMG}
-                    alt={brandSection.content.image.alt || "Brand Image"}
+                    src={brandSection.content.image?.src || PLACEHOLDER_IMG}
+                    alt={brandSection.content.image?.alt || "Brand Image"}
                     fill
                     className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
                     unoptimized={true}
                   />
                   <div className="absolute inset-0 bg-[#6C7466]/5 mix-blend-multiply transition-opacity duration-500 group-hover:opacity-0" />
-                  {brandSection.content.image.show_badge && (
+                  {brandSection.content.image?.show_badge && (
                     <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-full shadow-xl animate-spin-slow-reverse hidden md:block z-10">
                       <div className="border border-[#6C7466]/20 rounded-full p-2">
                         <Star className="w-6 h-6 text-[#6C7466]" />
@@ -264,10 +319,10 @@ export default async function Home() {
                   {brandSection.content.description}
                 </p>
                 <Link
-                  href={brandSection.content.cta.href || "#"}
+                  href={brandSection.content.cta?.href || "#"}
                   className="group flex items-center gap-3 text-sm font-bold tracking-[0.2em] uppercase text-[#2B2B2B] hover:text-[#6C7466] transition-colors"
                 >
-                  <span>{brandSection.content.cta.text}</span>
+                  <span>{brandSection.content.cta?.text}</span>
                   <span className="bg-[#6C7466]/10 p-2 rounded-full group-hover:bg-[#6C7466] group-hover:text-white transition-all duration-300">
                     <ArrowRight className="w-4 h-4" />
                   </span>
@@ -277,13 +332,6 @@ export default async function Home() {
           )}
         </div>
       </div>
-
-      {/* PRODUCT GRID - COMENTADO PORQUE LA API YA NO DEVUELVE ESTA DATA */}
-      {/* 
-      <Suspense fallback={<div className="h-96 flex items-center justify-center text-[#6C7466]">Loading Treasures...</div>}>
-        <ProductGrid />
-      </Suspense> 
-      */}
     </main>
   );
 }
