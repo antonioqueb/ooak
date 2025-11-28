@@ -26,11 +26,12 @@ const topBarLinks = [
   { name: "PROJECTS", href: "/projects", hasMenu: false },
 ]
 
-// Definimos la interfaz para el tipo de datos del menú
+// Definimos la interfaz. Agregamos _parentKey opcional para uso interno durante el armado
 interface CollectionMenuItem {
   name: string;
   href: string;
-  items: { name: string; href: string }[];
+  items: CollectionMenuItem[]; // Permitimos anidación recursiva
+  _parentKey?: string | null;  // Temporal para lógica de armado
 }
 
 export function Navbar() {
@@ -39,7 +40,6 @@ export function Navbar() {
   const [isShopMenuOpen, setIsShopMenuOpen] = React.useState(false)
   const [isShopPanelOpen, setIsShopPanelOpen] = React.useState(false)
   
-  // 1. CAMBIO: Convertimos collections en un estado
   const [collections, setCollections] = React.useState<CollectionMenuItem[]>([])
   const [selectedCollection, setSelectedCollection] = React.useState<CollectionMenuItem | null>(null)
   
@@ -49,7 +49,7 @@ export function Navbar() {
   const { cartCount, toggleCart } = useCart()
   const shopMenuTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
-  // 2. NUEVO: Fetch de datos al montar el componente
+  // --- LÓGICA DE FETCH Y ANIDACIÓN AUTOMÁTICA ---
   React.useEffect(() => {
     const fetchCollections = async () => {
       try {
@@ -57,21 +57,53 @@ export function Navbar() {
         if (!res.ok) throw new Error('Error fetching menu');
         const data = await res.json();
 
-        // Transformamos el objeto de la API { "key": { title: "..." } } a un array para el menú
-        const menuItems: CollectionMenuItem[] = Object.entries(data).map(([key, value]: [string, any]) => {
-            // Nota: Si la API en el futuro devuelve categorías dentro de 'products' u otro campo,
-            // aquí podrías lógica para poblar 'items'. Por ahora lo dejamos plano o vacío.
-            return {
+        // 1. Crear un mapa plano de todos los nodos (items del menú)
+        //    Esto nos permite buscar padres rápidamente por su 'key'.
+        const nodesMap: Record<string, CollectionMenuItem> = {};
+
+        Object.entries(data).forEach(([key, value]: [string, any]) => {
+            nodesMap[key] = {
                 name: value.title ? value.title.toUpperCase() : key.toUpperCase().replace(/_/g, " "),
-                href: `/collections/${key}`, // Usamos la key como slug (ej: /collections/alloys)
-                items: [] // Si tienes subcategorías en la API, mapealas aquí.
+                // Por defecto url base, luego la ajustaremos si es hijo
+                href: `/collections/${key}`, 
+                items: [],
+                _parentKey: value.parent // Guardamos quien es el padre (ej: "alloys")
             };
         });
 
-        setCollections(menuItems);
+        // 2. Construir el árbol (Tree)
+        const tree: CollectionMenuItem[] = [];
+
+        Object.keys(nodesMap).forEach((key) => {
+            const node = nodesMap[key];
+            const parentKey = node._parentKey;
+
+            if (parentKey && nodesMap[parentKey]) {
+                // ES UN HIJO:
+                // 1. Ajustamos su URL para que sea /collections/padre/hijo
+                node.href = `/collections/${parentKey}/${key}`;
+                
+                // 2. Lo metemos dentro del array 'items' del padre
+                nodesMap[parentKey].items.push(node);
+            } else {
+                // ES UN PADRE (RAÍZ) o huérfano:
+                tree.push(node);
+            }
+        });
+
+        // 3. Ordenar alfabéticamente los padres
+        tree.sort((a, b) => a.name.localeCompare(b.name));
+
+        // 4. Ordenar alfabéticamente los hijos dentro de cada padre
+        tree.forEach(root => {
+            if (root.items.length > 0) {
+                root.items.sort((a, b) => a.name.localeCompare(b.name));
+            }
+        });
+
+        setCollections(tree);
       } catch (error) {
         console.error("Failed to load collections for navbar", error);
-        // Opcional: Fallback manual si falla la API
       }
     };
 
@@ -265,11 +297,6 @@ export function Navbar() {
             </SheetTitle>
 
             <nav className="flex flex-col gap-2">
-              {/* 
-                  3. LÓGICA DE RENDERIZADO AJUSTADA:
-                  Si 'collections' está vacío (cargando), podrías mostrar un skeleton o nada.
-                  Si tiene datos de la API, se mostrarán aquí.
-              */}
               {collections.length === 0 && (
                 <div className="text-white/50 text-sm animate-pulse">Loading collections...</div>
               )}
@@ -278,7 +305,6 @@ export function Navbar() {
                 <div key={collection.name}>
                   <button
                     onClick={() => {
-                      // Si tiene sub-items, expandimos. Si no, navegamos directo.
                       if (collection.items && collection.items.length > 0) {
                         setSelectedCollection(
                           selectedCollection?.name === collection.name ? null : collection
