@@ -1,8 +1,18 @@
-import { COLLECTIONS_DATA } from "@/lib/collections";
 import { ArrowRight, Star, ArrowDown } from "lucide-react";
 import Link from "next/link";
-// 1. Importamos el Grid
 import { ProductGrid } from "@/components/ProductGrid";
+
+const API_URL = "https://odoo-ooak.alphaqueb.com/api/collections_data";
+
+async function getCollectionsData() {
+  try {
+    const res = await fetch(API_URL, { next: { revalidate: 60 } });
+    if (!res.ok) return {};
+    return await res.json();
+  } catch (error) {
+    return {};
+  }
+}
 
 export default async function CategoryPage({
     params,
@@ -10,31 +20,33 @@ export default async function CategoryPage({
     params: Promise<{ collection: string; category: string }>;
 }) {
     const { collection, category } = await params;
+    const collectionsData = await getCollectionsData();
 
-    // Normalización de texto
-    const categoryName = category.replace(/-/g, " ").toUpperCase();
-    const collectionName = collection.replace(/-/g, " ").toUpperCase();
+    // Normalización de texto para visualización
+    const categoryNameDisplay = category.replace(/-/g, " ").toUpperCase();
+    const collectionNameDisplay = collection.replace(/-/g, " ").toUpperCase();
 
-    // Lógica de recuperación de datos (Intacta)
-    let data = COLLECTIONS_DATA[categoryName];
-
+    // Lógica de recuperación de datos
+    // 1. Buscamos primero si existe una key exacta para la categoría
+    let data = collectionsData[category];
+    
+    // 2. Si no, buscamos la key de la colección padre para sacar datos genéricos
     if (!data) {
-        const parentData =
-            COLLECTIONS_DATA[collectionName] ||
-            COLLECTIONS_DATA[`${collectionName} COLLECTION`];
+        const parentKey = collection.toLowerCase(); // ej: 'alloys'
+        const parentData = collectionsData[parentKey];
+        
         if (parentData) {
+            // AQUÍ: Si la API no tiene un objeto separado para la categoría, 
+            // asumimos que quieres mostrar los productos de la colección padre.
+            // Opcionalmente podrías filtrar 'parentData.products' si tuvieran tags.
             data = {
                 description: parentData.description,
                 image: parentData.image,
-                // Intentamos pasar los productos del padre si la categoría no tiene datos específicos
-                // (Ojo: esto mostraría todos los productos de la colección. Si quieres filtrar, se haría aquí)
-                // @ts-ignore
                 products: parentData.products || []
             };
         }
     }
 
-    // Extraemos los productos de forma segura para TS
     const products = data ? ((data as any).products || []) : [];
 
     return (
@@ -49,25 +61,24 @@ export default async function CategoryPage({
 
             <div className="relative z-10 pt-32 pb-24 container mx-auto px-6">
 
-                {/* 2. Breadcrumb: Minimal & Clean */}
+                {/* 2. Breadcrumb */}
                 <nav className="flex items-center gap-4 text-[10px] font-bold tracking-[0.2em] uppercase text-[#6C7466]/60 mb-12 md:mb-20 pl-0 md:pl-12">
                     <Link href={`/collections/${collection}`} className="hover:text-[#6C7466] transition-colors border-b border-transparent hover:border-[#6C7466]">
-                        {collectionName}
+                        {collectionNameDisplay}
                     </Link>
                     <ArrowRight className="w-3 h-3 text-[#6C7466]/40" />
                     <span className="text-[#6C7466]">
-                        {categoryName}
+                        {categoryNameDisplay}
                     </span>
                 </nav>
 
-                {/* 3. Header Section: Centered & Clean */}
+                {/* 3. Header Section */}
                 <div className="container mx-auto px-6 mb-12">
                     <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
                         <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif text-[#6C7466] leading-[1.1] tracking-tight mb-8">
-                            {categoryName}
+                            {categoryNameDisplay}
                         </h1>
 
-                        {/* Divider Top */}
                         <div className="w-full h-px bg-[#6C7466]/20 mb-8" />
 
                         {data && (
@@ -76,17 +87,16 @@ export default async function CategoryPage({
                                     "{data.description}"
                                 </p>
                                 <p className="mt-4 text-sm text-gray-500 font-light leading-relaxed">
-                                    Exploring the nuances of texture and form within the {collectionName}. A study in material purity.
+                                    Exploring the nuances of texture and form within the {collectionNameDisplay}. A study in material purity.
                                 </p>
                             </div>
                         )}
 
-                        {/* Divider Bottom */}
                         <div className="w-full h-px bg-[#6C7466]/20 mt-12" />
                     </div>
                 </div>
 
-                {/* 5. Product Gallery Grid (INTEGRACIÓN) */}
+                {/* 5. Product Gallery Grid */}
                 <div className="pl-0 md:pl-12">
                     <div className="flex items-end justify-between mb-12 border-b border-[#6C7466]/10 pb-6">
                         <div>
@@ -102,7 +112,6 @@ export default async function CategoryPage({
                         </span>
                     </div>
 
-                    {/* Renderizamos el ProductGrid */}
                     {/* @ts-ignore */}
                     <ProductGrid products={products} />
 

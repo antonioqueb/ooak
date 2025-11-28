@@ -1,9 +1,25 @@
 import { notFound } from "next/navigation";
-import { COLLECTIONS_DATA } from "@/lib/collections";
 import { Star, Sparkles } from "lucide-react";
-// 1. CORRECCIÓN IMPORT: Aseguramos la ruta correcta (product-grid en minúscula si el archivo es así)
-// y usamos llaves porque es un export nombrado.
 import { ProductGrid } from "@/components/ProductGrid";
+
+// Definimos la URL de la API
+const API_URL = "https://odoo-ooak.alphaqueb.com/api/collections_data";
+
+// Función para obtener datos (con caché de Next.js)
+async function getCollectionsData() {
+  try {
+    const res = await fetch(API_URL, { 
+      next: { revalidate: 60 } // Revalida cada 60 segundos
+    });
+    
+    if (!res.ok) throw new Error("Failed to fetch data");
+    
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching collections:", error);
+    return {};
+  }
+}
 
 export default async function CollectionPage({
     params,
@@ -11,17 +27,27 @@ export default async function CollectionPage({
     params: Promise<{ collection: string }>;
 }) {
     const { collection } = await params;
+    const collectionsData = await getCollectionsData();
 
     // --- LOGIC START ---
-    let collectionKey = collection.replace(/-/g, " ").toUpperCase();
+    // La API devuelve keys como "alloys". Normalizamos el parámetro de la URL.
+    // Si la URL es /collections/alloys, buscamos "alloys".
+    let collectionKey = collection.toLowerCase();
+    
+    // Intento directo
+    let data = collectionsData[collectionKey];
 
-    if (!COLLECTIONS_DATA[collectionKey]) {
-        if (COLLECTIONS_DATA[`${collectionKey} COLLECTION`]) {
-            collectionKey = `${collectionKey} COLLECTION`;
+    // Fallback: Si no existe, buscamos keys que contengan la palabra (por si la API cambia)
+    if (!data) {
+        const foundKey = Object.keys(collectionsData).find(key => 
+            key.toLowerCase().includes(collectionKey) || 
+            collectionKey.includes(key.toLowerCase())
+        );
+        if (foundKey) {
+            data = collectionsData[foundKey];
+            collectionKey = foundKey; // Actualizamos para usar el título correcto
         }
     }
-
-    const data = COLLECTIONS_DATA[collectionKey];
     // --- LOGIC END ---
 
     // 404 Minimalista con estilo
@@ -35,11 +61,10 @@ export default async function CollectionPage({
         );
     }
 
-    // Formateo visual del título
-    const titleWords = collectionKey.split(" ");
-    const mainTitle = titleWords.join(" ");
+    // Usamos el título que viene de la API o formateamos la key
+    const mainTitle = data.title || collectionKey.replace(/-/g, " ").toUpperCase();
 
-    // CORRECCIÓN TS: Forzamos el tipo 'any' para acceder a .products sin errores de compilación
+    // CORRECCIÓN TS: Forzamos el tipo 'any' para acceder a .products sin errores
     const products = (data as any).products || [];
 
     return (
@@ -69,7 +94,6 @@ export default async function CollectionPage({
                             {mainTitle}
                         </h1>
 
-                        {/* Divider Top */}
                         <div className="w-full h-px bg-[#6C7466]/20 mb-8" />
 
                         <div className="max-w-2xl mx-auto">
@@ -83,24 +107,21 @@ export default async function CollectionPage({
                             </p>
                         </div>
 
-                        {/* Divider Bottom */}
                         <div className="w-full h-px bg-[#6C7466]/20 mt-12" />
                     </div>
                 </div>
 
-                {/* 5. GALLERY GRID (INTEGRACIÓN DE PRODUCT GRID) */}
+                {/* 5. GALLERY GRID */}
                 <div className="container mx-auto px-6">
                     <div className="flex items-center justify-between mb-12 border-b border-[#6C7466]/10 pb-6">
                         <span className="text-4xl font-serif text-[#6C7466] italic">
                             The Pieces
                         </span>
                         <span className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase">
-                            {/* Usamos 'products' extraído arriba con 'any' */}
                             {products.length || 0} Objects
                         </span>
                     </div>
 
-                    {/* Usamos @ts-ignore para que el build no falle si ProductGrid no espera props */}
                     {/* @ts-ignore */}
                     <ProductGrid products={products} />
                 </div>

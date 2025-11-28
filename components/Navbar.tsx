@@ -1,4 +1,3 @@
-// components/navbar.tsx
 "use client"
 
 import * as React from "react"
@@ -27,65 +26,57 @@ const topBarLinks = [
   { name: "PROJECTS", href: "/projects", hasMenu: false },
 ]
 
-const collections = [
-  {
-    name: "ALLOY COLLECTION",
-    href: "/collections/alloy",
-    items: [{ name: "Metal Sculptures", href: "/collections/alloy/metal-sculptures" }]
-  },
-  { name: "CRYSTAL COLLECTION", href: "/collections/crystal", items: [] },
-  {
-    name: "EARTH COLLECTION",
-    href: "/collections/earth",
-    items: [
-      { name: "Mineral Specimens", href: "/collections/earth/mineral-specimens" },
-      { name: "Fossils", href: "/collections/fossils" },
-      { name: "Petrified Wood", href: "/collections/petrified-wood" }
-    ]
-  },
-  {
-    name: "HERITAGE COLLECTION",
-    href: "/collections/heritage",
-    items: [
-      { name: "Pots", href: "/collections/heritage/pots" },
-      { name: "Vases", href: "/collections/heritage/vases" },
-      { name: "Home Décor", href: "/collections/heritage/home-decor" },
-    ]
-  },
-  {
-    name: "LUMEN COLLECTION",
-    href: "/collections/lumen",
-    items: [{ name: "Lamps", href: "/collections/lumen/lamps" }]
-  },
-  {
-    name: "OCEAN COLLECTION",
-    href: "/collections/ocean",
-    items: [
-      { name: "Corals", href: "/collections/ocean/corals" },
-      { name: "Shells", href: "/collections/ocean/shells" },
-    ]
-  },
-  {
-    name: "SERENITY COLLECTION",
-    href: "/collections/serenity",
-    items: [
-      { name: "Limestone Fountains", href: "/collections/serenity/limestone" },
-      { name: "Jar Fountains", href: "/collections/serenity/jar" },
-    ]
-  },
-]
+// Definimos la interfaz para el tipo de datos del menú
+interface CollectionMenuItem {
+  name: string;
+  href: string;
+  items: { name: string; href: string }[];
+}
 
 export function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
   const [isShopMenuOpen, setIsShopMenuOpen] = React.useState(false)
   const [isShopPanelOpen, setIsShopPanelOpen] = React.useState(false)
-  const [selectedCollection, setSelectedCollection] = React.useState<typeof collections[0] | null>(null)
+  
+  // 1. CAMBIO: Convertimos collections en un estado
+  const [collections, setCollections] = React.useState<CollectionMenuItem[]>([])
+  const [selectedCollection, setSelectedCollection] = React.useState<CollectionMenuItem | null>(null)
+  
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [isHovering, setIsHovering] = React.useState(false)
   const pathname = usePathname()
   const { cartCount, toggleCart } = useCart()
   const shopMenuTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  // 2. NUEVO: Fetch de datos al montar el componente
+  React.useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        const res = await fetch('https://odoo-ooak.alphaqueb.com/api/collections_data');
+        if (!res.ok) throw new Error('Error fetching menu');
+        const data = await res.json();
+
+        // Transformamos el objeto de la API { "key": { title: "..." } } a un array para el menú
+        const menuItems: CollectionMenuItem[] = Object.entries(data).map(([key, value]: [string, any]) => {
+            // Nota: Si la API en el futuro devuelve categorías dentro de 'products' u otro campo,
+            // aquí podrías lógica para poblar 'items'. Por ahora lo dejamos plano o vacío.
+            return {
+                name: value.title ? value.title.toUpperCase() : key.toUpperCase().replace(/_/g, " "),
+                href: `/collections/${key}`, // Usamos la key como slug (ej: /collections/alloys)
+                items: [] // Si tienes subcategorías en la API, mapealas aquí.
+            };
+        });
+
+        setCollections(menuItems);
+      } catch (error) {
+        console.error("Failed to load collections for navbar", error);
+        // Opcional: Fallback manual si falla la API
+      }
+    };
+
+    fetchCollections();
+  }, []);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -116,14 +107,11 @@ export function Navbar() {
   }
 
   const showCompactNav = isScrolled && !isHovering
-
-  // Mantenemos la transición suave optimizada para Safari
   const smoothTransition = "transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] transform-gpu backface-invisible"
 
   return (
     <header
       className={cn(
-        // CAMBIO PRINCIPAL AQUÍ: 'fixed' en lugar de 'sticky'
         "fixed top-0 left-0 right-0 z-50 w-full backdrop-blur supports-[backdrop-filter]:bg-[#6C7466]/95",
         "will-change-[background-color,backdrop-filter]",
         smoothTransition
@@ -132,11 +120,7 @@ export function Navbar() {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {/* 
-        Logo grande colapsable
-        Al ser el header 'fixed', cuando esto cambie de altura, el contenido
-        de la página NO se moverá, el header simplemente crecerá sobre él.
-      */}
+      {/* Logo grande colapsable */}
       <div
         className={cn(
           "hidden lg:block border-b border-white/15 overflow-hidden py-6",
@@ -164,9 +148,7 @@ export function Navbar() {
       </div>
 
       {/* Barra de navegación principal */}
-      <div
-        className="hidden lg:block border-b border-white/15"
-      >
+      <div className="hidden lg:block border-b border-white/15">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className={cn(
             "flex items-center justify-between",
@@ -174,7 +156,7 @@ export function Navbar() {
             smoothTransition,
             showCompactNav ? "h-14" : "h-20"
           )}>
-            {/* Logo compacto (Scroll) */}
+            {/* Logo compacto */}
             <div className={cn(
               "absolute left-1/2 transform -translate-x-1/2",
               "will-change-[opacity,transform]",
@@ -205,10 +187,7 @@ export function Navbar() {
                 : "opacity-100 translate-y-0"
             )}>
               {topBarLinks.map((link) => (
-                <div
-                  key={link.name}
-                  className="relative"
-                >
+                <div key={link.name} className="relative">
                   {link.hasMenu ? (
                     <button
                       onClick={handleShopClick}
@@ -286,11 +265,21 @@ export function Navbar() {
             </SheetTitle>
 
             <nav className="flex flex-col gap-2">
+              {/* 
+                  3. LÓGICA DE RENDERIZADO AJUSTADA:
+                  Si 'collections' está vacío (cargando), podrías mostrar un skeleton o nada.
+                  Si tiene datos de la API, se mostrarán aquí.
+              */}
+              {collections.length === 0 && (
+                <div className="text-white/50 text-sm animate-pulse">Loading collections...</div>
+              )}
+
               {collections.map((collection) => (
                 <div key={collection.name}>
                   <button
                     onClick={() => {
-                      if (collection.items.length > 0) {
+                      // Si tiene sub-items, expandimos. Si no, navegamos directo.
+                      if (collection.items && collection.items.length > 0) {
                         setSelectedCollection(
                           selectedCollection?.name === collection.name ? null : collection
                         )
@@ -304,7 +293,7 @@ export function Navbar() {
                     <span className="font-semibold tracking-wide">
                       {collection.name}
                     </span>
-                    {collection.items.length > 0 && (
+                    {collection.items && collection.items.length > 0 && (
                       <ChevronRight
                         className={cn(
                           "h-5 w-5 flex-shrink-0 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
