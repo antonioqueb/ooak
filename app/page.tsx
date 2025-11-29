@@ -3,11 +3,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Star, AlertTriangle } from "lucide-react";
 
-// Configuración de la API
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://46.202.88.177:8010";
+// --- CONFIGURACIÓN DE LA API ---
+// Apuntamos directamente a tu instancia de Odoo
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://odoo-ooak.alphaqueb.com";
 const PLACEHOLDER_IMG = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
-// --- INTERFACES (Tipado estricto para detectar errores) ---
+// --- INTERFACES (Adaptadas a tu respuesta JSON exacta) ---
 
 interface SectionContent {
   background_text?: string;
@@ -38,64 +39,58 @@ interface PageData {
   };
 }
 
-// --- FETCHING DE DATOS CON DEBUG ---
+// --- FETCHING DE DATOS ---
 
 async function getHomeData(): Promise<PageData | null> {
+  // Construimos la URL al endpoint que creamos en el controlador de Odoo
   const endpoint = `${API_URL}/api/v1/home`;
   
-  // LOG 1: Verificar a dónde estamos apuntando
   console.log(`🚀 [DEBUG] Iniciando petición a: ${endpoint}`);
 
   try {
     const res = await fetch(endpoint, {
-      next: { revalidate: 0 }, // 0 = Sin caché para pruebas (cambiar a 60 en producción)
-      cache: "no-store", 
+      // revalidate: 60 -> ISR: Cachea por 60 segs (bueno para producción)
+      // cache: "no-store" -> SSR: Siempre busca dato fresco (bueno para dev)
+      next: { revalidate: 60 }, 
+      headers: {
+        "Content-Type": "application/json",
+      }
     });
 
-    // LOG 2: Estado HTTP
     console.log(`📡 [DEBUG] Status HTTP: ${res.status} ${res.statusText}`);
 
     if (!res.ok) {
       const text = await res.text();
-      console.error(`❌ [DEBUG] Error del servidor: ${text}`);
+      console.error(`❌ [DEBUG] Error del servidor Odoo: ${text}`);
       return null;
     }
 
     const json = await res.json();
 
-    // LOG 3: Inspeccionar la estructura recibida
-    console.log("📦 [DEBUG] Estructura Root recibida (Keys):", Object.keys(json));
-    
-    if (json.data) {
-      console.log("📦 [DEBUG] Estructura 'data' interna (Keys):", Object.keys(json.data));
-      if (Array.isArray(json.data.sections)) {
-         console.log(`✅ [DEBUG] Se encontraron ${json.data.sections.length} secciones.`);
-         // Imprimir tipos de secciones encontradas
-         const types = json.data.sections.map((s: any) => s.type);
-         console.log(`ℹ️ [DEBUG] Tipos de secciones: ${types.join(", ")}`);
-      } else {
-         console.error("⚠️ [DEBUG] 'sections' no es un array o no existe en json.data");
-      }
+    // Validaciones básicas de estructura
+    if (json.data && Array.isArray(json.data.sections)) {
+       console.log(`✅ [DEBUG] Datos recibidos correctamente. ${json.data.sections.length} secciones encontradas.`);
     } else {
-      console.error("⚠️ [DEBUG] La propiedad 'data' no existe en la respuesta JSON.");
+       console.error("⚠️ [DEBUG] Estructura JSON inesperada:", json);
     }
 
     return json;
 
   } catch (error) {
-    console.error("❌ [DEBUG] Error CRÍTICO de red o parsing:", error);
+    console.error("❌ [DEBUG] Error de conexión:", error);
     return null;
   }
 }
 
-// --- METADATA ---
+// --- METADATA (SEO) ---
 
 export async function generateMetadata() {
   const pageData = await getHomeData();
   
+  // Fallback si falla la API
   if (!pageData?.data?.seo) return {
-    title: "Jasper Home",
-    description: "Welcome to Jasper"
+    title: "One Of A Kind | Jasper",
+    description: "Luxury stones and crystals."
   };
 
   const { seo } = pageData.data;
@@ -105,6 +100,8 @@ export async function generateMetadata() {
     description: seo.description,
     keywords: seo.keywords,
     openGraph: {
+      title: seo.title,
+      description: seo.description,
       images: seo.image ? [seo.image] : [],
     },
   };
@@ -115,19 +112,19 @@ export async function generateMetadata() {
 export default async function Home() {
   const pageData = await getHomeData();
 
-  // 1. VALIDACIÓN DE SEGURIDAD: Si no hay datos, mostrar error visual
+  // 1. MANEJO DE ERRORES / SIN DATOS
   if (!pageData || !pageData.data || !Array.isArray(pageData.data.sections)) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] p-4">
         <div className="text-center max-w-md bg-white p-8 rounded-lg shadow-sm border border-red-100">
             <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-serif text-[#6C7466] mb-2">Service Unavailable</h1>
+            <h1 className="text-2xl font-serif text-[#6C7466] mb-2">Content Unavailable</h1>
             <p className="text-[#6C7466]/70 mb-4">
-              We could not load the content configuration from the server.
+              Could not retrieve content from Odoo.
             </p>
             <div className="bg-gray-100 p-3 rounded text-left text-xs font-mono text-gray-500 overflow-auto">
-              <p>Check server console logs for [DEBUG] messages.</p>
-              <p className="mt-2">Posible causa: API URL incorrecta o formato JSON inesperado.</p>
+              <p>Target: {API_URL}</p>
+              <p className="mt-2">Check server logs or Odoo module status.</p>
             </div>
         </div>
       </main>
@@ -136,17 +133,23 @@ export default async function Home() {
 
   const { sections } = pageData.data;
   
-  // Buscar secciones con seguridad (optional chaining)
+  // Extraemos las secciones específicas usando el "type"
   const heroSection = sections.find((s) => s.type === "hero");
   const featureSection = sections.find((s) => s.type === "feature");
   const brandSection = sections.find((s) => s.type === "brand_story");
+
+  // Helper para renderizar iconos dinámicos si fuera necesario
+  const renderIcon = (iconName: string) => {
+      // Por ahora solo usamos Star, pero aquí podrías agregar un switch
+      return <Star className="w-3 h-3 fill-[#6C7466]" />;
+  };
 
   // 2. RENDERIZADO
   return (
     <main className="min-h-screen bg-[#FDFBF7] text-[#2B2B2B] selection:bg-[#6C7466] selection:text-white">
       <div className="relative pt-32 pb-24 md:pt-40 md:pb-32 px-6 overflow-hidden">
         
-        {/* Global Atmosphere (Background Noise) */}
+        {/* Background Noise effect */}
         <div
           className="absolute inset-0 opacity-[0.03] pointer-events-none z-0 mix-blend-multiply"
           style={{
@@ -159,9 +162,10 @@ export default async function Home() {
         <div className="container mx-auto max-w-7xl relative z-10 space-y-32 md:space-y-48">
           
           {/* --- HERO SECTION --- */}
-          {heroSection ? (
+          {heroSection && (
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-              <div className="order-2 lg:order-1 lg:col-span-7 relative group">
+              {/* Image Column */}
+              <div className={`order-2 lg:col-span-7 relative group ${heroSection.layout === 'image_right' ? 'lg:order-2' : 'lg:order-1'}`}>
                 {heroSection.content.background_text && (
                   <div className="absolute -top-12 -left-12 text-[8rem] md:text-[10rem] font-serif font-bold text-[#6C7466]/5 select-none pointer-events-none z-0 leading-none">
                     {heroSection.content.background_text}
@@ -176,14 +180,14 @@ export default async function Home() {
                     className="object-cover transition-transform duration-[2s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 60vw"
                     priority
-                    unoptimized={true} 
+                    unoptimized={true} // Importante: permite cargar desde dominio externo sin config extra
                   />
                   <div className="absolute inset-0 bg-[#6C7466]/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
                   {heroSection.content.badge && heroSection.content.badge.text && (
                     <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
                       <span className="flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-[#6C7466]">
-                        <Star className="w-3 h-3 fill-[#6C7466]" />
+                        {renderIcon(heroSection.content.badge.icon)}
                         {heroSection.content.badge.text}
                       </span>
                     </div>
@@ -191,7 +195,8 @@ export default async function Home() {
                 </div>
               </div>
 
-              <div className="order-1 lg:order-2 lg:col-span-5 lg:pl-12 flex flex-col justify-center text-center lg:text-left">
+              {/* Text Column */}
+              <div className={`order-1 lg:col-span-5 lg:pl-12 flex flex-col justify-center text-center lg:text-left ${heroSection.layout === 'image_right' ? 'lg:order-1' : 'lg:order-2'}`}>
                 <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
                   <span className="h-px w-6 bg-[#6C7466]"></span>
                   <p className="text-xs font-bold tracking-[0.25em] text-[#6C7466]/80 uppercase">
@@ -229,41 +234,48 @@ export default async function Home() {
                 </div>
               </div>
             </div>
-          ) : (
-            // Fallback visual si falta el Hero pero hay datos
-            <div className="text-center p-10 border border-dashed border-gray-300">Hero Section Missing in API Data</div>
           )}
 
           {/* --- FEATURE SECTION --- */}
           {featureSection && (
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-24 items-center">
-              <div className="order-1 lg:col-span-5 lg:text-right flex flex-col items-center lg:items-end">
+              {/* Text (Left usually) */}
+              <div className={`order-1 lg:col-span-5 flex flex-col ${featureSection.layout === 'image_left' ? 'lg:order-2 lg:items-start lg:text-left' : 'lg:order-1 lg:items-end lg:text-right'} items-center text-center`}>
                 <span className="text-xs font-bold tracking-[0.25em] text-[#6C7466]/60 uppercase mb-6 flex items-center gap-4">
-                  {featureSection.content.subtitle}{" "}
+                  {featureSection.layout !== 'image_left' && featureSection.content.subtitle}
                   <span className="w-8 h-px bg-[#6C7466]/40"></span>
+                  {featureSection.layout === 'image_left' && featureSection.content.subtitle}
                 </span>
-                <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif text-[#6C7466] leading-[0.95] mb-8 text-center lg:text-right">
+                <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif text-[#6C7466] leading-[0.95] mb-8">
                   {featureSection.content.title.normal} <br />
                   <span className="italic font-light text-[#2B2B2B]">
                     {featureSection.content.title.highlight}
                   </span>
                 </h2>
-                <p className="text-lg text-gray-500 font-light leading-relaxed mb-10 max-w-md text-center lg:text-right">
+                <p className="text-lg text-gray-500 font-light leading-relaxed mb-10 max-w-md">
                   {featureSection.content.description}
                 </p>
                 <Link
                   href={featureSection.content.cta?.href || "#"}
                   className="group flex items-center gap-3 text-sm font-bold tracking-[0.2em] uppercase text-[#2B2B2B] hover:text-[#6C7466] transition-colors"
                 >
-                  <span className="bg-[#6C7466]/10 p-2 rounded-full group-hover:bg-[#6C7466] group-hover:text-white transition-all duration-300">
-                    <ArrowRight className="w-4 h-4 rotate-180" />
-                  </span>
+                  {featureSection.layout !== 'image_left' && (
+                    <span className="bg-[#6C7466]/10 p-2 rounded-full group-hover:bg-[#6C7466] group-hover:text-white transition-all duration-300">
+                        <ArrowRight className="w-4 h-4 rotate-180" />
+                    </span>
+                  )}
                   <span>{featureSection.content.cta?.text}</span>
+                  {featureSection.layout === 'image_left' && (
+                    <span className="bg-[#6C7466]/10 p-2 rounded-full group-hover:bg-[#6C7466] group-hover:text-white transition-all duration-300">
+                        <ArrowRight className="w-4 h-4" />
+                    </span>
+                  )}
                 </Link>
               </div>
 
-              <div className="order-2 lg:col-span-6 lg:col-start-7 relative group">
-                <div className="absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm translate-x-4 translate-y-4 transition-transform duration-500 group-hover:translate-x-2 group-hover:translate-y-2" />
+              {/* Image (Right usually) */}
+              <div className={`order-2 lg:col-span-6 relative group ${featureSection.layout === 'image_left' ? 'lg:order-1 lg:col-start-1' : 'lg:order-2 lg:col-start-7'}`}>
+                <div className={`absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm transition-transform duration-500 group-hover:translate-y-2 ${featureSection.layout === 'image_left' ? '-translate-x-4 group-hover:-translate-x-2' : 'translate-x-4 group-hover:translate-x-2'}`} />
                 <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm">
                   <Image
                     src={featureSection.content.image?.src || PLACEHOLDER_IMG}
@@ -282,8 +294,9 @@ export default async function Home() {
           {/* --- BRAND STORY SECTION --- */}
           {brandSection && (
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-24 items-center">
-              <div className="order-2 lg:order-1 lg:col-span-5 relative group">
-                <div className="absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm -translate-x-4 translate-y-4 transition-transform duration-500 group-hover:-translate-x-2 group-hover:translate-y-2" />
+              {/* Image (Left usually) */}
+              <div className={`order-2 lg:col-span-5 relative group ${brandSection.layout === 'image_right' ? 'lg:order-2 lg:col-start-8' : 'lg:order-1'}`}>
+                <div className={`absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm transition-transform duration-500 group-hover:translate-y-2 ${brandSection.layout === 'image_right' ? 'translate-x-4 group-hover:translate-x-2' : '-translate-x-4 group-hover:-translate-x-2'}`} />
                 <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm">
                   <Image
                     src={brandSection.content.image?.src || PLACEHOLDER_IMG}
@@ -294,6 +307,7 @@ export default async function Home() {
                     unoptimized={true}
                   />
                   <div className="absolute inset-0 bg-[#6C7466]/5 mix-blend-multiply transition-opacity duration-500 group-hover:opacity-0" />
+                  
                   {brandSection.content.image?.show_badge && (
                     <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-full shadow-xl animate-spin-slow-reverse hidden md:block z-10">
                       <div className="border border-[#6C7466]/20 rounded-full p-2">
@@ -304,7 +318,8 @@ export default async function Home() {
                 </div>
               </div>
 
-              <div className="order-1 lg:order-2 lg:col-span-6 lg:col-start-7 flex flex-col items-center lg:items-start text-center lg:text-left">
+              {/* Text (Right usually) */}
+              <div className={`order-1 lg:col-span-6 flex flex-col items-center text-center ${brandSection.layout === 'image_right' ? 'lg:order-1 lg:items-end lg:text-right lg:col-start-1' : 'lg:order-2 lg:items-start lg:text-left lg:col-start-7'}`}>
                 <span className="text-xs font-bold tracking-[0.25em] text-[#6C7466]/60 uppercase mb-6 flex items-center gap-4">
                   <span className="w-8 h-px bg-[#6C7466]/40"></span>{" "}
                   {brandSection.content.subtitle}
