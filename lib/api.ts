@@ -66,7 +66,7 @@ export type ApiResponse = Record<string, ApiCollection>;
 
 export async function fetchCollections(): Promise<ApiResponse> {
     try {
-        const response = await fetch(API_URL, { next: { revalidate: 3600 } });
+        const response = await fetch(API_URL, { cache: 'no-store' });
         if (!response.ok) {
             throw new Error("Failed to fetch collections");
         }
@@ -79,7 +79,7 @@ export async function fetchCollections(): Promise<ApiResponse> {
 
 export async function fetchCollectionDetails(key: string): Promise<ApiCollectionDetail | null> {
     try {
-        const response = await fetch(`${API_COLLECTION_URL}/${key}`, { next: { revalidate: 3600 } });
+        const response = await fetch(`${API_COLLECTION_URL}/${key}`, { cache: 'no-store' });
         if (!response.ok) {
             throw new Error(`Failed to fetch collection details for ${key}`);
         }
