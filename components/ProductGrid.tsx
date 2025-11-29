@@ -135,7 +135,6 @@ function ProductCard({
   const [isFavorite, setIsFavorite] = React.useState(false);
 
   return (
-  return (
     <Link href={`/product/${product.slug}`} className="group cursor-pointer flex flex-col gap-4">
       <div className="relative aspect-[3/4] overflow-hidden bg-[#EBEBE8] rounded-sm">
         <Image
