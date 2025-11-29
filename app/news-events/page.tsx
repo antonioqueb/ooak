@@ -1,25 +1,58 @@
-import React from 'react';
-import { Calendar, ArrowUpRight, MapPin } from 'lucide-react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Calendar, ArrowUpRight, MapPin, Loader2 } from 'lucide-react';
+
+interface NewsEvent {
+    id: number;
+    slug: string;
+    status: string;
+    date: string;
+    title: string;
+    location: string;
+    description: string;
+    image?: string;
+}
 
 export default function NewsEventsPage() {
-    const events = [
-        {
-            id: 1,
-            status: "upcoming",
-            date: "Spring 2024",
-            title: "Rare Mineral Exhibition",
-            location: "Main Gallery, NYC",
-            description: "Join us for our annual exhibition featuring the most recent acquisitions from our private collection.", // Texto corto para probar el fix
-        },
-        {
-            id: 2,
-            status: "past",
-            date: "Oct 2023",
-            title: "Ocean Collection Launch",
-            location: "Design Week",
-            description: "Celebrating the debut of our new collection inspired by ocean depths. Featuring fossilized corals and shells that tell stories of ancient seas.",
-        }
-    ];
+    const [events, setEvents] = useState<NewsEvent[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const res = await fetch('/api/news-events');
+                if (!res.ok) throw new Error('Error fetching events');
+                const json = await res.json();
+                setEvents(json.data || json);
+            } catch (err: any) {
+                console.error(err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEvents();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7] text-[#6C7466]">
+                <Loader2 className="w-10 h-10 animate-spin" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
+                <p className="text-red-500">Error loading events. Please try again later.</p>
+            </div>
+        );
+    }
 
     return (
         <main className="min-h-screen bg-[#FDFBF7] relative overflow-hidden">
@@ -46,15 +79,15 @@ export default function NewsEventsPage() {
                 {/* Events List */}
                 <div className="max-w-5xl mx-auto flex flex-col gap-8">
                     {events.map((event) => (
-                        <div
+                        <Link
                             key={event.id}
-                            className="group relative bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-[#6C7466]/10 hover:shadow-xl hover:border-[#6C7466]/30 transition-all duration-500 ease-out"
+                            href={`/news-events/${event.slug}`}
+                            className="group relative bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-[#6C7466]/10 hover:shadow-xl hover:border-[#6C7466]/30 transition-all duration-500 ease-out cursor-pointer"
                         >
                             {/* Flex container para las columnas */}
                             <div className="flex flex-col md:flex-row gap-8 md:gap-12 h-full">
 
                                 {/* Columna Izquierda: Fecha / Status */}
-                                {/* shrink-0 evita que esta columna se aplaste */}
                                 <div className="md:w-1/4 shrink-0 flex flex-col justify-start border-l-2 border-[#6C7466]/10 pl-6 md:pl-0 md:border-l-0 md:border-r-2 md:border-[#6C7466]/10 md:pr-12">
                                     {event.status === 'upcoming' ? (
                                         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#6C7466] text-white text-xs font-bold uppercase tracking-wider w-fit mb-3">
@@ -76,29 +109,26 @@ export default function NewsEventsPage() {
                                 </div>
 
                                 {/* Columna Derecha: Contenido */}
-                                {/* flex-col y justify-between aseguran que el botón se vaya al fondo sin superponerse */}
                                 <div className="md:w-3/4 flex flex-col justify-between">
                                     <div>
                                         <h2 className="text-2xl md:text-3xl font-bold text-[#6C7466] mb-4 group-hover:text-black transition-colors duration-300">
                                             {event.title}
                                         </h2>
-                                        <p className="text-gray-600 text-lg leading-relaxed">
+                                        <p className="text-gray-600 text-lg leading-relaxed line-clamp-3">
                                             {event.description}
                                         </p>
                                     </div>
 
                                     {/* Action Area */}
-                                    {/* mt-8 asegura un margen mínimo si el texto es largo */}
-                                    {/* justify-end alinea el botón a la derecha */}
                                     <div className="mt-8 flex justify-end opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                                        <button className="flex items-center gap-2 text-[#6C7466] font-semibold border-b border-[#6C7466] pb-1 hover:text-black hover:border-black transition-colors">
+                                        <span className="flex items-center gap-2 text-[#6C7466] font-semibold border-b border-[#6C7466] pb-1 group-hover:text-black group-hover:border-black transition-colors">
                                             View Details <ArrowUpRight className="w-4 h-4" />
-                                        </button>
+                                        </span>
                                     </div>
                                 </div>
 
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
 
