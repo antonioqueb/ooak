@@ -12,12 +12,23 @@ export default function TheBrandPage() {
     useEffect(() => {
         const fetchContent = async () => {
             try {
-                const response = await fetch('https://odoo-ooak.alphaqueb.com/api/the-brand/content');
+                // CAMBIO AQUÍ: Usamos nuestra ruta interna en lugar de la externa
+                const response = await fetch('/api/brand-content');
+
                 if (!response.ok) throw new Error('Error al cargar los datos');
-                
+
                 const jsonData = await response.json();
-                // La API devuelve { "data": { ... } }, guardamos el objeto interno
-                setContent(jsonData.data);
+
+                // Nota: Dependiendo de si tu proxy devuelve { data: {...} } o directo el objeto
+                // Si la API de Odoo devuelve { "data": ... }, nuestro proxy devuelve lo mismo.
+                // Así que mantenemos la lógica:
+                if (jsonData.data) {
+                    setContent(jsonData.data);
+                } else {
+                    // Fallback por si la estructura cambia
+                    setContent(jsonData);
+                }
+
             } catch (err: any) {
                 console.error(err);
                 setError(err.message || 'Unknown error');
@@ -32,8 +43,8 @@ export default function TheBrandPage() {
     // Helper para asignar iconos según el índice del capítulo
     const getChapterIcon = (index: number) => {
         const icons = [
-            <MapPin key="map" className="w-4 h-4" />, 
-            <Search key="search" className="w-4 h-4" />, 
+            <MapPin key="map" className="w-4 h-4" />,
+            <Search key="search" className="w-4 h-4" />,
             <Diamond key="diamond" className="w-4 h-4" />
         ];
         return icons[index] || <Star className="w-4 h-4" />;
@@ -92,7 +103,7 @@ export default function TheBrandPage() {
                         </div>
                         <div className="md:w-2/3">
                             {/* Usamos dangerouslySetInnerHTML porque el título viene con etiquetas <p> y <br> desde la API */}
-                            <div 
+                            <div
                                 className="text-5xl md:text-8xl lg:text-9xl font-serif leading-[0.9] text-[#6C7466] mix-blend-multiply [&>p>br]:block"
                                 dangerouslySetInnerHTML={{ __html: hero.title }}
                             />
@@ -159,20 +170,20 @@ export default function TheBrandPage() {
                                     {/* Columna Derecha: Visual (Video o Imagen) */}
                                     <div className="md:col-span-4 md:col-start-9 mt-8 md:mt-0">
                                         <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-100 border border-[#6C7466]/20">
-                                            
+
                                             {/* Lógica para diferenciar Video vs Imagen */}
                                             {chapter.media_type === 'video' ? (
-                                                <video 
-                                                    src={chapter.video_url} 
+                                                <video
+                                                    src={chapter.video_url}
                                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                                    autoPlay 
-                                                    muted 
-                                                    loop 
-                                                    playsInline 
+                                                    autoPlay
+                                                    muted
+                                                    loop
+                                                    playsInline
                                                 />
                                             ) : (
-                                                <img 
-                                                    src={chapter.image_url} 
+                                                <img
+                                                    src={chapter.image_url}
                                                     alt={chapter.title}
                                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                                 />
