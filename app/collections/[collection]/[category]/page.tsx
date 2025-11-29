@@ -2,7 +2,7 @@ import { ArrowRight, Star, ArrowDown } from "lucide-react";
 import Link from "next/link";
 // 1. Importamos el Grid
 import { ProductGrid } from "@/components/ProductGrid";
-import { fetchCollections, mapApiProductToProduct } from "@/lib/api";
+import { fetchCollections, fetchCollectionDetails, mapApiProductDetailToProduct } from "@/lib/api";
 import { notFound } from "next/navigation";
 
 export default async function CategoryPage({
@@ -21,24 +21,36 @@ export default async function CategoryPage({
     // If URL is /collections/alloys/antonio, then `collection` is alloys, `category` is antonio.
     // We should look up `category` in the API.
 
-    let apiCategory = collections[category] || collections[category.toLowerCase()];
-    let apiParent = collections[collection] || collections[collection.toLowerCase()] || collections[collection + 's'] || collections[collection.toLowerCase() + 's'];
+    let apiCategoryKey = Object.keys(collections).find(key =>
+        key === category ||
+        key === category.toLowerCase()
+    );
 
-    if (!apiCategory) {
+    let apiParentKey = Object.keys(collections).find(key =>
+        key === collection ||
+        key === collection.toLowerCase() ||
+        key === collection + 's' ||
+        key === collection.toLowerCase() + 's'
+    );
+
+    if (!apiCategoryKey) {
         // Fallback or 404
         // return notFound();
     }
 
-    const data = apiCategory ? {
-        // Actually user said "descripciones de colecciones no las está heredando las colecciones hijas... debe decir exactamente lo mismo que la colección padre".
-        // So we should prefer parent description.
-        description: apiParent ? apiParent.description : apiCategory.description,
+    // Fetch details
+    const categoryDetail = apiCategoryKey ? await fetchCollectionDetails(apiCategoryKey) : null;
+    const parentDetail = apiParentKey ? await fetchCollectionDetails(apiParentKey) : null;
+
+    const data = categoryDetail ? {
+        // Prefer parent description if category description is missing or if user wants inheritance
+        description: (parentDetail && parentDetail.collection_info.description) || categoryDetail.collection_info.description,
     } : null;
 
-    const categoryNameDisplay = apiCategory ? apiCategory.title : category.replace(/-/g, " ").toUpperCase();
-    const collectionNameDisplay = apiParent ? apiParent.title : collection.replace(/-/g, " ").toUpperCase();
+    const categoryNameDisplay = categoryDetail ? categoryDetail.collection_info.title : category.replace(/-/g, " ").toUpperCase();
+    const collectionNameDisplay = parentDetail ? parentDetail.collection_info.title : collection.replace(/-/g, " ").toUpperCase();
 
-    const products = apiCategory ? apiCategory.products_preview.map(p => mapApiProductToProduct(p, categoryNameDisplay)) : [];
+    const products = categoryDetail ? categoryDetail.products.map(p => mapApiProductDetailToProduct(p, categoryNameDisplay)) : [];
 
     return (
         <main className="min-h-screen bg-[#FDFBF7] text-[#2B2B2B] relative overflow-hidden selection:bg-[#6C7466] selection:text-white">

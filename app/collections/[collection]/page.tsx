@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Star, Sparkles } from "lucide-react";
 import { ProductGrid } from "@/components/ProductGrid";
-import { fetchCollections, mapApiProductToProduct } from "@/lib/api";
+import { fetchCollections, fetchCollectionDetails, mapApiProductDetailToProduct } from "@/lib/api";
 
 
 export default async function CollectionPage({
@@ -13,46 +13,26 @@ export default async function CollectionPage({
     const collections = await fetchCollections();
 
     // Try to find collection by slug (assuming API keys are slugs like 'alloys')
-    // The param might be 'alloy', API has 'alloys'. We might need some fuzzy matching or try both.
-    // Let's try exact match first, then with 's', then lowercase.
-    let apiCollection = collections[collection] || collections[collection.toLowerCase()] || collections[collection + 's'] || collections[collection.toLowerCase() + 's'];
+    let apiCollectionKey = Object.keys(collections).find(key =>
+        key === collection ||
+        key === collection.toLowerCase() ||
+        key === collection + 's' ||
+        key === collection.toLowerCase() + 's'
+    );
 
-    // Fallback for specific known mappings if needed, or just rely on the above.
-    // The user provided API keys: "alloys", "antonio", "marissa", "metalicus", "pedro", "fossils", "marmolina".
-    // URL params are likely singular or plural depending on the link.
-    // Navbar links: /collections/alloy, /collections/crystal, /collections/earth, etc.
-    // So 'alloy' -> 'alloys'. 'crystal' -> ? (API doesn't have crystal? It has 'antonio', 'marissa' etc. Wait, the user provided API response has "alloys", "antonio", "marissa", "metalicus", "pedro", "fossils", "marmolina". It DOES NOT have "crystal", "earth", "heritage", "lumen", "ocean", "serenity" which are in the Navbar.
-    // This is a discrepancy. The user wants to use THIS API.
-    // If the API doesn't have the collection, we should probably show 404 or fallback to static if possible?
-    // The user said "instead of being static".
-    // I will try to use the API. If not found, I will try to fallback to static data if I haven't deleted it, OR just show 404 as per the code.
-    // Actually, I should probably keep the static data as a fallback if the API is missing keys, OR just assume the API is the source of truth.
-    // Given the user's request "instead of being static", I should rely on API.
-    // But if the API is missing "crystal", then /collections/crystal will 404.
-    // I will assume the user will update the API or I should map 'crystal' to one of the API keys if I knew the mapping.
-    // For now, I will implement the lookup logic.
-
-    if (!apiCollection) {
-        // Try to find by title match if slug fails? 
-        // No, let's just stick to keys.
-        // If not found, return 404.
-    }
-
-    const data = apiCollection ? {
-        description: apiCollection.description,
-        image: "", // API doesn't have collection image in the root object? It has 'products_preview'. 
-        // Wait, the API response provided by user: "alloys": { ..., "description": "...", "products_preview": [...] }
-        // It does NOT have a main image for the collection itself in the root, only inside products.
-        // The previous static data had an image.
-        // But we removed the hero image from the UI in step 251. So we don't need `image`!
-    } : null;
-
-    if (!data) {
+    if (!apiCollectionKey) {
         return notFound();
     }
 
-    const mainTitle = apiCollection.title;
-    const products = apiCollection.products_preview.map(p => mapApiProductToProduct(p, mainTitle));
+    // Fetch detailed data for this collection
+    const collectionDetail = await fetchCollectionDetails(apiCollectionKey);
+
+    if (!collectionDetail) {
+        return notFound();
+    }
+
+    const mainTitle = collectionDetail.collection_info.title;
+    const products = collectionDetail.products.map(p => mapApiProductDetailToProduct(p, mainTitle));
 
     return (
         <main className="min-h-screen bg-[#FDFBF7] text-[#2B2B2B] relative overflow-hidden selection:bg-[#6C7466] selection:text-white">
@@ -86,7 +66,7 @@ export default async function CollectionPage({
                         <div className="max-w-2xl mx-auto">
                             <Sparkles className="w-5 h-5 text-[#6C7466]/40 mb-4 mx-auto" />
                             <p className="text-lg md:text-xl font-serif text-[#2B2B2B] leading-relaxed">
-                                {data.description}
+                                {collectionDetail.collection_info.description}
                             </p>
                             <p className="mt-4 text-sm text-gray-500 font-light leading-relaxed">
                                 Each piece in this collection has been selected for its ability to transform a space.

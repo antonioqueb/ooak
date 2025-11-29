@@ -154,9 +154,13 @@ export function ProductView({ product }: { product: Product }) {
                     {/* Description */}
                     <div className="mb-8 text-gray-500 font-light leading-relaxed text-sm md:text-base">
                         <p>
-                            {showMoreDescription
-                                ? product.description
-                                : product.description?.substring(0, 180) + (product.description && product.description.length > 180 ? "..." : "")}
+                            {showMoreDescription ? (
+                                <div dangerouslySetInnerHTML={{ __html: product.description || "" }} />
+                            ) : (
+                                <div dangerouslySetInnerHTML={{
+                                    __html: (product.description?.substring(0, 180) || "") + (product.description && product.description.length > 180 ? "..." : "")
+                                }} />
+                            )}
                         </p>
                         {product.description && product.description.length > 180 && (
                             <button
