@@ -22,9 +22,10 @@ interface ProductViewProps {
     product: Product;
     prevProductSlug?: string;
     nextProductSlug?: string;
+    collectionSlug?: string;
 }
 
-export function ProductView({ product, prevProductSlug, nextProductSlug }: ProductViewProps) {
+export function ProductView({ product, prevProductSlug, nextProductSlug, collectionSlug }: ProductViewProps) {
     const { addItem } = useCart();
     const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
     const [activeTab, setActiveTab] = React.useState<"measurements" | "shipping" | "returns">("measurements");
@@ -59,12 +60,13 @@ export function ProductView({ product, prevProductSlug, nextProductSlug }: Produ
         <div className="min-h-screen bg-[#FDFBF7] flex flex-col md:flex-row">
             {/* Floating Close Button (Back to Home) */}
             {/* Floating Close Button (Back) */}
-            <button
-                onClick={() => window.history.back()}
+            {/* Floating Close Button (Back) */}
+            <Link
+                href={collectionSlug ? `/collections/${collectionSlug}` : "/"}
                 className="fixed top-4 right-4 z-50 p-2 bg-white/50 hover:bg-white rounded-full transition-colors backdrop-blur-md shadow-sm"
             >
                 <X className="w-5 h-5 text-[#2B2B2B]" strokeWidth={1.5} />
-            </button>
+            </Link>
 
             {/* LEFT SIDE: Image Gallery */}
             <div className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-[#EBEBE8] overflow-hidden group h-[50vh] md:h-screen sticky top-0">
