@@ -65,10 +65,6 @@ export function ProductGrid({ products: propProducts }: { products?: Product[] }
                 The Collection
               </span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-serif text-[#6C7466] leading-[0.9]">
-              Natural <br />
-              <span className="italic font-light opacity-80 text-[#2B2B2B]">Treasures.</span>
-            </h1>
           </div>
           <p className="text-sm font-light text-gray-500 max-w-xs mt-6 md:mt-0 leading-relaxed md:text-right">
             Transform your sanctuary with exceptional elements.
