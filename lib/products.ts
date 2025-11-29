@@ -23,6 +23,7 @@ export const products: Product[] = [
     {
         id: "prod-1",
         name: "Green Fluorite on Acrylic Base",
+        slug: "green-fluorite-acrylic-base",
         price: 38500,
         image: "/producto1.png",
         images: ["/producto1.png", "/producto1.png", "/producto1.png", "/producto1.png"],
@@ -37,6 +38,7 @@ export const products: Product[] = [
     {
         id: "prod-2",
         name: "Polished Fossil Ammonite",
+        slug: "polished-fossil-ammonite",
         price: 42000,
         image: "/producto2.png",
         images: ["/producto2.png", "/producto2.png", "/producto2.png", "/producto2.png"],
