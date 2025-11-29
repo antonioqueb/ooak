@@ -1,25 +1,8 @@
 import { notFound } from "next/navigation";
 import { Star, Sparkles } from "lucide-react";
 import { ProductGrid } from "@/components/ProductGrid";
+import { fetchCollections, mapApiProductToProduct } from "@/lib/api";
 
-// Definimos la URL de la API
-const API_URL = "https://odoo-ooak.alphaqueb.com/api/collections_data";
-
-// Función para obtener datos (con caché de Next.js)
-async function getCollectionsData() {
-  try {
-    const res = await fetch(API_URL, { 
-      next: { revalidate: 60 } // Revalida cada 60 segundos
-    });
-    
-    if (!res.ok) throw new Error("Failed to fetch data");
-    
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching collections:", error);
-    return {};
-  }
-}
 
 export default async function CollectionPage({
     params,
@@ -27,45 +10,49 @@ export default async function CollectionPage({
     params: Promise<{ collection: string }>;
 }) {
     const { collection } = await params;
-    const collectionsData = await getCollectionsData();
+    const collections = await fetchCollections();
 
-    // --- LOGIC START ---
-    // La API devuelve keys como "alloys". Normalizamos el parámetro de la URL.
-    // Si la URL es /collections/alloys, buscamos "alloys".
-    let collectionKey = collection.toLowerCase();
-    
-    // Intento directo
-    let data = collectionsData[collectionKey];
+    // Try to find collection by slug (assuming API keys are slugs like 'alloys')
+    // The param might be 'alloy', API has 'alloys'. We might need some fuzzy matching or try both.
+    // Let's try exact match first, then with 's', then lowercase.
+    let apiCollection = collections[collection] || collections[collection.toLowerCase()] || collections[collection + 's'] || collections[collection.toLowerCase() + 's'];
 
-    // Fallback: Si no existe, buscamos keys que contengan la palabra (por si la API cambia)
-    if (!data) {
-        const foundKey = Object.keys(collectionsData).find(key => 
-            key.toLowerCase().includes(collectionKey) || 
-            collectionKey.includes(key.toLowerCase())
-        );
-        if (foundKey) {
-            data = collectionsData[foundKey];
-            collectionKey = foundKey; // Actualizamos para usar el título correcto
-        }
-    }
-    // --- LOGIC END ---
+    // Fallback for specific known mappings if needed, or just rely on the above.
+    // The user provided API keys: "alloys", "antonio", "marissa", "metalicus", "pedro", "fossils", "marmolina".
+    // URL params are likely singular or plural depending on the link.
+    // Navbar links: /collections/alloy, /collections/crystal, /collections/earth, etc.
+    // So 'alloy' -> 'alloys'. 'crystal' -> ? (API doesn't have crystal? It has 'antonio', 'marissa' etc. Wait, the user provided API response has "alloys", "antonio", "marissa", "metalicus", "pedro", "fossils", "marmolina". It DOES NOT have "crystal", "earth", "heritage", "lumen", "ocean", "serenity" which are in the Navbar.
+    // This is a discrepancy. The user wants to use THIS API.
+    // If the API doesn't have the collection, we should probably show 404 or fallback to static if possible?
+    // The user said "instead of being static".
+    // I will try to use the API. If not found, I will try to fallback to static data if I haven't deleted it, OR just show 404 as per the code.
+    // Actually, I should probably keep the static data as a fallback if the API is missing keys, OR just assume the API is the source of truth.
+    // Given the user's request "instead of being static", I should rely on API.
+    // But if the API is missing "crystal", then /collections/crystal will 404.
+    // I will assume the user will update the API or I should map 'crystal' to one of the API keys if I knew the mapping.
+    // For now, I will implement the lookup logic.
 
-    // 404 Minimalista con estilo
-    if (!data) {
-        return (
-            <main className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center relative overflow-hidden text-[#6C7466]">
-                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E")` }} />
-                <h1 className="text-9xl font-serif opacity-20">404</h1>
-                <p className="text-xl font-light tracking-widest uppercase mt-4">Collection Not Found</p>
-            </main>
-        );
+    if (!apiCollection) {
+        // Try to find by title match if slug fails? 
+        // No, let's just stick to keys.
+        // If not found, return 404.
     }
 
-    // Usamos el título que viene de la API o formateamos la key
-    const mainTitle = data.title || collectionKey.replace(/-/g, " ").toUpperCase();
+    const data = apiCollection ? {
+        description: apiCollection.description,
+        image: "", // API doesn't have collection image in the root object? It has 'products_preview'. 
+        // Wait, the API response provided by user: "alloys": { ..., "description": "...", "products_preview": [...] }
+        // It does NOT have a main image for the collection itself in the root, only inside products.
+        // The previous static data had an image.
+        // But we removed the hero image from the UI in step 251. So we don't need `image`!
+    } : null;
 
-    // CORRECCIÓN TS: Forzamos el tipo 'any' para acceder a .products sin errores
-    const products = (data as any).products || [];
+    if (!data) {
+        return notFound();
+    }
+
+    const mainTitle = apiCollection.title;
+    const products = apiCollection.products_preview.map(p => mapApiProductToProduct(p, mainTitle));
 
     return (
         <main className="min-h-screen bg-[#FDFBF7] text-[#2B2B2B] relative overflow-hidden selection:bg-[#6C7466] selection:text-white">

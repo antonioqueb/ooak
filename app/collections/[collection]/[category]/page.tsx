@@ -1,18 +1,9 @@
 import { ArrowRight, Star, ArrowDown } from "lucide-react";
 import Link from "next/link";
+// 1. Importamos el Grid
 import { ProductGrid } from "@/components/ProductGrid";
-
-const API_URL = "https://odoo-ooak.alphaqueb.com/api/collections_data";
-
-async function getCollectionsData() {
-  try {
-    const res = await fetch(API_URL, { next: { revalidate: 60 } });
-    if (!res.ok) return {};
-    return await res.json();
-  } catch (error) {
-    return {};
-  }
-}
+import { fetchCollections, mapApiProductToProduct } from "@/lib/api";
+import { notFound } from "next/navigation";
 
 export default async function CategoryPage({
     params,
@@ -20,34 +11,34 @@ export default async function CategoryPage({
     params: Promise<{ collection: string; category: string }>;
 }) {
     const { collection, category } = await params;
-    const collectionsData = await getCollectionsData();
+    const collections = await fetchCollections();
 
-    // Normalización de texto para visualización
-    const categoryNameDisplay = category.replace(/-/g, " ").toUpperCase();
-    const collectionNameDisplay = collection.replace(/-/g, " ").toUpperCase();
+    // Try to find category in API. The API keys seem to be flat (e.g. "alloys", "antonio").
+    // The URL structure is /collections/[collection]/[category].
+    // Maybe the category corresponds to a key in the API?
+    // Or maybe the API has a hierarchical structure? The user provided API has "parent": "alloys" for "antonio".
+    // So "antonio" is a child of "alloys".
+    // If URL is /collections/alloys/antonio, then `collection` is alloys, `category` is antonio.
+    // We should look up `category` in the API.
 
-    // Lógica de recuperación de datos
-    // 1. Buscamos primero si existe una key exacta para la categoría
-    let data = collectionsData[category];
-    
-    // 2. Si no, buscamos la key de la colección padre para sacar datos genéricos
-    if (!data) {
-        const parentKey = collection.toLowerCase(); // ej: 'alloys'
-        const parentData = collectionsData[parentKey];
-        
-        if (parentData) {
-            // AQUÍ: Si la API no tiene un objeto separado para la categoría, 
-            // asumimos que quieres mostrar los productos de la colección padre.
-            // Opcionalmente podrías filtrar 'parentData.products' si tuvieran tags.
-            data = {
-                description: parentData.description,
-                image: parentData.image,
-                products: parentData.products || []
-            };
-        }
+    let apiCategory = collections[category] || collections[category.toLowerCase()];
+    let apiParent = collections[collection] || collections[collection.toLowerCase()] || collections[collection + 's'] || collections[collection.toLowerCase() + 's'];
+
+    if (!apiCategory) {
+        // Fallback or 404
+        // return notFound();
     }
 
-    const products = data ? ((data as any).products || []) : [];
+    const data = apiCategory ? {
+        // Actually user said "descripciones de colecciones no las está heredando las colecciones hijas... debe decir exactamente lo mismo que la colección padre".
+        // So we should prefer parent description.
+        description: apiParent ? apiParent.description : apiCategory.description,
+    } : null;
+
+    const categoryNameDisplay = apiCategory ? apiCategory.title : category.replace(/-/g, " ").toUpperCase();
+    const collectionNameDisplay = apiParent ? apiParent.title : collection.replace(/-/g, " ").toUpperCase();
+
+    const products = apiCategory ? apiCategory.products_preview.map(p => mapApiProductToProduct(p, categoryNameDisplay)) : [];
 
     return (
         <main className="min-h-screen bg-[#FDFBF7] text-[#2B2B2B] relative overflow-hidden selection:bg-[#6C7466] selection:text-white">

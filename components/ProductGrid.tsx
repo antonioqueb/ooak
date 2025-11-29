@@ -16,16 +16,19 @@ import { products, Product } from "@/lib/products";
 // ========================================
 // 🧩 MAIN COMPONENT
 // ========================================
-export function ProductGrid() {
+export function ProductGrid({ products: propProducts }: { products?: Product[] }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
 
+  // Use passed products or fallback to empty array (or static if we wanted, but let's prefer props)
+  const displayProducts = propProducts || products;
+
   const currentPage = Number(searchParams.get('page')) || 1;
   const ITEMS_PER_PAGE = 8;
-  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(displayProducts.length / ITEMS_PER_PAGE);
 
-  const currentProducts = products.slice(
+  const currentProducts = displayProducts.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
