@@ -26,7 +26,18 @@ export default function NewsEventsPage() {
                 const res = await fetch('/api/news-events');
                 if (!res.ok) throw new Error('Error fetching events');
                 const json = await res.json();
-                setEvents(json.data || json);
+
+                // Handle both possible API response structures
+                let eventsData = json.data || json;
+
+                // Ensure each event has a slug
+                eventsData = eventsData.map((event: any) => ({
+                    ...event,
+                    slug: event.slug || event.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
+                }));
+
+                console.log('Loaded events:', eventsData);
+                setEvents(eventsData);
             } catch (err: any) {
                 console.error(err);
                 setError(err.message);
@@ -82,7 +93,10 @@ export default function NewsEventsPage() {
                         <Link
                             key={event.id}
                             href={`/news-events/${event.slug}`}
-                            className="group relative bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-[#6C7466]/10 hover:shadow-xl hover:border-[#6C7466]/30 transition-all duration-500 ease-out cursor-pointer"
+                            onClick={(e) => {
+                                console.log('Navigating to:', `/news-events/${event.slug}`);
+                            }}
+                            className="block group relative bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-[#6C7466]/10 hover:shadow-xl hover:border-[#6C7466]/30 transition-all duration-500 ease-out"
                         >
                             {/* Flex container para las columnas */}
                             <div className="flex flex-col md:flex-row gap-8 md:gap-12 h-full">
