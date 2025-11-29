@@ -1,6 +1,7 @@
 export interface Product {
     id: string;
     name: string;
+    slug: string;
     price: number;
     image: string;
     images?: string[];
@@ -48,9 +49,10 @@ export const products: Product[] = [
         inStock: true,
     },
     {
-        id: "prod-3",
-        name: "Raw Natural Amazonite",
-        price: 31000,
+        id: "3",
+        name: "Quartz Crystal Cluster",
+        slug: "quartz-crystal-cluster",
+        price: 1200,
         image: "/producto3.png",
         images: ["/producto3.png", "/producto3.png", "/producto3.png", "/producto3.png"],
         category: "Gems & Minerals",
@@ -62,9 +64,10 @@ export const products: Product[] = [
         inStock: true,
     },
     {
-        id: "prod-4",
-        name: "Natural Smoky Quartz",
-        price: 54000,
+        id: "7",
+        name: "Labradorite Slab",
+        slug: "labradorite-slab",
+        price: 2100,
         image: "/producto4.png",
         images: ["/producto4.png", "/producto4.png", "/producto4.png", "/producto4.png"],
         category: "Gems & Minerals",
@@ -76,9 +79,10 @@ export const products: Product[] = [
         inStock: true,
     },
     {
-        id: "prod-5",
+        id: "1",
         name: "Polished Landscape Jasper",
-        price: 36000,
+        slug: "polished-landscape-jasper",
+        price: 2400,
         image: "/producto5.png",
         images: ["/producto5.png", "/producto5.png", "/producto5.png", "/producto5.png"],
         category: "Gems & Minerals",
@@ -90,9 +94,10 @@ export const products: Product[] = [
         inStock: true,
     },
     {
-        id: "prod-6",
-        name: "Natural Amethyst Geode",
-        price: 48000,
+        id: "2",
+        name: "Amethyst Geode Cathedral",
+        slug: "amethyst-geode-cathedral",
+        price: 4500,
         image: "/producto6.png",
         images: ["/producto6.png", "/producto6.png", "/producto6.png", "/producto6.png"],
         category: "Gems & Minerals",
@@ -106,6 +111,7 @@ export const products: Product[] = [
     {
         id: "prod-7",
         name: "Polished Septarian Geode",
+        slug: "polished-septarian-geode",
         price: 69000,
         image: "/producto7.png",
         images: ["/producto7.png", "/producto7.png", "/producto7.png", "/producto7.png"],
@@ -118,9 +124,10 @@ export const products: Product[] = [
         inStock: true,
     },
     {
-        id: "prod-8",
-        name: "Polished Septarian Sphere",
-        price: 72000,
+        id: "4",
+        name: "Obsidian Sphere",
+        slug: "obsidian-sphere",
+        price: 850,
         image: "/producto8.png",
         images: ["/producto8.png", "/producto8.png", "/producto8.png", "/producto8.png"],
         category: "Gems & Minerals",

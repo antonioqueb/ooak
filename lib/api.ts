@@ -33,12 +33,16 @@ export async function fetchCollections(): Promise<ApiResponse> {
 }
 
 export function mapApiProductToProduct(apiProduct: ApiProduct, category: string): Product {
+    // Ensure image URL is HTTPS to avoid mixed content errors
+    const imageUrl = apiProduct.image.replace(/^http:\/\//, "https://");
+
     return {
         id: apiProduct.id.toString(),
         name: apiProduct.name,
+        slug: apiProduct.slug,
         price: 0, // Default as API doesn't provide price
-        image: apiProduct.image,
-        images: [apiProduct.image],
+        image: imageUrl,
+        images: [imageUrl],
         category: category,
         featured: false,
         description: "",
