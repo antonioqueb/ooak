@@ -55,22 +55,6 @@ export function ProductGrid({ products: propProducts }: { products?: Product[] }
       <div className="hidden md:block absolute top-0 right-12 w-px h-full bg-[#6C7466]/10 z-0" />
 
       <div className="container mx-auto px-6 relative z-10">
-
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 md:pl-12">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <Star className="w-4 h-4 text-[#6C7466] animate-spin-slow" />
-              <span className="text-xs font-bold tracking-[0.25em] text-[#6C7466] uppercase">
-                The Collection
-              </span>
-            </div>
-          </div>
-          <p className="text-sm font-light text-gray-500 max-w-xs mt-6 md:mt-0 leading-relaxed md:text-right">
-            Transform your sanctuary with exceptional elements.
-          </p>
-        </div>
-
         {/* Gallery */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 md:pl-12">
           {currentProducts.map((product) => (
