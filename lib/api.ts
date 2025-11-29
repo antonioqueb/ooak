@@ -90,7 +90,7 @@ export async function fetchCollectionDetails(key: string): Promise<ApiCollection
     }
 }
 
-export function mapApiProductDetailToProduct(apiProduct: ApiProductDetail, category: string): Product {
+export function mapApiProductDetailToProduct(apiProduct: ApiProductDetail, category: string, collectionKey?: string): Product {
     // Helper to ensure HTTPS
     const toHttps = (url: string) => url ? url.replace(/^http:\/\//, "https://") : "";
 
@@ -111,6 +111,7 @@ export function mapApiProductDetailToProduct(apiProduct: ApiProductDetail, categ
         image: mainImage,
         images: images,
         category: category,
+        collectionKey: collectionKey,
         featured: false,
         description: apiProduct.long_description || apiProduct.short_description, // Use HTML description
         dimensions: {
@@ -126,7 +127,7 @@ export function mapApiProductDetailToProduct(apiProduct: ApiProductDetail, categ
 }
 
 // Keep the old mapper for preview if needed, or just use the detailed one if we fetch everything.
-export function mapApiProductToProduct(apiProduct: ApiProduct, category: string): Product {
+export function mapApiProductToProduct(apiProduct: ApiProduct, category: string, collectionKey?: string): Product {
     // Ensure image URL is HTTPS to avoid mixed content errors
     const imageUrl = apiProduct.image.replace(/^http:\/\//, "https://");
 
@@ -138,6 +139,7 @@ export function mapApiProductToProduct(apiProduct: ApiProduct, category: string)
         image: imageUrl,
         images: [imageUrl],
         category: category,
+        collectionKey: collectionKey,
         featured: false,
         description: "",
         dimensions: { height: "", width: "", depth: "", weight: "" },
@@ -161,7 +163,8 @@ export async function getAllProducts(): Promise<Product[]> {
     detailsResults.forEach((detail, index) => {
         if (detail && detail.products) {
             const category = detail.collection_info.title;
-            const products = detail.products.map(p => mapApiProductDetailToProduct(p, category));
+            const collectionKey = detail.collection_info.key;
+            const products = detail.products.map(p => mapApiProductDetailToProduct(p, category, collectionKey));
             allProducts = [...allProducts, ...products];
         } else {
             // Fallback to preview data if details fail? 

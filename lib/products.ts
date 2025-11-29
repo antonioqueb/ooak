@@ -6,6 +6,7 @@ export interface Product {
     image: string;
     images?: string[];
     category: string;
+    collectionKey?: string;
     featured?: boolean;
     description?: string;
     dimensions?: {
