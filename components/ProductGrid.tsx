@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { products, Product } from "@/lib/products";
+import { useCart } from "@/context/cart-context";
 
 // ========================================
 // 🧩 MAIN COMPONENT
@@ -133,6 +134,7 @@ function ProductCard({
   product: Product;
 }) {
   const [isFavorite, setIsFavorite] = React.useState(false);
+  const { addItem } = useCart();
 
   return (
     <Link href={`/product/${product.slug}`} className="group cursor-pointer flex flex-col gap-4">
@@ -166,7 +168,14 @@ function ProductCard({
           <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
         </button>
 
-        <button className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#6C7466] shadow-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#6C7466] hover:text-white">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            addItem(product);
+          }}
+          className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#6C7466] shadow-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#6C7466] hover:text-white"
+        >
           <Plus className="w-5 h-5" />
         </button>
       </div>

@@ -18,7 +18,13 @@ import { cn } from "@/lib/utils";
 import { Product } from "@/lib/products";
 import { useCart } from "@/context/cart-context";
 
-export function ProductView({ product }: { product: Product }) {
+interface ProductViewProps {
+    product: Product;
+    prevProductSlug?: string;
+    nextProductSlug?: string;
+}
+
+export function ProductView({ product, prevProductSlug, nextProductSlug }: ProductViewProps) {
     const { addItem } = useCart();
     const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
     const [activeTab, setActiveTab] = React.useState<"measurements" | "shipping" | "returns">("measurements");
@@ -52,12 +58,13 @@ export function ProductView({ product }: { product: Product }) {
     return (
         <div className="min-h-screen bg-[#FDFBF7] flex flex-col md:flex-row">
             {/* Floating Close Button (Back to Home) */}
-            <Link
-                href="/"
+            {/* Floating Close Button (Back) */}
+            <button
+                onClick={() => window.history.back()}
                 className="fixed top-4 right-4 z-50 p-2 bg-white/50 hover:bg-white rounded-full transition-colors backdrop-blur-md shadow-sm"
             >
                 <X className="w-5 h-5 text-[#2B2B2B]" strokeWidth={1.5} />
-            </Link>
+            </button>
 
             {/* LEFT SIDE: Image Gallery */}
             <div className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-[#EBEBE8] overflow-hidden group h-[50vh] md:h-screen sticky top-0">
@@ -129,6 +136,27 @@ export function ProductView({ product }: { product: Product }) {
 
             {/* RIGHT SIDE: Details */}
             <div className="flex-1 w-full md:w-[45%] lg:w-[40%] flex flex-col min-h-screen bg-[#FDFBF7]">
+
+                {/* PRODUCT NAVIGATION ARROWS (Desktop: Fixed sides) */}
+                {prevProductSlug && (
+                    <Link
+                        href={`/product/${prevProductSlug}`}
+                        className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-40 p-3 bg-white/40 hover:bg-white backdrop-blur-md rounded-full shadow-sm text-[#2B2B2B] transition-all hover:scale-105"
+                        title="Previous Product"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                    </Link>
+                )}
+                {nextProductSlug && (
+                    <Link
+                        href={`/product/${nextProductSlug}`}
+                        className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-40 p-3 bg-white/40 hover:bg-white backdrop-blur-md rounded-full shadow-sm text-[#2B2B2B] transition-all hover:scale-105"
+                        title="Next Product"
+                        style={{ right: '1rem' }}
+                    >
+                        <ArrowRight className="w-5 h-5" />
+                    </Link>
+                )}
                 {/* Scrollable Content Area */}
                 <div className="flex-1 p-6 md:p-8 lg:p-12 pb-32"> {/* Added pb-32 for footer space */}
 

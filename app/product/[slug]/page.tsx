@@ -5,11 +5,15 @@ import { ProductView } from "@/components/ProductView";
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     const products = await getAllProducts();
-    const product = products.find((p) => p.slug === slug);
+    const productIndex = products.findIndex((p) => p.slug === slug);
+    const product = products[productIndex];
 
     if (!product) {
         notFound();
     }
 
-    return <ProductView product={product} />;
+    const prevProduct = products[productIndex - 1] || products[products.length - 1];
+    const nextProduct = products[productIndex + 1] || products[0];
+
+    return <ProductView product={product} prevProductSlug={prevProduct.slug} nextProductSlug={nextProduct.slug} />;
 }
