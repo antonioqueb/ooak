@@ -1,37 +1,60 @@
-import React from 'react';
-import { ArrowUpRight, MapPin } from 'lucide-react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { ArrowUpRight, MapPin, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+
+interface Project {
+    id: number;
+    slug: string;
+    title: string;
+    location: string;
+    category: string;
+    year: string;
+    description: string;
+    image: string;
+}
 
 export default function ProjectsPage() {
-    const projects = [
-        {
-            id: 1,
-            title: "Casa Lomas",
-            location: "Mexico City",
-            category: "Residential",
-            year: "2024",
-            description: "A dialogue between raw volcanic stone and modern minimalism.",
-            image: "/cdmx.png",
-        },
-        {
-            id: 2,
-            title: "Villa Tulum",
-            location: "Riviera Maya",
-            category: "Hospitality",
-            year: "2023",
-            description: "Curating energy through massive quartz installations in open spaces.",
-            image: "/tulum.png",
-        },
-        {
-            id: 3,
-            title: "San Miguel Loft",
-            location: "Guanajuato",
-            category: "Interior Styling",
-            year: "2023",
-            description: "Integrating fossilized textures into colonial architecture.",
-            image: "/san-miguel.png",
-        }
-    ];
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                const res = await fetch('/api/projects');
+                if (!res.ok) throw new Error('Error fetching projects');
+                const json = await res.json();
+
+                let projectsData = json.data || json;
+
+                // Ensure slug exists
+                projectsData = projectsData.map((p: any) => ({
+                    ...p,
+                    slug: p.slug || p.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
+                }));
+
+                setProjects(projectsData);
+            } catch (err: any) {
+                console.error(err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProjects();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7] text-[#6C7466]">
+                <Loader2 className="w-10 h-10 animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <main className="min-h-screen bg-[#FDFBF7] relative overflow-hidden">
@@ -56,13 +79,16 @@ export default function ProjectsPage() {
                 {/* Projects Grid */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16 max-w-7xl mx-auto">
                     {projects.map((project) => (
-                        <div key={project.id} className="group cursor-pointer flex flex-col h-full">
+                        <Link
+                            key={project.id}
+                            href={`/projects/${project.slug}`}
+                            className="group cursor-pointer flex flex-col h-full block"
+                        >
 
                             {/* Image Container */}
                             <div className="relative overflow-hidden rounded-2xl bg-[#EBEBE8] aspect-[4/5] mb-6 shadow-sm group-hover:shadow-xl transition-all duration-500">
-                                
-                                {/* AQUI ESTÁ EL CAMBIO PRINCIPAL: Integración de Next/Image */}
-                                <Image 
+
+                                <Image
                                     src={project.image}
                                     alt={project.title}
                                     fill
@@ -70,10 +96,10 @@ export default function ProjectsPage() {
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                 />
 
-                                {/* Overlay Effect (Oscurece sutilmente al pasar el mouse para resaltar el texto blanco si hubiera, o dar profundidad) */}
+                                {/* Overlay Effect */}
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none" />
 
-                                {/* Floating 'View' Button (Z-index superior automático al estar después en el DOM) */}
+                                {/* Floating 'View' Button */}
                                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 delay-75 shadow-sm z-10">
                                     <ArrowUpRight className="w-5 h-5 text-[#6C7466]" />
                                 </div>
@@ -105,7 +131,7 @@ export default function ProjectsPage() {
                                     {project.description}
                                 </p>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
 
