@@ -21,7 +21,8 @@ export default function CraftStoriesPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('https://odoo-ooak.alphaqueb.com/api/craft-stories/content');
+        // Use internal proxy to avoid CORS
+        const res = await fetch('/api/craft-stories-content');
         if (!res.ok) throw new Error('Error fetching data');
         const json = await res.json();
         setContent(json.data);
@@ -114,13 +115,13 @@ export default function CraftStoriesPage() {
             const ChapterIcon = iconMap[chapter.icon] || Star;
 
             // Fallback images si la API viene vacía (para que se vea bonito el demo)
-            const fallbackImage = isEven 
+            const fallbackImage = isEven
               ? "https://images.unsplash.com/photo-1615529182904-14819c35db37?q=80&w=1600&auto=format&fit=crop"
               : "https://images.unsplash.com/photo-1597523920677-24a9d7743d50?q=80&w=1600&auto=format&fit=crop";
 
             return (
               <div key={chapter.id} className="grid lg:grid-cols-2 gap-16 items-center mb-40 group">
-                
+
                 {/* Image Side */}
                 <div className={`${isEven ? 'order-2 lg:order-1' : 'relative'} relative`}>
                   <div className="aspect-[4/5] overflow-hidden bg-gray-200 relative">
@@ -140,7 +141,7 @@ export default function CraftStoriesPage() {
                   <span className={`text-9xl font-serif text-[#6C7466]/10 absolute -translate-y-16 select-none ${isEven ? '-translate-x-8' : 'right-0 lg:right-12'}`}>
                     {chapter.number}
                   </span>
-                  
+
                   <div className="relative">
                     <div className="flex items-center gap-3 mb-6">
                       <ChapterIcon className="w-5 h-5 text-[#6C7466]" />
@@ -148,12 +149,12 @@ export default function CraftStoriesPage() {
                         {chapter.label_top}
                       </span>
                     </div>
-                    
+
                     <h2 className="text-5xl md:text-6xl font-serif text-[#2B2B2B] mb-8 leading-[1.1]">
                       {chapter.title.main} <br />
                       <span className="italic text-[#6C7466]">{chapter.title.italic}</span>
                     </h2>
-                    
+
                     <p className="text-lg text-gray-600 font-light leading-relaxed mb-8">
                       {chapter.description}
                     </p>
