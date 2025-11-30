@@ -1,4 +1,4 @@
-```
+
 "use client";
 
 import * as React from "react";
@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
 import { loadStripe } from "@stripe/stripe-js";
 import {
-  EmbeddedCheckoutProvider,
-  EmbeddedCheckout,
+    EmbeddedCheckoutProvider,
+    EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
