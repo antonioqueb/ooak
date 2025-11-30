@@ -35,6 +35,8 @@ async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.
         }))
     };
 
+    console.log('📦 Sending payload to Odoo:', JSON.stringify(payload, null, 2));
+
     // Send to Odoo
     const response = await fetch(ODOO_URL, {
         method: 'POST',
@@ -44,6 +46,8 @@ async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.
         },
         body: JSON.stringify(payload)
     });
+
+    console.log('📡 Odoo Response Status:', response.status);
 
     if (!response.ok) {
         const errorText = await response.text();
