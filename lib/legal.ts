@@ -49,7 +49,8 @@ export async function getLegalPage(slug: string): Promise<LegalPageDetail | null
 
         return {
             ...page,
-            content: secureContent
+            content: secureContent,
+            meta_description: typeof page.meta_description === 'string' ? page.meta_description : ''
         };
     } catch (error) {
         console.error(`Error fetching legal page ${slug}:`, error);
