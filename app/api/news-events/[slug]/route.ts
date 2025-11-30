@@ -52,6 +52,7 @@ export async function GET(
     try {
         const { slug } = await params;
 
+        // Use the live API endpoint provided by the user
         const res = await fetch(`https://odoo-ooak.alphaqueb.com/api/news-events/${slug}`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -61,15 +62,27 @@ export async function GET(
 
         if (!res.ok) {
             console.log('Odoo API not available for event, using fallback data');
-            // Return fallback data if available
             if (FALLBACK_EVENTS[slug]) {
                 return NextResponse.json(FALLBACK_EVENTS[slug]);
             }
             return NextResponse.json({ error: 'Event not found' }, { status: 404 });
         }
 
-        const data = await res.json();
-        return NextResponse.json(data);
+        const json = await res.json();
+        const eventData = json.data || json;
+
+        // Helper to ensure HTTPS
+        const toHttps = (url: string) => url ? url.replace(/^http:\/\//, "https://") : "";
+
+        // Process images to ensure HTTPS
+        if (eventData) {
+            if (eventData.image) eventData.image = toHttps(eventData.image);
+            if (eventData.gallery && Array.isArray(eventData.gallery)) {
+                eventData.gallery = eventData.gallery.map(toHttps);
+            }
+        }
+
+        return NextResponse.json({ data: eventData });
     } catch (error) {
         console.log('Error fetching event from Odoo, using fallback data:', error);
         const { slug } = await params;
