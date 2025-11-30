@@ -2,25 +2,10 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Metadata } from 'next';
+import { getLegalPage } from '@/lib/legal';
 
 interface LegalPageProps {
     params: Promise<{ slug: string }>;
-}
-
-async function getLegalPage(slug: string) {
-    try {
-        const res = await fetch(`https://odoo-ooak.alphaqueb.com/api/legal/page/${slug}`, {
-            next: { revalidate: 3600 }, // Revalidate every hour
-        });
-
-        if (!res.ok) return null;
-
-        const json = await res.json();
-        return json.data;
-    } catch (error) {
-        console.error('Error fetching legal page:', error);
-        return null;
-    }
 }
 
 export async function generateMetadata({ params }: LegalPageProps): Promise<Metadata> {
@@ -47,9 +32,6 @@ export default async function LegalPage({ params }: LegalPageProps) {
         notFound();
     }
 
-    // Enforce HTTPS in content
-    const secureContent = page.content.replace(/http:\/\/odoo-ooak\.alphaqueb\.com/g, 'https://odoo-ooak.alphaqueb.com');
-
     return (
         <main className="min-h-screen bg-[#FDFBF7] pt-32 pb-20">
             <div className="container mx-auto px-6 max-w-4xl">
@@ -69,9 +51,9 @@ export default async function LegalPage({ params }: LegalPageProps) {
                     <h1 className="text-4xl md:text-5xl font-serif text-[#2B2B2B] mb-4">
                         {page.title}
                     </h1>
-                    {page.updated_at && (
+                    {page.last_updated && (
                         <p className="text-[#6C7466]/70 text-sm">
-                            Last updated: {new Date(page.updated_at).toLocaleDateString('en-US', {
+                            Last updated: {new Date(page.last_updated).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
@@ -91,7 +73,7 @@ export default async function LegalPage({ params }: LegalPageProps) {
                     prose-ul:list-disc prose-ul:pl-4 prose-ul:my-6
                     prose-li:text-[#2B2B2B]/80 prose-li:mb-2
                 ">
-                    <div dangerouslySetInnerHTML={{ __html: secureContent }} />
+                    <div dangerouslySetInnerHTML={{ __html: page.content }} />
                 </article>
             </div>
         </main>
