@@ -62,6 +62,7 @@ const FALLBACK_PROJECTS = {
 
 export async function GET() {
     try {
+        // Use the live API endpoint provided by the user
         const res = await fetch('https://odoo-ooak.alphaqueb.com/api/projects/list', {
             headers: {
                 'Content-Type': 'application/json',
@@ -70,12 +71,30 @@ export async function GET() {
         });
 
         if (!res.ok) {
-            console.log('Odoo API not available, using fallback data');
+            console.log('Odoo API error, using fallback data');
             return NextResponse.json(FALLBACK_PROJECTS);
         }
 
-        const data = await res.json();
-        return NextResponse.json(data);
+        const json = await res.json();
+
+        // Helper to ensure proper image URLs
+        const processImage = (url: string) => {
+            if (!url) return "";
+            if (url.startsWith('http')) return url.replace(/^http:\/\//, "https://");
+            // If it's a relative path like /tulum.png, keep it as is (served from public folder)
+            return url;
+        };
+
+        // Process data
+        let projects = json.data || json;
+        if (Array.isArray(projects)) {
+            projects = projects.map((project: any) => ({
+                ...project,
+                image: processImage(project.image)
+            }));
+        }
+
+        return NextResponse.json({ data: projects });
     } catch (error) {
         console.log('Error fetching from Odoo, using fallback data:', error);
         return NextResponse.json(FALLBACK_PROJECTS);

@@ -71,6 +71,7 @@ export async function GET(
     try {
         const { slug } = await params;
 
+        // Use the live API endpoint provided by the user
         const res = await fetch(`https://odoo-ooak.alphaqueb.com/api/projects/${slug}`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -86,8 +87,25 @@ export async function GET(
             return NextResponse.json({ error: 'Project not found' }, { status: 404 });
         }
 
-        const data = await res.json();
-        return NextResponse.json(data);
+        const json = await res.json();
+        const projectData = json.data || json;
+
+        // Helper to ensure proper image URLs
+        const processImage = (url: string) => {
+            if (!url) return "";
+            if (url.startsWith('http')) return url.replace(/^http:\/\//, "https://");
+            return url;
+        };
+
+        // Process images
+        if (projectData) {
+            if (projectData.image) projectData.image = processImage(projectData.image);
+            if (projectData.gallery && Array.isArray(projectData.gallery)) {
+                projectData.gallery = projectData.gallery.map(processImage);
+            }
+        }
+
+        return NextResponse.json({ data: projectData });
     } catch (error) {
         console.log('Error fetching project from Odoo, using fallback data:', error);
         const { slug } = await params;
