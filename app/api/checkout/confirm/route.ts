@@ -59,25 +59,38 @@ async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.
 }
 
 export async function POST(req: Request) {
+    console.log('🔵 /api/checkout/confirm called');
+
+    if (!process.env.STRIPE_SECRET_KEY) console.error('🔴 Missing STRIPE_SECRET_KEY');
+    if (!process.env.ODOO_API_TOKEN) console.error('🔴 Missing ODOO_API_TOKEN');
+
     try {
-        const { session_id } = await req.json();
+        const body = await req.json();
+        console.log('🔵 Request body:', body);
+        const { session_id } = body;
 
         if (!session_id) {
+            console.error('🔴 Missing session_id in body');
             return NextResponse.json({ error: 'Missing session_id' }, { status: 400 });
         }
 
+        console.log(`🔵 Retrieving session: ${session_id}`);
         // 1. Retrieve the session from Stripe
         const session = await stripe.checkout.sessions.retrieve(session_id);
+        console.log(`🔵 Session status: ${session.payment_status}`);
 
         // 2. Verify payment status
         if (session.payment_status !== 'paid') {
+            console.error('🔴 Payment not paid');
             return NextResponse.json({ error: 'Payment not completed' }, { status: 400 });
         }
 
         // 3. Fetch line items
+        console.log('🔵 Fetching line items...');
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
             expand: ['data.price.product']
         });
+        console.log(`🔵 Found ${lineItems.data.length} items`);
 
         // 4. Sync with Odoo
         const result = await syncWithOdoo(session, lineItems);
@@ -85,7 +98,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, odoo_order: result.data?.order_name });
 
     } catch (error: any) {
-        console.error('Error confirming checkout:', error);
+        console.error('🔴 Error confirming checkout:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
