@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const API_URL = 'https://odoo-ooak.alphaqueb.com';
+const API_URL = '';
 
 export function useFooterData() {
     const [data, setData] = useState<any>(null);
