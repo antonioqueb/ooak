@@ -1,4 +1,3 @@
-import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
@@ -6,7 +5,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-10-28.acacia',
 });
 
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 const ODOO_URL = 'https://odoo-ooak.alphaqueb.com/api/sales/create_from_stripe';
 const ODOO_TOKEN = process.env.ODOO_API_TOKEN;
 
@@ -35,7 +33,7 @@ async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.
         }))
     };
 
-    console.log('📦 Sending payload to Odoo:', JSON.stringify(payload, null, 2));
+    console.log('📦 Sending payload to Odoo (Success Page):', JSON.stringify(payload, null, 2));
 
     // Send to Odoo
     const response = await fetch(ODOO_URL, {
@@ -61,40 +59,33 @@ async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.
 }
 
 export async function POST(req: Request) {
-    const body = await req.text();
-    const sig = (await headers()).get('stripe-signature') as string;
-
-    let event: Stripe.Event;
-
     try {
-        if (!endpointSecret) throw new Error('Missing STRIPE_WEBHOOK_SECRET');
-        event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
-    } catch (err: any) {
-        console.error(`Webhook Error: ${err.message}`);
-        return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
-    }
+        const { session_id } = await req.json();
 
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object as Stripe.Checkout.Session;
-
-        try {
-            // Fetch line items (Stripe doesn't send them by default in the webhook)
-            const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
-                expand: ['data.price.product']
-            });
-
-            await syncWithOdoo(session, lineItems);
-
-        } catch (error) {
-            console.error('Error syncing with Odoo:', error);
-            // Return 500 to retry later
-            return NextResponse.json({ error: 'Error syncing with Odoo' }, { status: 500 });
+        if (!session_id) {
+            return NextResponse.json({ error: 'Missing session_id' }, { status: 400 });
         }
+
+        // 1. Retrieve the session from Stripe
+        const session = await stripe.checkout.sessions.retrieve(session_id);
+
+        // 2. Verify payment status
+        if (session.payment_status !== 'paid') {
+            return NextResponse.json({ error: 'Payment not completed' }, { status: 400 });
+        }
+
+        // 3. Fetch line items
+        const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+            expand: ['data.price.product']
+        });
+
+        // 4. Sync with Odoo
+        const result = await syncWithOdoo(session, lineItems);
+
+        return NextResponse.json({ success: true, odoo_order: result.data?.order_name });
+
+    } catch (error: any) {
+        console.error('Error confirming checkout:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    return NextResponse.json({ received: true });
-}
-
-export async function GET() {
-    return NextResponse.json({ status: 'Webhook endpoint is active' });
 }
