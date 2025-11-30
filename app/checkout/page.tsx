@@ -1,13 +1,16 @@
+```
 "use client";
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Loader2, CreditCard } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useCart } from "@/context/cart-context";
 import { loadStripe } from "@stripe/stripe-js";
+import {
+  EmbeddedCheckoutProvider,
+  EmbeddedCheckout,
+} from "@stripe/react-stripe-js";
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
@@ -15,57 +18,21 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 
 export default function CheckoutPage() {
     const { items, cartTotal } = useCart();
-    const [isProcessing, setIsProcessing] = React.useState(false);
+    const [clientSecret, setClientSecret] = React.useState<string | null>(null);
 
-    const handleStripeCheckout = async () => {
-        setIsProcessing(true);
-
-        try {
-            const response = await fetch('/api/checkout_sessions', {
-                method: 'POST',
+    React.useEffect(() => {
+        if (items.length > 0) {
+            fetch("/api/checkout_sessions", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ items }),
-            });
-
-            const { sessionId, url, error } = await response.json();
-
-            if (error) {
-                console.error('Error creating checkout session:', error);
-                alert('Payment failed: ' + error);
-                setIsProcessing(false);
-                return;
-            }
-
-            if (url) {
-                window.open(url, '_blank');
-                setIsProcessing(false);
-            } else {
-                const stripe = await stripePromise;
-                if (!stripe) {
-                    console.error('Stripe failed to load');
-                    setIsProcessing(false);
-                    return;
-                }
-
-                const { error: stripeError } = await stripe.redirectToCheckout({
-                    sessionId,
-                });
-
-                if (stripeError) {
-                    console.error('Stripe redirect error:', stripeError);
-                    alert(stripeError.message);
-                    setIsProcessing(false);
-                }
-            }
-
-        } catch (err) {
-            console.error('Checkout error:', err);
-            alert('An unexpected error occurred.');
-            setIsProcessing(false);
+            })
+                .then((res) => res.json())
+                .then((data) => setClientSecret(data.clientSecret));
         }
-    };
+    }, [items]);
 
     if (items.length === 0) {
         return (
@@ -89,42 +56,20 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
-                    {/* Checkout Options */}
-                    <div>
-                        <div className="space-y-8">
-                            <section>
-                                <h2 className="text-lg font-bold text-[#2B2B2B] uppercase tracking-widest mb-6">Express Checkout</h2>
-                                <p className="text-gray-500 mb-6 text-sm">
-                                    Complete your purchase securely. You will be redirected to a secure payment page to enter your shipping and payment details.
-                                </p>
-
-                                <Button
-                                    onClick={handleStripeCheckout}
-                                    disabled={isProcessing}
-                                    className="w-full bg-[#2B2B2B] hover:bg-[#6C7466] text-white h-14 rounded-md text-sm font-bold tracking-wide transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 uppercase"
-                                >
-                                    {isProcessing ? (
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                        "Pay"
-                                    )}
-                                </Button>
-                            </section>
-
-                            <div className="relative flex py-5 items-center">
-                                <div className="flex-grow border-t border-gray-300"></div>
-                                <span className="flex-shrink-0 mx-4 text-gray-400 text-xs uppercase tracking-widest">Secure Payment</span>
-                                <div className="flex-grow border-t border-gray-300"></div>
+                    {/* Embedded Checkout Form */}
+                    <div className="bg-white p-6 rounded-md shadow-sm border border-[#6C7466]/10">
+                        {clientSecret ? (
+                            <EmbeddedCheckoutProvider
+                                stripe={stripePromise}
+                                options={{ clientSecret }}
+                            >
+                                <EmbeddedCheckout />
+                            </EmbeddedCheckoutProvider>
+                        ) : (
+                            <div className="flex justify-center py-12">
+                                <p className="text-gray-500">Loading checkout...</p>
                             </div>
-
-                            <div className="flex justify-center gap-4 opacity-50 grayscale">
-                                {/* Add payment icons here if available, or just text */}
-                                <div className="h-8 w-12 bg-gray-200 rounded"></div>
-                                <div className="h-8 w-12 bg-gray-200 rounded"></div>
-                                <div className="h-8 w-12 bg-gray-200 rounded"></div>
-                                <div className="h-8 w-12 bg-gray-200 rounded"></div>
-                            </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* Order Summary */}

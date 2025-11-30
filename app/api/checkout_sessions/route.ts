@@ -30,18 +30,18 @@ export async function POST(req: Request) {
         });
 
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'], // Add other types if needed, or remove to accept all enabled in Dashboard
+            payment_method_types: ['card'],
             line_items: lineItems,
             mode: 'payment',
-            success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${req.headers.get('origin')}/checkout`,
+            ui_mode: 'embedded',
+            return_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
             // automatic_tax: { enabled: true }, // Disabled to avoid configuration error
             shipping_address_collection: {
-                allowed_countries: ['US', 'MX', 'CA'], // Adjust as needed
+                allowed_countries: ['US', 'MX', 'CA'],
             },
         });
 
-        return NextResponse.json({ sessionId: session.id, url: session.url });
+        return NextResponse.json({ clientSecret: session.client_secret });
     } catch (err: any) {
         console.error('Error creating checkout session:', err);
         return NextResponse.json({ error: err.message }, { status: 500 });
