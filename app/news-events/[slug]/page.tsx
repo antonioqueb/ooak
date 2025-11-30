@@ -138,8 +138,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         fill
                         className="object-cover"
                         priority
-                        // Nota: Si tus imágenes vienen de dominios externos no configurados, 
-                        // esto podría fallar. Asegúrate de tenerlos en next.config.js
+                        // Nota: Asegúrate de que el dominio de la imagen esté en next.config.js
                     />
                 ) : (
                     <div className="flex items-center justify-center h-full">
@@ -186,28 +185,29 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                     <div className="lg:col-span-8">
                         
                         {/* 
-                           AQUÍ ESTÁ LA SOLUCIÓN AL PROBLEMA DE DISEÑO:
-                           Personalizamos 'prose' para limpiar el HTML sucio de la API.
+                           AQUÍ ESTÁ LA CORRECCIÓN DE ESTILO PARA TU JSON:
+                           Estas clases transforman el HTML crudo de la API en diseño editorial.
                         */}
                         <article className="
                             prose prose-lg max-w-none
                             
-                            // Títulos Generales
+                            // Títulos Generales (H2 en tu JSON)
                             prose-headings:font-serif prose-headings:text-[#2B2B2B]
-                            prose-h2:text-3xl prose-h2:mt-8 prose-h2:mb-6 prose-h2:font-medium
+                            prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-6 prose-h2:font-medium
                             
-                            // SUBTÍTULOS (AIDA, PAS): Transformamos los H3 en etiquetas elegantes
-                            prose-h3:text-sm prose-h3:font-bold prose-h3:uppercase prose-h3:tracking-[0.15em] prose-h3:text-[#6C7466] prose-h3:mt-10 prose-h3:mb-4
+                            // SUBTÍTULOS (H3 en tu JSON - AIDA, PAS): 
+                            // Los convertimos en texto pequeño, mayúsculas y verde
+                            prose-h3:text-sm prose-h3:font-bold prose-h3:uppercase prose-h3:tracking-[0.15em] prose-h3:text-[#6C7466] prose-h3:mt-12 prose-h3:mb-4 prose-h3:font-sans
                             
                             // Párrafos
                             prose-p:text-[#2B2B2B]/85 prose-p:leading-[1.8] prose-p:font-light prose-p:mb-6
                             
-                            // Negritas: Efecto 'resaltador' sutil en lugar de negro pesado
+                            // Negritas (strong): Efecto 'resaltador' sutil verde
                             prose-strong:font-bold prose-strong:text-[#2B2B2B] prose-strong:bg-[#6C7466]/10 prose-strong:px-1 prose-strong:rounded-sm
                             
-                            // Listas: Bullets verdes y buen espaciado
+                            // Listas (ul/li): Puntos (bullets) personalizados verdes
                             prose-ul:my-6 prose-ul:list-none prose-ul:pl-0 prose-ul:space-y-3
-                            prose-li:pl-6 prose-li:relative
+                            prose-li:pl-6 prose-li:relative prose-li:text-[#2B2B2B]/85
                             prose-li:before:content-[''] prose-li:before:absolute prose-li:before:left-0 prose-li:before:top-[0.6em] prose-li:before:h-1.5 prose-li:before:w-1.5 prose-li:before:bg-[#6C7466] prose-li:before:rounded-full
                             
                             // Enlaces dentro del texto
