@@ -35,13 +35,13 @@ export async function POST(req: Request) {
             mode: 'payment',
             success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${req.headers.get('origin')}/checkout`,
-            automatic_tax: { enabled: true },
+            // automatic_tax: { enabled: true }, // Disabled to avoid configuration error
             shipping_address_collection: {
                 allowed_countries: ['US', 'MX', 'CA'], // Adjust as needed
             },
         });
 
-        return NextResponse.json({ sessionId: session.id });
+        return NextResponse.json({ sessionId: session.id, url: session.url });
     } catch (err: any) {
         console.error('Error creating checkout session:', err);
         return NextResponse.json({ error: err.message }, { status: 500 });

@@ -29,7 +29,7 @@ export default function CheckoutPage() {
                 body: JSON.stringify({ items }),
             });
 
-            const { sessionId, error } = await response.json();
+            const { sessionId, url, error } = await response.json();
 
             if (error) {
                 console.error('Error creating checkout session:', error);
@@ -38,22 +38,28 @@ export default function CheckoutPage() {
                 return;
             }
 
-            const stripe = await stripePromise;
-            if (!stripe) {
-                console.error('Stripe failed to load');
+            if (url) {
+                window.open(url, '_blank');
                 setIsProcessing(false);
-                return;
+            } else {
+                const stripe = await stripePromise;
+                if (!stripe) {
+                    console.error('Stripe failed to load');
+                    setIsProcessing(false);
+                    return;
+                }
+
+                const { error: stripeError } = await stripe.redirectToCheckout({
+                    sessionId,
+                });
+
+                if (stripeError) {
+                    console.error('Stripe redirect error:', stripeError);
+                    alert(stripeError.message);
+                    setIsProcessing(false);
+                }
             }
 
-            const { error: stripeError } = await stripe.redirectToCheckout({
-                sessionId,
-            });
-
-            if (stripeError) {
-                console.error('Stripe redirect error:', stripeError);
-                alert(stripeError.message);
-                setIsProcessing(false);
-            }
         } catch (err) {
             console.error('Checkout error:', err);
             alert('An unexpected error occurred.');
@@ -89,20 +95,18 @@ export default function CheckoutPage() {
                             <section>
                                 <h2 className="text-lg font-bold text-[#2B2B2B] uppercase tracking-widest mb-6">Express Checkout</h2>
                                 <p className="text-gray-500 mb-6 text-sm">
-                                    Complete your purchase securely with Stripe. You will be redirected to a secure payment page to enter your shipping and payment details.
+                                    Complete your purchase securely. You will be redirected to a secure payment page to enter your shipping and payment details.
                                 </p>
 
                                 <Button
                                     onClick={handleStripeCheckout}
                                     disabled={isProcessing}
-                                    className="w-full bg-[#635BFF] hover:bg-[#5851E1] text-white h-14 rounded-md text-sm font-bold tracking-wide transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                                    className="w-full bg-[#2B2B2B] hover:bg-[#6C7466] text-white h-14 rounded-md text-sm font-bold tracking-wide transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 uppercase"
                                 >
                                     {isProcessing ? (
                                         <Loader2 className="w-5 h-5 animate-spin" />
                                     ) : (
-                                        <>
-                                            Pay with <span className="font-bold text-lg">Stripe</span> <CreditCard className="w-5 h-5 ml-1" />
-                                        </>
+                                        "Pay"
                                     )}
                                 </Button>
                             </section>
