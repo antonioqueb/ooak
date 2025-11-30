@@ -3,86 +3,53 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react"
+import { Facebook, Instagram, Mail, MapPin, Phone, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-
-// ========================================
-// 📝 TEXT CONFIGURATION
-// ========================================
-const FOOTER_COPY = {
-  brandName: "One of a Kind",
-  tagline: "Unique pieces from nature that tell ancient stories. Each mineral, gem, and fossil is authentic and carefully selected.",
-
-  newsletter: {
-    title: "Newsletter",
-    description: "Be the first to receive new finds, exclusive offers, and knowledge about the fascinating world of minerals.",
-    placeholder: "your@email.com",
-    buttonDefault: "Subscribe",
-    buttonSuccess: "Subscribed!",
-    privacyText: "By subscribing, you accept our",
-    privacyLink: "Privacy Policy"
-  },
-
-  quickLinks: {
-    title: "Explore",
-    links: [
-      { label: "Full Catalog", href: "/collections/alloy" },
-      { label: "Featured Pieces", href: "/collections/crystal" },
-      { label: "Our Story", href: "/the-brand" },
-      { label: "Certificates", href: "/craft-stories" },
-      { label: "Mineral Care", href: "/craft-stories" }
-    ]
-  },
-
-  legalLinks: {
-    title: "Legal",
-    links: [
-      { label: "Terms and Conditions", href: "/legal" },
-      { label: "Privacy Policy", href: "/legal" },
-      { label: "Shipping and Delivery", href: "/legal" },
-      { label: "Returns and Exchanges", href: "/legal" },
-      { label: "Legal Notice", href: "/legal" }
-    ]
-  },
-
-  contact: {
-    title: "Contact",
-    location: "García, Nuevo León, Mexico",
-    phone: "+52 81 1234 5678",
-    email: "hello@oneofakind.mx"
-  },
-
-  social: {
-    facebook: "https://facebook.com/oneofakind",
-    instagram: "https://instagram.com/oneofakind",
-    email: "mailto:hello@oneofakind.mx"
-  },
-
-  bottom: {
-    copyright: "One of a Kind. All rights reserved.",
-    links: [
-      { label: "Site Map", href: "/legal" },
-      { label: "Accessibility", href: "/legal" }
-    ]
-  }
-}
+import { useFooterData } from "@/hooks/useFooterData"
 
 export function Footer() {
+  const { footerData, loading, subscribeEmail } = useFooterData()
   const [email, setEmail] = React.useState("")
-  const [isSubscribed, setIsSubscribed] = React.useState(false)
+  const [subscriptionStatus, setSubscriptionStatus] = React.useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [message, setMessage] = React.useState("")
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (email) {
-      setIsSubscribed(true)
+    if (!email) return
+
+    setSubscriptionStatus('loading')
+    try {
+      await subscribeEmail(email)
+      setSubscriptionStatus('success')
+      setMessage("¡Gracias por suscribirte!")
+      setEmail("")
       setTimeout(() => {
-        setEmail("")
-        setIsSubscribed(false)
+        setSubscriptionStatus('idle')
+        setMessage("")
+      }, 3000)
+    } catch (err: any) {
+      setSubscriptionStatus('error')
+      setMessage(err.message)
+      setTimeout(() => {
+        setSubscriptionStatus('idle')
+        setMessage("")
       }, 3000)
     }
   }
+
+  if (loading) {
+    return (
+      <footer className="bg-[#F5F3F0] border-t border-[#6C7466]/10 py-20">
+        <div className="flex justify-center items-center">
+          <Loader2 className="w-6 h-6 animate-spin text-[#6C7466]" />
+        </div>
+      </footer>
+    )
+  }
+
+  if (!footerData) return null
 
   return (
     <footer className="bg-[#F5F3F0] border-t border-[#6C7466]/10">
@@ -94,47 +61,53 @@ export function Footer() {
             {/* Company Info */}
             <div className="space-y-4 sm:space-y-5">
               <h3 className="text-[#6C7466] font-bold text-base sm:text-lg tracking-wider">
-                {FOOTER_COPY.brandName}
+                {footerData.brandName}
               </h3>
               <p className="text-[#6C7466]/70 text-sm sm:text-base leading-relaxed max-w-xs">
-                {FOOTER_COPY.tagline}
+                {footerData.tagline}
               </p>
               <div className="flex items-center gap-3 pt-2">
-                <Link
-                  href={FOOTER_COPY.social.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#6C7466]/10 hover:bg-[#6C7466]/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
-                  aria-label="Facebook"
-                >
-                  <Facebook className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-[#6C7466]" />
-                </Link>
-                <Link
-                  href={FOOTER_COPY.social.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#6C7466]/10 hover:bg-[#6C7466]/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
-                  aria-label="Instagram"
-                >
-                  <Instagram className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-[#6C7466]" />
-                </Link>
-                <Link
-                  href={FOOTER_COPY.social.email}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#6C7466]/10 hover:bg-[#6C7466]/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
-                  aria-label="Email"
-                >
-                  <Mail className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-[#6C7466]" />
-                </Link>
+                {footerData.social?.facebook && (
+                  <Link
+                    href={footerData.social.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#6C7466]/10 hover:bg-[#6C7466]/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
+                    aria-label="Facebook"
+                  >
+                    <Facebook className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-[#6C7466]" />
+                  </Link>
+                )}
+                {footerData.social?.instagram && (
+                  <Link
+                    href={footerData.social.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#6C7466]/10 hover:bg-[#6C7466]/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-[#6C7466]" />
+                  </Link>
+                )}
+                {footerData.social?.email && (
+                  <Link
+                    href={footerData.social.email}
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#6C7466]/10 hover:bg-[#6C7466]/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
+                    aria-label="Email"
+                  >
+                    <Mail className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-[#6C7466]" />
+                  </Link>
+                )}
               </div>
             </div>
 
             {/* Quick Links */}
             <div className="space-y-4 sm:space-y-5">
               <h3 className="text-[#6C7466] font-bold text-sm sm:text-base tracking-wider uppercase">
-                {FOOTER_COPY.quickLinks.title}
+                {footerData.quickLinks?.title}
               </h3>
               <ul className="space-y-2.5 sm:space-y-3">
-                {FOOTER_COPY.quickLinks.links.map((link) => (
+                {footerData.quickLinks?.links?.map((link: any) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
@@ -150,10 +123,10 @@ export function Footer() {
             {/* Legal */}
             <div className="space-y-4 sm:space-y-5">
               <h3 className="text-[#6C7466] font-bold text-sm sm:text-base tracking-wider uppercase">
-                {FOOTER_COPY.legalLinks.title}
+                {footerData.legalLinks?.title}
               </h3>
               <ul className="space-y-2.5 sm:space-y-3">
-                {FOOTER_COPY.legalLinks.links.map((link) => (
+                {footerData.legalLinks?.links?.map((link: any) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
@@ -169,37 +142,51 @@ export function Footer() {
             {/* Newsletter */}
             <div className="space-y-4 sm:space-y-5">
               <h3 className="text-[#6C7466] font-bold text-sm sm:text-base tracking-wider uppercase">
-                {FOOTER_COPY.newsletter.title}
+                {footerData.newsletter?.title}
               </h3>
               <p className="text-[#6C7466]/70 text-sm sm:text-base leading-relaxed">
-                {FOOTER_COPY.newsletter.description}
+                {footerData.newsletter?.description}
               </p>
               <form onSubmit={handleSubscribe} className="space-y-3">
                 <Input
                   type="email"
-                  placeholder={FOOTER_COPY.newsletter.placeholder}
+                  placeholder={footerData.newsletter?.placeholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-white border-[#6C7466]/20 text-[#6C7466] placeholder:text-[#6C7466]/40 focus:border-[#6C7466] focus:ring-[#6C7466]/20 h-11 sm:h-12 text-sm sm:text-base"
                   required
+                  disabled={subscriptionStatus === 'loading' || subscriptionStatus === 'success'}
                 />
                 <Button
                   type="submit"
+                  disabled={subscriptionStatus === 'loading' || subscriptionStatus === 'success'}
                   className={cn(
                     "w-full transition-all duration-300 h-11 sm:h-12 text-sm sm:text-base font-medium",
-                    isSubscribed
+                    subscriptionStatus === 'success'
                       ? "bg-green-600 hover:bg-green-700"
-                      : "bg-[#6C7466] hover:bg-[#6C7466]/90"
+                      : subscriptionStatus === 'error'
+                        ? "bg-red-600 hover:bg-red-700"
+                        : "bg-[#6C7466] hover:bg-[#6C7466]/90"
                   )}
                 >
-                  {isSubscribed ? FOOTER_COPY.newsletter.buttonSuccess : FOOTER_COPY.newsletter.buttonDefault}
+                  {subscriptionStatus === 'loading' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : subscriptionStatus === 'success' ? (
+                    "¡Suscrito!"
+                  ) : subscriptionStatus === 'error' ? (
+                    "Error"
+                  ) : (
+                    "Suscribirse"
+                  )}
                 </Button>
+                {message && (
+                  <p className={cn("text-xs mt-2", subscriptionStatus === 'error' ? "text-red-500" : "text-green-600")}>
+                    {message}
+                  </p>
+                )}
               </form>
               <p className="text-[#6C7466]/50 text-xs sm:text-sm leading-relaxed">
-                {FOOTER_COPY.newsletter.privacyText}{" "}
-                <Link href="/privacy-policy" className="underline hover:text-[#6C7466] transition-colors">
-                  {FOOTER_COPY.newsletter.privacyLink}
-                </Link>
+                {footerData.newsletter?.privacyText}
               </p>
             </div>
           </div>
@@ -208,26 +195,32 @@ export function Footer() {
         {/* Contact Info Bar */}
         <div className="border-t border-[#6C7466]/10 py-6 sm:py-7 lg:py-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-8 xl:gap-12">
-            <div className="flex items-center gap-2 text-[#6C7466]/70 group">
-              <MapPin className="w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0 group-hover:text-[#6C7466] transition-colors" />
-              <span className="text-xs sm:text-sm lg:text-base">{FOOTER_COPY.contact.location}</span>
-            </div>
+            {footerData.contact?.location && (
+              <div className="flex items-center gap-2 text-[#6C7466]/70 group">
+                <MapPin className="w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0 group-hover:text-[#6C7466] transition-colors" />
+                <span className="text-xs sm:text-sm lg:text-base">{footerData.contact.location}</span>
+              </div>
+            )}
             <div className="hidden sm:block w-px h-4 bg-[#6C7466]/20" />
-            <Link
-              href={`tel:${FOOTER_COPY.contact.phone}`}
-              className="flex items-center gap-2 text-[#6C7466]/70 hover:text-[#6C7466] transition-colors group"
-            >
-              <Phone className="w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
-              <span className="text-xs sm:text-sm lg:text-base">{FOOTER_COPY.contact.phone}</span>
-            </Link>
+            {footerData.contact?.phone && (
+              <Link
+                href={`tel:${footerData.contact.phone}`}
+                className="flex items-center gap-2 text-[#6C7466]/70 hover:text-[#6C7466] transition-colors group"
+              >
+                <Phone className="w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
+                <span className="text-xs sm:text-sm lg:text-base">{footerData.contact.phone}</span>
+              </Link>
+            )}
             <div className="hidden sm:block w-px h-4 bg-[#6C7466]/20" />
-            <Link
-              href={`mailto:${FOOTER_COPY.contact.email}`}
-              className="flex items-center gap-2 text-[#6C7466]/70 hover:text-[#6C7466] transition-colors group"
-            >
-              <Mail className="w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
-              <span className="text-xs sm:text-sm lg:text-base">{FOOTER_COPY.contact.email}</span>
-            </Link>
+            {footerData.contact?.email && (
+              <Link
+                href={`mailto:${footerData.contact.email}`}
+                className="flex items-center gap-2 text-[#6C7466]/70 hover:text-[#6C7466] transition-colors group"
+              >
+                <Mail className="w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
+                <span className="text-xs sm:text-sm lg:text-base">{footerData.contact.email}</span>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -235,10 +228,10 @@ export function Footer() {
         <div className="border-t border-[#6C7466]/10 py-5 sm:py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
             <p className="text-[#6C7466]/60 text-xs sm:text-sm text-center sm:text-left">
-              © {new Date().getFullYear()} {FOOTER_COPY.bottom.copyright}
+              © {new Date().getFullYear()} {footerData.bottom?.copyright}
             </p>
             <div className="flex items-center gap-3 sm:gap-4">
-              {FOOTER_COPY.bottom.links.map((link, index) => (
+              {footerData.bottom?.links?.map((link: any, index: number) => (
                 <React.Fragment key={link.href}>
                   {index > 0 && <span className="text-[#6C7466]/30 text-xs">•</span>}
                   <Link
