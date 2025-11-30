@@ -3,45 +3,63 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/context/cart-context";
+import { loadStripe } from "@stripe/stripe-js";
+
+// Make sure to call `loadStripe` outside of a component’s render to avoid
+// recreating the `Stripe` object on every render.
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function CheckoutPage() {
-    const { items, cartTotal, clearCart } = useCart();
-    const router = useRouter();
+    const { items, cartTotal } = useCart();
     const [isProcessing, setIsProcessing] = React.useState(false);
-    const [isSuccess, setIsSuccess] = React.useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleStripeCheckout = async () => {
         setIsProcessing(true);
 
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        try {
+            const response = await fetch('/api/checkout_sessions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ items }),
+            });
 
-        setIsProcessing(false);
-        setIsSuccess(true);
-        clearCart();
+            const { sessionId, error } = await response.json();
+
+            if (error) {
+                console.error('Error creating checkout session:', error);
+                alert('Payment failed: ' + error);
+                setIsProcessing(false);
+                return;
+            }
+
+            const stripe = await stripePromise;
+            if (!stripe) {
+                console.error('Stripe failed to load');
+                setIsProcessing(false);
+                return;
+            }
+
+            const { error: stripeError } = await stripe.redirectToCheckout({
+                sessionId,
+            });
+
+            if (stripeError) {
+                console.error('Stripe redirect error:', stripeError);
+                alert(stripeError.message);
+                setIsProcessing(false);
+            }
+        } catch (err) {
+            console.error('Checkout error:', err);
+            alert('An unexpected error occurred.');
+            setIsProcessing(false);
+        }
     };
-
-    if (isSuccess) {
-        return (
-            <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-6 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6 animate-in zoom-in duration-500">
-                    <CheckCircle2 className="w-8 h-8 text-green-600" />
-                </div>
-                <h1 className="text-3xl md:text-4xl font-serif text-[#2B2B2B] mb-4">Order Confirmed!</h1>
-                <p className="text-gray-500 max-w-md mb-8">
-                    Thank you for your purchase. Your natural treasures will be on their way soon. You will receive a confirmation email shortly.
-                </p>
-                <Button asChild className="bg-[#2B2B2B] text-white hover:bg-[#6C7466] h-12 px-8 rounded-none text-xs font-bold tracking-[0.2em] uppercase">
-                    <Link href="/">Return to Home</Link>
-                </Button>
-            </div>
-        );
-    }
 
     if (items.length === 0) {
         return (
@@ -65,51 +83,44 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
-                    {/* Checkout Form */}
+                    {/* Checkout Options */}
                     <div>
-                        <form onSubmit={handleSubmit} className="space-y-8">
-                            {/* Contact Info */}
+                        <div className="space-y-8">
                             <section>
-                                <h2 className="text-lg font-bold text-[#2B2B2B] uppercase tracking-widest mb-6">Contact Information</h2>
-                                <div className="space-y-4">
-                                    <Input required type="email" placeholder="Email Address" className="bg-white border-[#6C7466]/20 h-12" />
-                                </div>
+                                <h2 className="text-lg font-bold text-[#2B2B2B] uppercase tracking-widest mb-6">Express Checkout</h2>
+                                <p className="text-gray-500 mb-6 text-sm">
+                                    Complete your purchase securely with Stripe. You will be redirected to a secure payment page to enter your shipping and payment details.
+                                </p>
+
+                                <Button
+                                    onClick={handleStripeCheckout}
+                                    disabled={isProcessing}
+                                    className="w-full bg-[#635BFF] hover:bg-[#5851E1] text-white h-14 rounded-md text-sm font-bold tracking-wide transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    {isProcessing ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            Pay with <span className="font-bold text-lg">Stripe</span> <CreditCard className="w-5 h-5 ml-1" />
+                                        </>
+                                    )}
+                                </Button>
                             </section>
 
-                            {/* Shipping Address */}
-                            <section>
-                                <h2 className="text-lg font-bold text-[#2B2B2B] uppercase tracking-widest mb-6">Shipping Address</h2>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <Input required placeholder="First Name" className="bg-white border-[#6C7466]/20 h-12" />
-                                    <Input required placeholder="Last Name" className="bg-white border-[#6C7466]/20 h-12" />
-                                    <Input required placeholder="Address" className="col-span-2 bg-white border-[#6C7466]/20 h-12" />
-                                    <Input required placeholder="Apartment, suite, etc." className="col-span-2 bg-white border-[#6C7466]/20 h-12" />
-                                    <Input required placeholder="City" className="bg-white border-[#6C7466]/20 h-12" />
-                                    <Input required placeholder="Postal Code" className="bg-white border-[#6C7466]/20 h-12" />
-                                </div>
-                            </section>
+                            <div className="relative flex py-5 items-center">
+                                <div className="flex-grow border-t border-gray-300"></div>
+                                <span className="flex-shrink-0 mx-4 text-gray-400 text-xs uppercase tracking-widest">Secure Payment</span>
+                                <div className="flex-grow border-t border-gray-300"></div>
+                            </div>
 
-                            {/* Payment (Simulated) */}
-                            <section>
-                                <h2 className="text-lg font-bold text-[#2B2B2B] uppercase tracking-widest mb-6">Payment</h2>
-                                <div className="bg-white border border-[#6C7466]/20 p-6 rounded-sm text-center text-gray-500 text-sm">
-                                    <p>This is a simulated checkout.</p>
-                                    <p>No real payment will be processed.</p>
-                                </div>
-                            </section>
-
-                            <Button
-                                type="submit"
-                                disabled={isProcessing}
-                                className="w-full bg-[#2B2B2B] text-white hover:bg-[#6C7466] h-14 rounded-none text-xs font-bold tracking-[0.2em] uppercase"
-                            >
-                                {isProcessing ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    `Pay $${cartTotal.toLocaleString("en-US")}`
-                                )}
-                            </Button>
-                        </form>
+                            <div className="flex justify-center gap-4 opacity-50 grayscale">
+                                {/* Add payment icons here if available, or just text */}
+                                <div className="h-8 w-12 bg-gray-200 rounded"></div>
+                                <div className="h-8 w-12 bg-gray-200 rounded"></div>
+                                <div className="h-8 w-12 bg-gray-200 rounded"></div>
+                                <div className="h-8 w-12 bg-gray-200 rounded"></div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Order Summary */}
@@ -139,7 +150,7 @@ export default function CheckoutPage() {
                             </div>
                             <div className="flex justify-between text-gray-600">
                                 <span>Shipping</span>
-                                <span>Free</span>
+                                <span>Calculated at checkout</span>
                             </div>
                         </div>
 
