@@ -38,7 +38,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     const [error, setError] = useState<string | null>(null);
     const [slug, setSlug] = useState<string>('');
 
-    // Manejo del Promise de params para Next.js 15
+    // 1. Desempaquetar Params (Next.js 15)
     useEffect(() => {
         const getParams = async () => {
             const resolvedParams = await params;
@@ -47,15 +47,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         getParams();
     }, [params]);
 
-    // Fetch de datos
+    // 2. Fetch de datos
     useEffect(() => {
         if (!slug) return;
 
         const fetchEvent = async () => {
             try {
-                // Simula un delay pequeño para ver el Skeleton (puedes quitar esto en prod)
-                // await new Promise(resolve => setTimeout(resolve, 800)); 
-                
                 const res = await fetch(`/api/news-events/${slug}`);
                 if (!res.ok) {
                     if (res.status === 404) {
@@ -77,6 +74,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         fetchEvent();
     }, [slug]);
 
+    // 3. Función compartir
     const handleShare = async () => {
         if (navigator.share && event) {
             try {
@@ -89,13 +87,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                 console.log('Error sharing', err);
             }
         } else {
-            // Fallback: Copiar al portapapeles
             navigator.clipboard.writeText(window.location.href);
             alert('Enlace copiado al portapapeles');
         }
     };
 
-    // --- Loading State (Skeleton UI) ---
+    // --- Loading Skeleton ---
     if (loading) {
         return (
             <div className="min-h-screen bg-[#FDFBF7] animate-pulse">
@@ -106,7 +103,6 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                             <div className="h-12 bg-gray-200 rounded w-3/4 mb-6" />
                             <div className="h-4 bg-gray-200 rounded w-full" />
                             <div className="h-4 bg-gray-200 rounded w-full" />
-                            <div className="h-4 bg-gray-200 rounded w-2/3" />
                         </div>
                         <div className="h-64 bg-gray-200 rounded-2xl" />
                     </div>
@@ -120,13 +116,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     if (error) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] text-[#2B2B2B]">
-                <div className="bg-red-50 text-red-600 p-6 rounded-lg border border-red-100 max-w-md text-center">
-                    <p className="font-medium mb-2">Algo salió mal</p>
-                    <p className="text-sm opacity-80">No pudimos cargar el evento. Por favor intenta de nuevo.</p>
-                </div>
-                <Link href="/news-events" className="mt-6 text-[#6C7466] hover:underline">
-                    Volver a eventos
-                </Link>
+                <p className="text-red-500 mb-4">Error cargando el evento.</p>
+                <Link href="/news-events" className="text-[#6C7466] underline">Volver</Link>
             </div>
         );
     }
@@ -134,7 +125,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     return (
         <main className="min-h-screen bg-[#FDFBF7] text-[#2B2B2B] font-sans selection:bg-[#6C7466] selection:text-white">
             
-            {/* Header / Hero Image */}
+            {/* HERO SECTION */}
             <div className="relative h-[50vh] lg:h-[60vh] w-full overflow-hidden">
                 {event.image ? (
                     <Image
@@ -150,10 +141,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                     </div>
                 )}
                 
-                {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2B2B2B]/90 via-[#2B2B2B]/20 to-transparent" />
 
-                {/* Navigation Top */}
                 <div className="absolute top-0 left-0 w-full p-6 z-20">
                     <div className="container mx-auto max-w-6xl">
                         <Link
@@ -161,12 +150,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                             className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-white/20 transition-all duration-300 group"
                         >
                             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                            Volver a Eventos
+                            Volver
                         </Link>
                     </div>
                 </div>
 
-                {/* Hero Title Content */}
                 <div className="absolute bottom-0 left-0 w-full p-6 lg:p-12 z-20">
                     <div className="container mx-auto max-w-6xl">
                         {event.status === 'upcoming' && (
@@ -181,23 +169,43 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                 </div>
             </div>
 
-            {/* Main Content Layout */}
+            {/* CONTENIDO PRINCIPAL */}
             <div className="container mx-auto max-w-6xl px-6 py-12 lg:py-20">
                 <div className="grid lg:grid-cols-12 gap-12">
                     
-                    {/* Left Column: Content & Gallery (8 cols) */}
+                    {/* COLUMNA IZQUIERDA: TEXTO EDITORIAL (8 COLS) */}
                     <div className="lg:col-span-8">
-                        {/* Description */}
-                        <div className="prose prose-lg prose-headings:font-serif prose-headings:text-[#2B2B2B] prose-p:text-[#2B2B2B]/80 prose-a:text-[#6C7466] hover:prose-a:text-[#555] prose-strong:text-[#2B2B2B] max-w-none mb-16">
+                        
+                        {/* 
+                            AQUÍ ESTÁ LA CORRECCIÓN CLAVE PARA QUE NO SE VEA AMATEUR 
+                            Configuramos 'prose' para forzar estilos elegantes en el HTML inyectado.
+                        */}
+                        <article className="
+                            prose prose-lg max-w-none
+                            
+                            // Títulos
+                            prose-headings:font-serif prose-headings:text-[#2B2B2B]
+                            prose-h2:text-3xl prose-h2:font-medium prose-h2:mt-12 prose-h2:mb-6
+                            prose-h3:text-sm prose-h3:font-bold prose-h3:uppercase prose-h3:tracking-widest prose-h3:text-[#6C7466] prose-h3:mt-8
+                            
+                            // Párrafos y Negritas
+                            prose-p:text-[#2B2B2B]/85 prose-p:leading-[1.8] prose-p:font-light
+                            prose-strong:text-[#2B2B2B] prose-strong:font-bold prose-strong:bg-[#6C7466]/10 prose-strong:px-1 prose-strong:rounded
+                            
+                            // Listas
+                            prose-li:marker:text-[#6C7466] prose-li:text-[#2B2B2B]/85
+                            
+                            // Citas
+                            prose-blockquote:border-l-[#6C7466] prose-blockquote:bg-gray-50 prose-blockquote:py-2 prose-blockquote:not-italic prose-blockquote:rounded-r
+                        ">
                             <div dangerouslySetInnerHTML={{ __html: event.long_description || event.description }} />
-                        </div>
+                        </article>
 
-                        {/* Gallery Section */}
+                        {/* Galería */}
                         {event.gallery && event.gallery.length > 0 && (
-                            <div className="border-t border-[#6C7466]/10 pt-12">
+                            <div className="border-t border-[#6C7466]/10 pt-12 mt-12">
                                 <h3 className="text-2xl font-serif text-[#2B2B2B] mb-8 flex items-center gap-3">
                                     Galería
-                                    <span className="h-px flex-1 bg-[#6C7466]/10"></span>
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {event.gallery.map((img, idx) => (
@@ -211,7 +219,6 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                                                 fill
                                                 className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                                             />
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                         </div>
                                     ))}
                                 </div>
@@ -219,13 +226,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         )}
                     </div>
 
-                    {/* Right Column: Sticky Sidebar Info (4 cols) */}
+                    {/* COLUMNA DERECHA: SIDEBAR STICKY (4 COLS) */}
                     <div className="lg:col-span-4 relative">
                         <div className="sticky top-24 space-y-6">
                             
-                            {/* Info Card */}
                             <div className="bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#6C7466]/5">
-                                <h2 className="text-xl font-serif text-[#2B2B2B] mb-6">Detalles del Evento</h2>
+                                <h2 className="text-xl font-serif text-[#2B2B2B] mb-6">Detalles</h2>
                                 
                                 <div className="space-y-6">
                                     <div className="flex items-start gap-4 group">
@@ -283,17 +289,15 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                                     className="w-full mt-8 flex items-center justify-center gap-2 py-3 px-4 bg-[#FDFBF7] text-[#2B2B2B] border border-[#6C7466]/20 rounded-xl hover:bg-[#6C7466] hover:text-white hover:border-transparent transition-all duration-300 font-medium text-sm"
                                 >
                                     <Share2 className="w-4 h-4" />
-                                    Compartir Evento
+                                    Compartir
                                 </button>
                             </div>
 
-                            {/* Additional CTA or Map Placeholder */}
                             <div className="bg-[#6C7466] rounded-2xl p-8 text-center text-white relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-                                
                                 <h3 className="text-xl font-serif mb-2 relative z-10">¿Te interesa asistir?</h3>
                                 <p className="text-white/80 text-sm mb-6 relative z-10">
-                                    No te pierdas las novedades de este evento.
+                                    No te pierdas las novedades.
                                 </p>
                                 <button className="w-full py-3 px-4 bg-white text-[#6C7466] rounded-xl font-bold text-sm hover:bg-[#FDFBF7] transition-colors relative z-10 flex items-center justify-center gap-2">
                                     Más Información <ExternalLink className="w-3 h-3" />
