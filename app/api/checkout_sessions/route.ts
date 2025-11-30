@@ -22,6 +22,9 @@ export async function POST(req: Request) {
                         name: item.name,
                         images: item.image ? [item.image.startsWith('http') ? item.image : `https://oneofakind.alphaqueb.com${item.image}`] : [],
                         description: item.description ? item.description.substring(0, 100) : undefined,
+                        metadata: {
+                            sku: item.slug // Assuming slug is used as SKU/Internal Reference
+                        }
                     },
                     unit_amount: Math.round(item.price * 100), // Stripe expects cents
                 },
