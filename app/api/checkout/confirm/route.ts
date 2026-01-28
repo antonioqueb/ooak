@@ -5,7 +5,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-10-28.acacia',
 });
 
-const ODOO_URL = 'https://odoo-ooak.alphaqueb.com/api/sales/create_from_stripe';
+const ODOO_URL = 'https://erp.oneofakind.com.mx/odoo/api/sales/create_from_stripe';
 const ODOO_TOKEN = process.env.ODOO_API_TOKEN;
 
 async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.ApiList<Stripe.LineItem>) {

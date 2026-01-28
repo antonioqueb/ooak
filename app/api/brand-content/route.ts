@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
     try {
         // El servidor de Next.js hace la petición a Odoo (esto evita el CORS del navegador)
-        const res = await fetch('https://odoo-ooak.alphaqueb.com/api/the-brand/content', {
+        const res = await fetch('https://erp.oneofakind.com.mx/odoo/api/the-brand/content', {
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -17,7 +17,7 @@ export async function GET() {
         const data = await res.json();
 
         // Convertir todas las URLs http a https para evitar contenido mixto
-        const jsonString = JSON.stringify(data).replace(/http:\/\/odoo-ooak\.alphaqueb\.com/g, 'https://odoo-ooak.alphaqueb.com');
+        const jsonString = JSON.stringify(data).replace(/http:\/\/odoo-ooak\.alphaqueb\.com/g, 'https://erp.oneofakind.com.mx/odoo');
         const secureData = JSON.parse(jsonString);
 
         // Devolvemos los datos al frontend

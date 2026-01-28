@@ -5,7 +5,7 @@ import { ArrowRight, Star, AlertTriangle } from "lucide-react";
 
 // --- CONFIGURACIÓN DE LA API ---
 // Apuntamos directamente a tu instancia de Odoo
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://odoo-ooak.alphaqueb.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://erp.oneofakind.com.mx/odoo";
 const PLACEHOLDER_IMG = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 // --- INTERFACES (Adaptadas a tu respuesta JSON exacta) ---

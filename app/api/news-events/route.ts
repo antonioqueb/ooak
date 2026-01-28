@@ -37,7 +37,7 @@ const FALLBACK_EVENTS = {
 export async function GET() {
     try {
         // Use the live API endpoint provided by the user
-        const res = await fetch('https://odoo-ooak.alphaqueb.com/api/news-events', {
+        const res = await fetch('https://erp.oneofakind.com.mx/odoo/api/news-events', {
             headers: {
                 'Content-Type': 'application/json',
             },

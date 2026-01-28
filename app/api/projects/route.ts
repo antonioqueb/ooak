@@ -63,7 +63,7 @@ const FALLBACK_PROJECTS = {
 export async function GET() {
     try {
         // Use the live API endpoint provided by the user
-        const res = await fetch('https://odoo-ooak.alphaqueb.com/api/projects/list', {
+        const res = await fetch('https://erp.oneofakind.com.mx/odoo/api/projects/list', {
             headers: {
                 'Content-Type': 'application/json',
             },
