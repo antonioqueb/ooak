@@ -6,19 +6,19 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "odoo-ooak.alphaqueb.com",
+        hostname: "erp.oneofakind.com.mx",
         port: "",
         pathname: "/**",
       },
       {
         protocol: "http",
-        hostname: "odoo-ooak.alphaqueb.com",
+        hostname: "erp.oneofakind.com.mx",
         port: "",
         pathname: "/**",
       },
       {
         protocol: "https",
-        hostname: "oneofakind.alphaqueb.com",
+        hostname: "erp.oneofakind.com.mx",
         port: "",
         pathname: "/**",
       },
