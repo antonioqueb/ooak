@@ -53,7 +53,7 @@ export async function GET(
         const { slug } = await params;
 
         // Use the live API endpoint provided by the user
-        const res = await fetch(`https://erp.oneofakind.com.mx/odoo/api/news-events/${slug}`, {
+        const res = await fetch(`https://erp.oneofakind.com.mx/api/news-events/${slug}`, {
             headers: {
                 'Content-Type': 'application/json',
             },

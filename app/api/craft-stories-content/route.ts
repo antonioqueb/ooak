@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
     try {
-        const res = await fetch('https://erp.oneofakind.com.mx/odoo/api/craft-stories/content', {
+        const res = await fetch('https://erp.oneofakind.com.mx/api/craft-stories/content', {
             headers: {
                 'Content-Type': 'application/json',
             },

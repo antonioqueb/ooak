@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://erp.oneofakind.com.mx/odoo/api/legal";
+const API_BASE_URL = "https://erp.oneofakind.com.mx/api/legal";
 
 export interface LegalPageSummary {
     title: string;
@@ -45,7 +45,7 @@ export async function getLegalPage(slug: string): Promise<LegalPageDetail | null
         if (!page) return null;
 
         // Enforce HTTPS in content
-        const secureContent = page.content.replace(/http:\/\/odoo-ooak\.alphaqueb\.com/g, 'https://erp.oneofakind.com.mx/odoo');
+        const secureContent = page.content.replace(/http:\/\/odoo-ooak\.alphaqueb\.com/g, 'https://erp.oneofakind.com.mx');
 
         return {
             ...page,

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
     try {
-        const res = await fetch('https://erp.oneofakind.com.mx/odoo/api/footer/content', {
+        const res = await fetch('https://erp.oneofakind.com.mx/api/footer/content', {
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -16,7 +16,7 @@ export async function GET() {
         const data = await res.json();
 
         // Enforce HTTPS
-        const jsonString = JSON.stringify(data).replace(/http:\/\/odoo-ooak\.alphaqueb\.com/g, 'https://erp.oneofakind.com.mx/odoo');
+        const jsonString = JSON.stringify(data).replace(/http:\/\/odoo-ooak\.alphaqueb\.com/g, 'https://erp.oneofakind.com.mx');
         const secureData = JSON.parse(jsonString);
 
         return NextResponse.json(secureData);

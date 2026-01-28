@@ -53,7 +53,7 @@ export function Navbar() {
   React.useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const res = await fetch('https://erp.oneofakind.com.mx/odoo/api/collections_data');
+        const res = await fetch('https://erp.oneofakind.com.mx/api/collections_data');
         if (!res.ok) throw new Error('Error fetching menu');
         const data = await res.json();
 

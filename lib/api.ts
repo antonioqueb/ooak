@@ -2,8 +2,8 @@ import { Product } from "./products";
 
 // ... existing imports ...
 
-const API_URL = "https://erp.oneofakind.com.mx/odoo/api/collections_data";
-const API_COLLECTION_URL = "https://erp.oneofakind.com.mx/odoo/api/collection";
+const API_URL = "https://erp.oneofakind.com.mx/api/collections_data";
+const API_COLLECTION_URL = "https://erp.oneofakind.com.mx/api/collection";
 
 export interface ApiProduct {
     id: number;
