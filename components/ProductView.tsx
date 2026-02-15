@@ -29,18 +29,6 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
     const [activeTab, setActiveTab] = React.useState<"measurements" | "shipping" | "returns">("measurements");
     const [showMoreDescription, setShowMoreDescription] = React.useState(false);
 
-    // Smooth Zoom Logic
-    const [isZooming, setIsZooming] = React.useState(false);
-    const [mousePosition, setMousePosition] = React.useState({ x: 50, y: 50 });
-    const imageContainerRef = React.useRef<HTMLDivElement>(null);
-
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!imageContainerRef.current) return;
-        const { left, top, width, height } = imageContainerRef.current.getBoundingClientRect();
-        const x = ((e.clientX - left) / width) * 100;
-        const y = ((e.clientY - top) / height) * 100;
-        setMousePosition({ x, y });
-    };
 
     const images = product.images || [product.image];
 
@@ -87,36 +75,15 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                 )}
 
                 {/* Image Container */}
-                <div
-                    ref={imageContainerRef}
-                    className="w-full h-full cursor-zoom-in relative"
-                    onMouseMove={handleMouseMove}
-                    onMouseEnter={() => setIsZooming(true)}
-                    onMouseLeave={() => setIsZooming(false)}
-                >
-                    <div
-                        className="w-full h-full relative"
-                        style={{
-                            transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`,
-                            transform: isZooming ? "scale(2)" : "scale(1)",
-                            transition: "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform-origin 0.1s ease-out"
-                        }}
-                    >
-                        <Image
-                            src={images[selectedImageIndex]}
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 100vw, 60vw"
-                            priority
-                        />
-                    </div>
-
-                    {/* Overlay only when NOT zooming */}
-                    <div className={cn(
-                        "absolute inset-0 bg-[#6C7466]/5 mix-blend-multiply pointer-events-none transition-opacity duration-300",
-                        isZooming ? "opacity-0" : "opacity-100"
-                    )} />
+                <div className="w-full h-full relative flex items-center justify-center p-8 bg-[#EBEBE8]">
+                    <Image
+                        src={images[selectedImageIndex]}
+                        alt={product.name}
+                        fill
+                        className="object-contain"
+                        sizes="(max-width: 768px) 100vw, 60vw"
+                        priority
+                    />
                 </div>
 
                 {/* Thumbnails */}
