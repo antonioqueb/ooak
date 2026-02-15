@@ -201,7 +201,7 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                         <div className="min-h-[80px]">
                             {activeTab === "measurements" && (
                                 <div className="grid grid-cols-2 gap-3 text-sm animate-in fade-in slide-in-from-left-2 duration-300">
-                                    <div><span className="block text-[10px] text-gray-400 uppercase">Dimensions</span><span className="text-[#2B2B2B]">{product.dimensions?.height} x {product.dimensions?.width}</span></div>
+                                    <div><span className="block text-[10px] text-gray-400 uppercase">Dimensions</span><span className="text-[#2B2B2B]">{product.dimensions?.height} x {product.dimensions?.width} x {product.dimensions?.depth}</span></div>
                                     <div><span className="block text-[10px] text-gray-400 uppercase">Weight</span><span className="text-[#2B2B2B]">{product.dimensions?.weight}</span></div>
                                     <div className="col-span-2"><span className="block text-[10px] text-gray-400 uppercase">Material</span><span className="text-[#2B2B2B]">{product.material}</span></div>
                                 </div>
