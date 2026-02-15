@@ -115,6 +115,8 @@ export function mapApiProductDetailToProduct(apiProduct: ApiProductDetail, categ
         collectionKey: collectionKey,
         featured: false,
         description: apiProduct.long_description || apiProduct.short_description, // Use HTML description
+        shortDescription: apiProduct.short_description,
+        longDescription: apiProduct.long_description,
         dimensions: {
             height: apiProduct.specs.dimensions.height + " cm",
             width: apiProduct.specs.dimensions.width + " cm",

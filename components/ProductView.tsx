@@ -161,16 +161,14 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
 
                     {/* Description */}
                     <div className="mb-8 text-gray-500 font-light leading-relaxed text-sm md:text-base">
-                        <p>
-                            {showMoreDescription ? (
-                                <div dangerouslySetInnerHTML={{ __html: product.description || "" }} />
-                            ) : (
-                                <div dangerouslySetInnerHTML={{
-                                    __html: (product.description?.substring(0, 180) || "") + (product.description && product.description.length > 180 ? "..." : "")
-                                }} />
-                            )}
-                        </p>
-                        {product.description && product.description.length > 180 && (
+                        <div className="prose prose-sm max-w-none text-gray-500">
+                            <div dangerouslySetInnerHTML={{
+                                __html: showMoreDescription
+                                    ? (product.longDescription || product.description || "")
+                                    : (product.shortDescription || (product.description?.substring(0, 180) + "...") || "")
+                            }} />
+                        </div>
+                        {(product.longDescription || (product.description && product.description.length > 180)) && (
                             <button
                                 onClick={() => setShowMoreDescription(!showMoreDescription)}
                                 className="text-[#6C7466] text-[10px] md:text-xs font-bold uppercase tracking-widest mt-2 flex items-center gap-2 hover:text-[#2B2B2B] transition-colors"

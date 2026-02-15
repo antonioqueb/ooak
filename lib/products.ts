@@ -8,7 +8,9 @@ export interface Product {
     category: string;
     collectionKey?: string;
     featured?: boolean;
-    description?: string;
+    description?: string; // Keep for backward compatibility or fallbacks
+    shortDescription?: string;
+    longDescription?: string;
     dimensions?: {
         height: string;
         width: string;
