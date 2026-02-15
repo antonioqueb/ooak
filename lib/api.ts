@@ -56,6 +56,7 @@ export interface ApiCollection {
 export interface ApiCollectionDetail {
     collection_info: {
         title: string;
+        subtitle?: string;
         description: string;
         key: string;
     };

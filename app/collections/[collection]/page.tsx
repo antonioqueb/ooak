@@ -68,10 +68,11 @@ export default async function CollectionPage({
                             <p className="text-lg md:text-xl font-serif text-[#2B2B2B] leading-relaxed">
                                 {collectionDetail.collection_info.description}
                             </p>
-                            <p className="mt-4 text-sm text-gray-500 font-light leading-relaxed">
-                                Each piece in this collection has been selected for its ability to transform a space.
-                                We invite you to explore the silence, the texture, and the timeless energy inherent in these forms.
-                            </p>
+                            {collectionDetail.collection_info.subtitle && (
+                                <p className="mt-4 text-sm text-gray-500 font-light leading-relaxed">
+                                    {collectionDetail.collection_info.subtitle}
+                                </p>
+                            )}
                         </div>
 
                         <div className="w-full h-px bg-[#6C7466]/20 mt-12" />
