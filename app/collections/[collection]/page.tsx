@@ -65,11 +65,11 @@ export default async function CollectionPage({
 
                         <div className="max-w-2xl mx-auto">
                             <Sparkles className="w-5 h-5 text-[#6C7466]/40 mb-4 mx-auto" />
-                            <p className="text-lg md:text-xl font-serif text-[#2B2B2B] leading-relaxed">
+                            <p className="text-lg md:text-xl font-serif text-[#2B2B2B] leading-relaxed whitespace-pre-wrap">
                                 {collectionDetail.collection_info.description}
                             </p>
                             {collectionDetail.collection_info.subtitle && (
-                                <p className="mt-4 text-sm text-gray-500 font-light leading-relaxed">
+                                <p className="mt-4 text-sm text-gray-500 font-light leading-relaxed whitespace-pre-wrap">
                                     {collectionDetail.collection_info.subtitle}
                                 </p>
                             )}
