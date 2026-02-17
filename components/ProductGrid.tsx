@@ -160,18 +160,16 @@ function ProductCard({
         </button>
       </div>
 
-      <div className="flex flex-col">
-        <div className="flex justify-between items-baseline">
-          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-1 truncate max-w-[70%]">
-            {product.category}
-          </span>
-          <span className="text-sm font-medium text-[#2B2B2B]">
-            ${product.price.toLocaleString("en-US")}
-          </span>
-        </div>
-        <h3 className="text-lg font-serif text-[#2B2B2B] leading-tight group-hover:text-[#6C7466] transition-colors duration-300 line-clamp-2">
+      <div className="flex flex-col gap-1">
+        <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 leading-tight">
+          {product.category}
+        </span>
+        <h3 className="text-base md:text-lg font-serif text-[#2B2B2B] leading-tight group-hover:text-[#6C7466] transition-colors duration-300">
           {product.name}
         </h3>
+        <span className="text-sm font-medium text-[#2B2B2B]">
+          ${product.price.toLocaleString("en-US")}
+        </span>
       </div>
     </Link>
   );
