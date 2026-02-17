@@ -44,12 +44,12 @@ export default async function CollectionPage({
             <div className="hidden md:block absolute top-0 left-[15%] w-px h-full bg-[#6C7466]/5 z-0" />
             <div className="hidden md:block absolute top-0 right-[15%] w-px h-full bg-[#6C7466]/5 z-0" />
 
-            <div className="relative z-10 pt-20 pb-12 md:pt-32 md:pb-24">
+            <div className="relative z-10 pt-4 pb-0 md:pt-32 md:pb-24">
 
                 {/* 2. HEADER SECTION: Centered & Clean */}
-                <div className="container mx-auto px-6 mb-6 md:mb-12">
+                <div className="container mx-auto px-6 mb-2 md:mb-12">
                     <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-                        <div className="flex items-center gap-3 mb-3 md:mb-6">
+                        <div className="flex items-center gap-3 mb-1 md:mb-6">
                             <Star className="w-2 h-2 md:w-3 md:h-3 text-[#6C7466] animate-spin-slow" />
                             <span className="text-[8px] md:text-[10px] font-bold tracking-[0.3em] uppercase text-[#6C7466]/70">
                                 Curated Series
@@ -57,31 +57,31 @@ export default async function CollectionPage({
                             <Star className="w-2 h-2 md:w-3 md:h-3 text-[#6C7466] animate-spin-slow" />
                         </div>
 
-                        <h1 className="text-xl md:text-5xl lg:text-6xl font-serif text-[#6C7466] leading-[1.1] tracking-tight mb-4 md:mb-8">
+                        <h1 className="text-xl md:text-5xl lg:text-6xl font-serif text-[#6C7466] leading-[1.1] tracking-tight mb-2 md:mb-8">
                             {mainTitle}
                         </h1>
 
-                        <div className="w-full h-px bg-[#6C7466]/20 mb-4 md:mb-8" />
+                        <div className="w-full h-px bg-[#6C7466]/20 mb-2 md:mb-8 opacity-20 md:opacity-100" />
 
                         <div className="max-w-2xl mx-auto">
-                            <Sparkles className="w-3 h-3 md:w-5 md:h-5 text-[#6C7466]/40 mb-2 md:mb-4 mx-auto" />
+                            <Sparkles className="hidden md:block w-3 h-3 md:w-5 md:h-5 text-[#6C7466]/40 mb-2 md:mb-4 mx-auto" />
                             <p className="text-xs md:text-xl font-serif text-[#2B2B2B] leading-tight md:leading-relaxed whitespace-pre-wrap">
                                 {collectionDetail.collection_info.description}
                             </p>
                             {collectionDetail.collection_info.subtitle && (
-                                <p className="mt-2 md:mt-4 text-[10px] md:text-sm text-gray-500 font-light leading-tight md:leading-relaxed whitespace-pre-wrap">
+                                <p className="mt-1 md:mt-4 text-[10px] md:text-sm text-gray-500 font-light leading-tight md:leading-relaxed whitespace-pre-wrap">
                                     {collectionDetail.collection_info.subtitle}
                                 </p>
                             )}
                         </div>
 
-                        <div className="w-full h-px bg-[#6C7466]/20 mt-6 md:mt-12" />
+                        <div className="hidden md:block w-full h-px bg-[#6C7466]/20 mt-6 md:mt-12" />
                     </div>
                 </div>
 
                 {/* 5. GALLERY GRID */}
                 <div className="container mx-auto px-6">
-                    <div className="flex items-center justify-between mb-6 md:mb-12 border-b border-[#6C7466]/10 pb-3 md:pb-6">
+                    <div className="flex items-center justify-between mt-4 mb-4 md:mb-12 border-b border-[#6C7466]/10 pb-2 md:pb-6">
                         <span className="text-sm md:text-4xl font-serif text-[#6C7466] italic hidden md:block">
                             The Pieces
                         </span>
