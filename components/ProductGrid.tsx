@@ -56,7 +56,7 @@ export function ProductGrid({ products: propProducts }: { products?: Product[] }
 
       <div className="container mx-auto px-6 relative z-10">
         {/* Gallery */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 md:pl-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-16 md:pl-12">
           {currentProducts.map((product) => (
             <ProductCard
               key={product.id}
