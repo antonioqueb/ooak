@@ -4,15 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-    MapPin, 
-    ArrowLeft, 
-    Share2, 
-    Loader2, 
-    Calendar, 
-    User, 
-    Briefcase, 
-    Layers 
+import {
+    MapPin,
+    ArrowLeft,
+    Share2,
+    Loader2,
+    Calendar,
+    User,
+    Briefcase,
+    Layers
 } from 'lucide-react';
 
 interface ProjectDetail {
@@ -85,7 +85,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
             }
         } else {
             navigator.clipboard.writeText(window.location.href);
-            alert('Enlace copiado al portapapeles');
+            alert('Link copied to clipboard');
         }
     };
 
@@ -113,9 +113,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
     if (error) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] text-[#2B2B2B]">
-                <p className="text-red-500 mb-4 font-medium">Error cargando el proyecto.</p>
+                <p className="text-red-500 mb-4 font-medium">Error loading project.</p>
                 <Link href="/projects" className="text-[#6C7466] hover:underline flex items-center gap-2">
-                    <ArrowLeft className="w-4 h-4" /> Volver a proyectos
+                    <ArrowLeft className="w-4 h-4" /> Back to projects
                 </Link>
             </div>
         );
@@ -123,7 +123,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
 
     return (
         <main className="min-h-screen bg-[#FDFBF7] text-[#2B2B2B] font-sans selection:bg-[#6C7466] selection:text-white">
-            
+
             {/* --- HERO SECTION --- */}
             <div className="relative h-[60vh] lg:h-[70vh] w-full overflow-hidden bg-[#EBEBE8]">
                 <Image
@@ -133,7 +133,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                     className="object-cover"
                     priority
                 />
-                
+
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2B2B2B]/90 via-[#2B2B2B]/30 to-transparent" />
 
@@ -145,7 +145,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                             className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-white/20 transition-all duration-300 group"
                         >
                             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                            Volver
+                            Back
                         </Link>
                     </div>
                 </div>
@@ -169,7 +169,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
 
                     {/* COLUMNA IZQUIERDA: TEXTO CON ESTILO PROSE (8 COLS) */}
                     <div className="lg:col-span-8">
-                        
+
                         {/* Intro / Short Description en tamaño grande */}
                         <p className="text-xl md:text-2xl font-serif text-[#2B2B2B] leading-relaxed mb-10 border-l-4 border-[#6C7466] pl-6 py-1">
                             {project.description}
@@ -210,13 +210,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                         {project.gallery && project.gallery.length > 0 && (
                             <div className="border-t border-[#6C7466]/10 pt-16 mt-16">
                                 <h3 className="text-2xl font-serif text-[#2B2B2B] mb-8 flex items-center gap-4">
-                                    Galería del Proyecto
+                                    Project Gallery
                                     <span className="h-px flex-1 bg-[#6C7466]/10"></span>
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {project.gallery.map((img, idx) => (
-                                        <div 
-                                            key={idx} 
+                                        <div
+                                            key={idx}
                                             className={`relative rounded-xl overflow-hidden shadow-sm group bg-gray-100 ${idx === 0 ? 'md:col-span-2 aspect-[2/1]' : 'aspect-square'}`}
                                         >
                                             <Image
@@ -236,11 +236,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                     {/* COLUMNA DERECHA: SIDEBAR STICKY (4 COLS) */}
                     <div className="lg:col-span-4 relative">
                         <div className="sticky top-24 space-y-6">
-                            
+
                             {/* Card de Ficha Técnica */}
                             <div className="bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#6C7466]/10">
                                 <h2 className="text-xl font-serif text-[#2B2B2B] mb-6 border-b border-[#6C7466]/10 pb-4">
-                                    Ficha Técnica
+                                    Technical Sheet
                                 </h2>
 
                                 <div className="space-y-6">
@@ -250,7 +250,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                                             <MapPin className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Ubicación</p>
+                                            <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Location</p>
                                             <p className="text-[#2B2B2B] font-medium">{project.location}</p>
                                         </div>
                                     </div>
@@ -261,7 +261,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                                             <Calendar className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Año</p>
+                                            <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Year</p>
                                             <p className="text-[#2B2B2B] font-medium">{project.year}</p>
                                         </div>
                                     </div>
@@ -272,7 +272,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                                             <Layers className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Categoría</p>
+                                            <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Category</p>
                                             <p className="text-[#2B2B2B] font-medium">{project.category}</p>
                                         </div>
                                     </div>
@@ -290,17 +290,17 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                                     {project.client && (
                                         <div className="flex items-center gap-3 text-sm text-[#2B2B2B]/70">
                                             <Briefcase className="w-4 h-4 text-[#6C7466]" />
-                                            <span>Cliente: <span className="text-[#2B2B2B] font-medium">{project.client}</span></span>
+                                            <span>Client: <span className="text-[#2B2B2B] font-medium">{project.client}</span></span>
                                         </div>
                                     )}
                                 </div>
 
-                                <button 
+                                <button
                                     onClick={handleShare}
                                     className="w-full mt-8 flex items-center justify-center gap-2 py-3 px-4 bg-[#FDFBF7] text-[#2B2B2B] border border-[#6C7466]/20 rounded-xl hover:bg-[#6C7466] hover:text-white hover:border-transparent transition-all duration-300 font-medium text-sm"
                                 >
                                     <Share2 className="w-4 h-4" />
-                                    Compartir Proyecto
+                                    Share Project
                                 </button>
                             </div>
 

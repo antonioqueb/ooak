@@ -4,14 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-    Calendar, 
-    MapPin, 
-    ArrowLeft, 
-    Clock, 
-    Share2, 
-    User, 
-    Mail, 
+import {
+    Calendar,
+    MapPin,
+    ArrowLeft,
+    Clock,
+    Share2,
+    User,
+    Mail,
     ExternalLink,
     Loader2
 } from 'lucide-react';
@@ -89,7 +89,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             }
         } else {
             navigator.clipboard.writeText(window.location.href);
-            alert('Enlace copiado al portapapeles');
+            alert('Link copied to clipboard');
         }
     };
 
@@ -118,9 +118,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     if (error) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] text-[#2B2B2B]">
-                <p className="text-red-500 mb-4 font-medium">Error cargando el evento.</p>
+                <p className="text-red-500 mb-4 font-medium">Error loading event.</p>
                 <Link href="/news-events" className="text-[#6C7466] hover:underline flex items-center gap-2">
-                    <ArrowLeft className="w-4 h-4" /> Volver a intentar
+                    <ArrowLeft className="w-4 h-4" /> Try again
                 </Link>
             </div>
         );
@@ -128,7 +128,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
 
     return (
         <main className="min-h-screen bg-[#FDFBF7] text-[#2B2B2B] font-sans selection:bg-[#6C7466] selection:text-white">
-            
+
             {/* --- HERO SECTION --- */}
             <div className="relative h-[50vh] lg:h-[60vh] w-full overflow-hidden bg-[#EBEBE8]">
                 {event.image ? (
@@ -138,14 +138,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         fill
                         className="object-cover"
                         priority
-                        // Nota: Asegúrate de que el dominio de la imagen esté en next.config.js
+                    // Nota: Asegúrate de que el dominio de la imagen esté en next.config.js
                     />
                 ) : (
                     <div className="flex items-center justify-center h-full">
                         <span className="text-[#6C7466]/30 font-serif text-4xl">Event</span>
                     </div>
                 )}
-                
+
                 {/* Degradado para legibilidad del texto */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2B2B2B]/90 via-[#2B2B2B]/30 to-transparent" />
 
@@ -157,7 +157,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                             className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-white/20 transition-all duration-300 group"
                         >
                             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                            Volver
+                            Back
                         </Link>
                     </div>
                 </div>
@@ -167,7 +167,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                     <div className="container mx-auto max-w-6xl">
                         {event.status === 'upcoming' && (
                             <span className="inline-block px-3 py-1 rounded-md bg-[#6C7466] text-white text-xs font-bold tracking-widest uppercase mb-4 shadow-lg shadow-[#6C7466]/20">
-                                Próximo Evento
+                                Upcoming Event
                             </span>
                         )}
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-tight max-w-4xl drop-shadow-md">
@@ -180,10 +180,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             {/* --- CONTENIDO PRINCIPAL --- */}
             <div className="container mx-auto max-w-6xl px-6 py-12 lg:py-20">
                 <div className="grid lg:grid-cols-12 gap-12">
-                    
+
                     {/* COLUMNA IZQUIERDA: TEXTO RENDERIZADO (8 COLS) */}
                     <div className="lg:col-span-8">
-                        
+
                         {/* 
                            AQUÍ ESTÁ LA CORRECCIÓN DE ESTILO PARA TU JSON:
                            Estas clases transforman el HTML crudo de la API en diseño editorial.
@@ -221,13 +221,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         {event.gallery && event.gallery.length > 0 && (
                             <div className="border-t border-[#6C7466]/10 pt-16 mt-12">
                                 <h3 className="text-2xl font-serif text-[#2B2B2B] mb-8 flex items-center gap-4">
-                                    Galería
+                                    Gallery
                                     <span className="h-px flex-1 bg-[#6C7466]/10"></span>
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {event.gallery.map((img, idx) => (
-                                        <div 
-                                            key={idx} 
+                                        <div
+                                            key={idx}
                                             className={`relative rounded-xl overflow-hidden shadow-sm group bg-gray-100 ${idx === 0 ? 'md:col-span-2 md:aspect-[2.5/1]' : 'aspect-square'}`}
                                         >
                                             <Image
@@ -247,13 +247,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                     {/* COLUMNA DERECHA: SIDEBAR STICKY (4 COLS) */}
                     <div className="lg:col-span-4 relative">
                         <div className="sticky top-24 space-y-6">
-                            
+
                             {/* Tarjeta de Información */}
                             <div className="bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#6C7466]/10">
                                 <h2 className="text-xl font-serif text-[#2B2B2B] mb-6 border-b border-[#6C7466]/10 pb-4">
-                                    Detalles del Evento
+                                    Event Details
                                 </h2>
-                                
+
                                 <div className="space-y-6">
                                     {/* Fecha */}
                                     <div className="flex items-start gap-4 group">
@@ -261,7 +261,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                                             <Calendar className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Fecha</p>
+                                            <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Date</p>
                                             <p className="text-[#2B2B2B] font-medium">{event.date}</p>
                                         </div>
                                     </div>
@@ -273,7 +273,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                                                 <Clock className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Horario</p>
+                                                <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Time</p>
                                                 <p className="text-[#2B2B2B] font-medium">{event.time}</p>
                                             </div>
                                         </div>
@@ -285,7 +285,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                                             <MapPin className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Ubicación</p>
+                                            <p className="text-[11px] font-bold text-[#6C7466]/80 uppercase tracking-wider mb-0.5">Location</p>
                                             <p className="text-[#2B2B2B] font-medium leading-tight">{event.location}</p>
                                         </div>
                                     </div>
@@ -312,12 +312,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                                     </>
                                 )}
 
-                                <button 
+                                <button
                                     onClick={handleShare}
                                     className="w-full mt-8 flex items-center justify-center gap-2 py-3 px-4 bg-[#FDFBF7] text-[#2B2B2B] border border-[#6C7466]/20 rounded-xl hover:bg-[#6C7466] hover:text-white hover:border-transparent transition-all duration-300 font-medium text-sm"
                                 >
                                     <Share2 className="w-4 h-4" />
-                                    Compartir
+                                    Share
                                 </button>
                             </div>
 
@@ -325,13 +325,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                             <div className="bg-[#6C7466] rounded-2xl p-8 text-center text-white relative overflow-hidden group shadow-lg">
                                 {/* Efecto decorativo de fondo */}
                                 <div className="absolute top-0 right-0 p-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-                                
-                                <h3 className="text-xl font-serif mb-2 relative z-10">¿Te interesa asistir?</h3>
+
+                                <h3 className="text-xl font-serif mb-2 relative z-10">Interested in attending?</h3>
                                 <p className="text-white/80 text-sm mb-6 relative z-10 font-light">
-                                    No te pierdas las novedades y actualizaciones de este evento.
+                                    Don't miss the news and updates for this event.
                                 </p>
                                 <button className="w-full py-3 px-4 bg-white text-[#6C7466] rounded-xl font-bold text-sm hover:bg-[#FDFBF7] transition-colors relative z-10 flex items-center justify-center gap-2 shadow-md">
-                                    Más Información <ExternalLink className="w-3 h-3" />
+                                    More Information <ExternalLink className="w-3 h-3" />
                                 </button>
                             </div>
 

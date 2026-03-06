@@ -23,7 +23,7 @@ export function Footer() {
     try {
       await subscribeEmail(email)
       setSubscriptionStatus('success')
-      setMessage("¡Gracias por suscribirte!")
+      setMessage("Thank you for subscribing!")
       setEmail("")
       setTimeout(() => {
         setSubscriptionStatus('idle')
@@ -172,11 +172,11 @@ export function Footer() {
                   {subscriptionStatus === 'loading' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : subscriptionStatus === 'success' ? (
-                    "¡Suscrito!"
+                    "Subscribed!"
                   ) : subscriptionStatus === 'error' ? (
                     "Error"
                   ) : (
-                    "Suscribirse"
+                    "Subscribe"
                   )}
                 </Button>
                 {message && (

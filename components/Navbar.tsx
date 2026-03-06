@@ -255,7 +255,7 @@ export function Navbar() {
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
               >
                 <Search className="h-5 w-5" />
-                <span className="sr-only">Buscar</span>
+                <span className="sr-only">Search</span>
               </Button>
 
               <Button
@@ -273,7 +273,7 @@ export function Navbar() {
                     {cartCount}
                   </Badge>
                 )}
-                <span className="sr-only">Carrito de compras</span>
+                <span className="sr-only">Shopping Cart</span>
               </Button>
             </div>
           </div>
@@ -376,7 +376,7 @@ export function Navbar() {
                   className="text-white hover:bg-white/10 hover:text-white h-10 w-10"
                 >
                   <Menu className="h-6 w-6" />
-                  <span className="sr-only">Abrir menú</span>
+                  <span className="sr-only">Open menu</span>
                 </Button>
               </SheetTrigger>
               <SheetContent
@@ -441,7 +441,7 @@ export function Navbar() {
               onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
               <Search className="h-5 w-5" />
-              <span className="sr-only">Buscar</span>
+              <span className="sr-only">Search</span>
             </Button>
             <Button
               variant="ghost"
@@ -458,7 +458,7 @@ export function Navbar() {
                   {cartCount}
                 </Badge>
               )}
-              <span className="sr-only">Carrito de compras</span>
+              <span className="sr-only">Shopping Cart</span>
             </Button>
           </div>
         </div>
@@ -481,7 +481,7 @@ export function Navbar() {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" />
                 <Input
                   type="search"
-                  placeholder="Buscar productos..."
+                  placeholder="Search products..."
                   className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus-visible:ring-white/50 h-10"
                   autoFocus
                 />
