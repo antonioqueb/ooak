@@ -27,7 +27,7 @@ export function BrandStory() {
                 src="/producto3.png" // Asegúrate que esta ruta sea correcta en tu carpeta public
                 alt="Curated crystal collection"
                 fill
-                className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
+                className="object-contain transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
               

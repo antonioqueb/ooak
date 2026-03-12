@@ -54,7 +54,7 @@ export function FeatureSection({
                 src={imageSrc || "/placeholder.svg"} 
                 alt={imageAlt} 
                 fill
-                className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
+                className="object-contain transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
               {/* Filtro sutil para unificar tono */}

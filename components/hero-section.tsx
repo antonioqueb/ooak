@@ -32,7 +32,7 @@ export function HeroSection() {
                 src="/producto5.png"
                 alt="Polished Landscape Jasper - Luxury Object"
                 fill
-                className="object-cover transition-transform duration-[2s] ease-in-out group-hover:scale-105"
+                className="object-contain transition-transform duration-[2s] ease-in-out group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 60vw"
                 priority // Carga prioritaria por ser Hero
               />
