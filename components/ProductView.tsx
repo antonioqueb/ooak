@@ -26,7 +26,7 @@ interface ProductViewProps {
 export function ProductView({ product, collectionSlug }: ProductViewProps) {
     const { addItem } = useCart();
     const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
-    const [activeTab, setActiveTab] = React.useState<"measurements" | "shipping" | "returns">("measurements");
+    const [activeTab, setActiveTab] = React.useState<"measurements" | "shipping">("measurements");
     const [showMoreDescription, setShowMoreDescription] = React.useState(false);
 
 
@@ -146,10 +146,9 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                         )}
                     </div>
 
-                    {/* Tabs */}
                     <div className="border-t border-b border-[#6C7466]/10 py-4 md:py-6 mb-6">
                         <div className="flex gap-6 mb-4 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                            {["measurements", "shipping", "returns"].map((tab) => (
+                            {["measurements", "shipping"].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab as any)}
@@ -167,7 +166,9 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                             {activeTab === "measurements" && (
                                 <div className="grid grid-cols-2 gap-3 text-sm animate-in fade-in slide-in-from-left-2 duration-300">
                                     <div><span className="block text-[10px] text-gray-400 uppercase">Dimensions</span><span className="text-[#2B2B2B]">{product.dimensions?.height} x {product.dimensions?.width} x {product.dimensions?.depth}</span></div>
-                                    <div><span className="block text-[10px] text-gray-400 uppercase">Weight</span><span className="text-[#2B2B2B]">{product.dimensions?.weight}</span></div>
+                                    {product.dimensions?.weight && String(product.dimensions.weight) !== "0" && (
+                                        <div><span className="block text-[10px] text-gray-400 uppercase">Weight</span><span className="text-[#2B2B2B]">{product.dimensions.weight}</span></div>
+                                    )}
                                     <div className="col-span-2"><span className="block text-[10px] text-gray-400 uppercase">Material</span><span className="text-[#2B2B2B]">{product.material}</span></div>
                                 </div>
                             )}
@@ -175,11 +176,6 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                                 <div className="space-y-2 text-sm text-gray-500 font-light animate-in fade-in slide-in-from-left-2 duration-300">
                                     <p className="flex items-center gap-2"><TruckIcon className="w-3.5 h-3.5 text-[#6C7466]" /> CDMX: 2-3 days</p>
                                     <p className="flex items-center gap-2"><Package className="w-3.5 h-3.5 text-[#6C7466]" /> National: 3-5 days</p>
-                                </div>
-                            )}
-                            {activeTab === "returns" && (
-                                <div className="space-y-2 text-sm text-gray-500 font-light animate-in fade-in slide-in-from-left-2 duration-300">
-                                    <p className="flex items-center gap-2"><RefreshCcw className="w-3.5 h-3.5 text-[#6C7466]" /> 30-day return window</p>
                                 </div>
                             )}
                         </div>
