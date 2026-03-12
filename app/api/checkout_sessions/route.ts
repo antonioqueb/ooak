@@ -17,7 +17,7 @@ export async function POST(req: Request) {
         const lineItems = items.map((item: any) => {
             return {
                 price_data: {
-                    currency: 'usd',
+                    currency: 'mxn',
                     product_data: {
                         name: item.name,
                         images: item.image ? [item.image.startsWith('http') ? item.image : `https://oneofakind.alphaqueb.com${item.image}`] : [],
