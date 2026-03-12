@@ -177,7 +177,7 @@ export default async function Home() {
                     src={heroSection.content.image?.src || PLACEHOLDER_IMG}
                     alt={heroSection.content.image?.alt || "Hero Image"}
                     fill
-                    className="object-cover transition-transform duration-[2s] ease-in-out group-hover:scale-105"
+                    className="object-contain transition-transform duration-[2s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 60vw"
                     priority
                     unoptimized={true} // Importante: permite cargar desde dominio externo sin config extra
@@ -281,7 +281,7 @@ export default async function Home() {
                     src={featureSection.content.image?.src || PLACEHOLDER_IMG}
                     alt={featureSection.content.image?.alt || "Feature Image"}
                     fill
-                    className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
+                    className="object-contain transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
                     unoptimized={true}
                   />
@@ -302,7 +302,7 @@ export default async function Home() {
                     src={brandSection.content.image?.src || PLACEHOLDER_IMG}
                     alt={brandSection.content.image?.alt || "Brand Image"}
                     fill
-                    className="object-cover transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
+                    className="object-contain transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
                     unoptimized={true}
                   />
