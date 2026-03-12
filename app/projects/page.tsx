@@ -61,17 +61,17 @@ export default function ProjectsPage() {
             {/* Background Decor */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[#6C7466] opacity-[0.02] rounded-full blur-3xl pointer-events-none" />
 
-            <div className="container mx-auto px-6 py-20 relative z-10">
+            <div className="container mx-auto px-6 pt-24 pb-12 md:pt-32 md:pb-16 relative z-10">
 
                 {/* Header Section */}
-                <div className="max-w-4xl mx-auto text-center mb-20">
+                <div className="max-w-4xl mx-auto text-center mb-12">
                     <span className="uppercase tracking-[0.2em] text-xs font-bold text-[#6C7466]/60 mb-4 block">
                         Portfolio
                     </span>
-                    <h1 className="text-5xl md:text-6xl font-serif font-bold text-[#6C7466] mb-6 tracking-tight">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#6C7466] mb-4 tracking-tight">
                         Selected Projects
                     </h1>
-                    <p className="text-lg md:text-xl text-gray-600 leading-relaxed font-light">
+                    <p className="text-base md:text-lg text-gray-600 leading-relaxed font-light">
                         Collaborations with visionary architects and interior designers to create bespoke spaces where nature acts as the ultimate centerpiece.
                     </p>
                 </div>

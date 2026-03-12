@@ -91,9 +91,9 @@ export default function TheBrandPage() {
             <div className="relative z-10">
 
                 {/* 2. Hero Section: Editorial & Minimal */}
-                <section className="pt-32 pb-20 md:pt-48 md:pb-32 container mx-auto px-6">
-                    <div className="flex flex-col md:flex-row items-start justify-between border-b border-[#6C7466] pb-12">
-                        <div className="md:w-1/3 mb-8 md:mb-0">
+                <section className="pt-24 pb-12 md:pt-32 md:pb-16 container mx-auto px-6">
+                    <div className="flex flex-col md:flex-row items-start justify-between border-b border-[#6C7466] pb-8">
+                        <div className="md:w-1/3 mb-6 md:mb-0">
                             <div className="flex items-center gap-3 text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#6C7466]">
                                 <span className="w-4 h-4 border border-[#6C7466] flex items-center justify-center rounded-full text-[8px]">
                                     {hero.number}
@@ -104,7 +104,7 @@ export default function TheBrandPage() {
                         <div className="md:w-2/3">
                             {/* Usamos dangerouslySetInnerHTML porque el título viene con etiquetas <p> y <br> desde la API */}
                             <div
-                                className="text-5xl md:text-8xl lg:text-9xl font-serif leading-[0.9] text-[#6C7466] mix-blend-multiply [&>p>br]:block"
+                                className="text-4xl md:text-6xl lg:text-7xl font-serif leading-[0.9] text-[#6C7466] mix-blend-multiply [&>p>br]:block"
                                 dangerouslySetInnerHTML={{ __html: hero.title }}
                             />
                         </div>

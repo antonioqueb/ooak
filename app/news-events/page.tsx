@@ -70,15 +70,15 @@ export default function NewsEventsPage() {
             {/* Background Decor */}
             <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#6C7466] opacity-[0.03] rounded-full blur-3xl translate-x-1/2 -translate-y-1/2 pointer-events-none" />
 
-            <div className="container mx-auto px-6 py-20 relative z-10">
+            <div className="container mx-auto px-6 pt-24 pb-12 md:pt-32 md:pb-16 relative z-10">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-24 gap-6">
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 md:mb-16 gap-6">
                     <div className="max-w-2xl">
                         <span className="uppercase tracking-[0.2em] text-xs font-bold text-[#6C7466]/60 mb-4 block">
                             Journal
                         </span>
-                        <h1 className="text-5xl md:text-6xl font-serif font-bold text-[#6C7466] tracking-tight">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#6C7466] tracking-tight">
                             News & Events
                         </h1>
                     </div>

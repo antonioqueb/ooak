@@ -67,15 +67,15 @@ export default function CraftStoriesPage() {
       <div className="relative z-10">
 
         {/* 2. HERO SECTION */}
-        <section className="min-h-[90vh] flex flex-col justify-center container mx-auto px-6 pt-32 pb-20">
+        <section className="flex flex-col justify-center container mx-auto px-6 pt-24 pb-12 md:pt-32 md:pb-16">
           <div className="max-w-screen-2xl mx-auto w-full">
-            <div className="flex flex-col md:flex-row items-end justify-between mb-12 border-b border-[#6C7466]/20 pb-12">
-              <div className="mb-8 md:mb-0">
+            <div className="flex flex-col md:flex-row items-end justify-between mb-8 border-b border-[#6C7466]/20 pb-8">
+              <div className="mb-6 md:mb-0">
                 <div className="flex items-center gap-2 text-[#6C7466] mb-4">
                   <Star className="w-4 h-4 animate-spin-slow" />
                   <span className="text-xs font-bold tracking-[0.25em] uppercase">{content.hero.est}</span>
                 </div>
-                <h1 className="text-7xl md:text-9xl font-serif text-[#1a1a1a] tracking-tight leading-[0.9]">
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-[#1a1a1a] tracking-tight leading-[0.9]">
                   {content.hero.title_raw} <br />
                   <span className="italic font-light text-[#6C7466]">{content.hero.title_pure}</span>
                 </h1>
@@ -90,7 +90,7 @@ export default function CraftStoriesPage() {
             {/* Scroll Indicator */}
             <div className="flex justify-between items-center">
               <span className="text-xs font-mono text-[#6C7466]/60">SCROLL TO DISCOVER</span>
-              <div className="w-12 h-12 rounded-full border border-[#6C7466]/20 flex items-center justify-center animate-bounce duration-3000">
+              <div className="w-10 h-10 rounded-full border border-[#6C7466]/20 flex items-center justify-center animate-bounce duration-3000">
                 <MoveDown className="w-4 h-4 text-[#6C7466]" />
               </div>
             </div>
