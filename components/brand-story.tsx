@@ -19,27 +19,18 @@ export function BrandStory() {
           
           {/* 2. Columna Imagen: Estilo Marco de Galería */}
           <div className="order-2 lg:order-1 relative group">
-            {/* Marco decorativo desplazado */}
-            <div className="absolute inset-0 border border-[#6C7466] translate-x-4 translate-y-4 rounded-sm opacity-20 transition-transform duration-500 group-hover:translate-x-2 group-hover:translate-y-2" />
-            
-            <div className="relative aspect-[3/4] md:aspect-[4/5] overflow-hidden rounded-sm bg-[#EBEBE8]">
+            <div className="relative w-full overflow-hidden rounded-sm">
               <Image
                 src="/producto3.png" // Asegúrate que esta ruta sea correcta en tu carpeta public
                 alt="Curated crystal collection"
-                fill
-                className="object-contain transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
+                width={1000}
+                height={1000}
+                className="w-full h-auto transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
               
               {/* Overlay sutil */}
               <div className="absolute inset-0 bg-[#6C7466]/10 mix-blend-multiply pointer-events-none" />
-            </div>
-
-            {/* Badge Flotante (Estilo Sello) */}
-            <div className="absolute -bottom-6 -right-6 md:bottom-10 md:-right-10 bg-white p-4 rounded-full shadow-xl animate-spin-slow-reverse hidden md:block">
-               <div className="border border-[#6C7466]/20 rounded-full p-2">
-                 <Star className="w-6 h-6 text-[#6C7466]" />
-               </div>
             </div>
           </div>
 

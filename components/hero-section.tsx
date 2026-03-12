@@ -27,26 +27,19 @@ export function HeroSection() {
             </div>
 
             {/* Contenedor de Imagen */}
-            <div className="relative aspect-[4/5] md:aspect-[16/10] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm z-10">
+            <div className="relative w-full overflow-hidden rounded-sm shadow-sm z-10">
               <Image
                 src="/producto5.png"
                 alt="Polished Landscape Jasper - Luxury Object"
-                fill
-                className="object-contain transition-transform duration-[2s] ease-in-out group-hover:scale-105"
+                width={1200}
+                height={1200}
+                className="w-full h-auto transition-transform duration-[2s] ease-in-out group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 60vw"
                 priority // Carga prioritaria por ser Hero
               />
 
               {/* Overlay suave al hover */}
               <div className="absolute inset-0 bg-[#6C7466]/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-
-              {/* Badge "New Arrival" */}
-              <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-                <span className="flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-[#6C7466]">
-                  <Star className="w-3 h-3 fill-[#6C7466]" />
-                  New Arrival
-                </span>
-              </div>
             </div>
           </div>
 

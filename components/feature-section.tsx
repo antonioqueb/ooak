@@ -45,16 +45,13 @@ export function FeatureSection({
           
           {/* --- COLUMNA IMAGEN --- */}
           <div className={`relative group ${reverse ? "lg:col-span-6 lg:col-start-7 lg:order-2" : "lg:col-span-5 lg:order-1"}`}>
-            
-            {/* Marco decorativo (Offset border) */}
-            <div className={`absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm transition-transform duration-500 group-hover:translate-x-0 group-hover:translate-y-0 ${reverse ? "translate-x-4 translate-y-4" : "-translate-x-4 translate-y-4"}`} />
-
-            <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm">
+            <div className="relative w-full overflow-hidden rounded-sm shadow-sm">
               <Image 
                 src={imageSrc || "/placeholder.svg"} 
                 alt={imageAlt} 
-                fill
-                className="object-contain transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
+                width={1000}
+                height={1000}
+                className="w-full h-auto transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
               {/* Filtro sutil para unificar tono */}

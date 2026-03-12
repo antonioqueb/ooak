@@ -172,26 +172,18 @@ export default async function Home() {
                   </div>
                 )}
 
-                <div className="relative aspect-[4/5] md:aspect-[16/10] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm z-10">
+                <div className="relative w-full overflow-hidden rounded-sm shadow-sm z-10">
                   <Image
                     src={heroSection.content.image?.src || PLACEHOLDER_IMG}
                     alt={heroSection.content.image?.alt || "Hero Image"}
-                    fill
-                    className="object-contain transition-transform duration-[2s] ease-in-out group-hover:scale-105"
+                    width={1200}
+                    height={1200}
+                    className="w-full h-auto transition-transform duration-[2s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 60vw"
                     priority
                     unoptimized={true} // Importante: permite cargar desde dominio externo sin config extra
                   />
                   <div className="absolute inset-0 bg-[#6C7466]/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-
-                  {heroSection.content.badge && heroSection.content.badge.text && (
-                    <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-                      <span className="flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-[#6C7466]">
-                        {renderIcon(heroSection.content.badge.icon)}
-                        {heroSection.content.badge.text}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -273,15 +265,14 @@ export default async function Home() {
                 </Link>
               </div>
 
-              {/* Image (Right usually) */}
               <div className={`order-2 lg:col-span-6 relative group ${featureSection.layout === 'image_left' ? 'lg:order-1 lg:col-start-1' : 'lg:order-2 lg:col-start-7'}`}>
-                <div className={`absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm transition-transform duration-500 group-hover:translate-y-2 ${featureSection.layout === 'image_left' ? '-translate-x-4 group-hover:-translate-x-2' : 'translate-x-4 group-hover:translate-x-2'}`} />
-                <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm">
+                <div className="relative w-full overflow-hidden rounded-sm shadow-sm">
                   <Image
                     src={featureSection.content.image?.src || PLACEHOLDER_IMG}
                     alt={featureSection.content.image?.alt || "Feature Image"}
-                    fill
-                    className="object-contain transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
+                    width={1000}
+                    height={1000}
+                    className="w-full h-auto transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
                     unoptimized={true}
                   />
@@ -294,27 +285,18 @@ export default async function Home() {
           {/* --- BRAND STORY SECTION --- */}
           {brandSection && (
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-24 items-center">
-              {/* Image (Left usually) */}
               <div className={`order-2 lg:col-span-5 relative group ${brandSection.layout === 'image_right' ? 'lg:order-2 lg:col-start-8' : 'lg:order-1'}`}>
-                <div className={`absolute inset-0 border border-[#6C7466] opacity-20 rounded-sm transition-transform duration-500 group-hover:translate-y-2 ${brandSection.layout === 'image_right' ? 'translate-x-4 group-hover:translate-x-2' : '-translate-x-4 group-hover:-translate-x-2'}`} />
-                <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EBEBE8] rounded-sm shadow-sm">
+                <div className="relative w-full overflow-hidden rounded-sm shadow-sm">
                   <Image
                     src={brandSection.content.image?.src || PLACEHOLDER_IMG}
                     alt={brandSection.content.image?.alt || "Brand Image"}
-                    fill
-                    className="object-contain transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
+                    width={1000}
+                    height={1000}
+                    className="w-full h-auto transition-transform duration-[1.5s] ease-in-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
                     unoptimized={true}
                   />
                   <div className="absolute inset-0 bg-[#6C7466]/5 mix-blend-multiply transition-opacity duration-500 group-hover:opacity-0" />
-                  
-                  {brandSection.content.image?.show_badge && (
-                    <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-full shadow-xl animate-spin-slow-reverse hidden md:block z-10">
-                      <div className="border border-[#6C7466]/20 rounded-full p-2">
-                        <Star className="w-6 h-6 text-[#6C7466]" />
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 
