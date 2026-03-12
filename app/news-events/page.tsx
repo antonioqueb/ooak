@@ -75,10 +75,12 @@ export default function NewsEventsPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 md:mb-16 gap-6">
                     <div className="max-w-2xl">
-                        <span className="uppercase tracking-[0.2em] text-xs font-bold text-[#6C7466]/60 mb-4 block">
-                            Journal
-                        </span>
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#6C7466] tracking-tight">
+                        <div className="flex items-center gap-2 text-[#6C7466] mb-4">
+                            <span className="text-xs font-bold tracking-[0.25em] uppercase">
+                                Journal
+                            </span>
+                        </div>
+                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-[#6C7466] tracking-tight leading-[0.9]">
                             News & Events
                         </h1>
                     </div>

@@ -65,10 +65,12 @@ export default function ProjectsPage() {
 
                 {/* Header Section */}
                 <div className="max-w-4xl mx-auto text-center mb-12">
-                    <span className="uppercase tracking-[0.2em] text-xs font-bold text-[#6C7466]/60 mb-4 block">
-                        Portfolio
-                    </span>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#6C7466] mb-4 tracking-tight">
+                    <div className="flex items-center justify-center gap-2 text-[#6C7466] mb-4">
+                        <span className="text-xs font-bold tracking-[0.25em] uppercase">
+                            Portfolio
+                        </span>
+                    </div>
+                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-[#6C7466] mb-6 tracking-tight leading-[0.9]">
                         Selected Projects
                     </h1>
                     <p className="text-base md:text-lg text-gray-600 leading-relaxed font-light">
