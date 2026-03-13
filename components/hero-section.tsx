@@ -4,7 +4,7 @@ import { ArrowRight, Star } from "lucide-react";
 
 export function HeroSection() {
   return (
-    <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 px-6 bg-[#FDFBF7] overflow-hidden text-[#2B2B2B]">
+    <section className="relative pt-24 pb-16 md:pt-28 md:pb-20 px-6 bg-[#FDFBF7] overflow-hidden text-[#2B2B2B]">
 
       {/* 1. Background Atmosphere (Noise & Lines) */}
       <div

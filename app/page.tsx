@@ -147,7 +147,7 @@ export default async function Home() {
   // 2. RENDERIZADO
   return (
     <main className="min-h-screen bg-[#FDFBF7] text-[#2B2B2B] selection:bg-[#6C7466] selection:text-white">
-      <div className="relative pt-32 pb-24 md:pt-40 md:pb-32 px-6 overflow-hidden">
+      <div className="relative pt-24 pb-16 md:pt-28 md:pb-20 px-6 overflow-hidden">
         
         {/* Background Noise effect */}
         <div

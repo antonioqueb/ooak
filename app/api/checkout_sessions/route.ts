@@ -20,7 +20,7 @@ export async function POST(req: Request) {
                     currency: 'mxn',
                     product_data: {
                         name: item.name,
-                        images: item.image ? [item.image.startsWith('http') ? item.image : `https://oneofakind.alphaqueb.com${item.image}`] : [],
+                        images: item.image ? [item.image.startsWith('http') ? item.image : `https://oneofakind.com${item.image}`] : [],
                         description: item.description ? item.description.substring(0, 100) : undefined,
                         metadata: {
                             sku: item.slug // Assuming slug is used as SKU/Internal Reference
