@@ -115,11 +115,11 @@ export default function CartPage() {
                                     <span>${cartTotal.toLocaleString("en-US")}</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
-                                    <span>Shipping</span>
-                                    <span className="text-xs text-gray-400">Calculated at checkout</span>
+                                    <span>Tax</span>
+                                    <span className="text-xs text-[#6C7466] font-medium">Included</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
-                                    <span>Tax</span>
+                                    <span>Shipping</span>
                                     <span className="text-xs text-gray-400">Calculated at checkout</span>
                                 </div>
                             </div>
@@ -129,6 +129,7 @@ export default function CartPage() {
                                     <span className="text-base font-bold text-[#2B2B2B]">Total</span>
                                     <span className="text-2xl font-serif text-[#2B2B2B]">${cartTotal.toLocaleString("en-US")}</span>
                                 </div>
+                                <p className="text-[10px] text-[#6C7466] mt-1 text-right">Tax included</p>
                             </div>
 
                             <Button

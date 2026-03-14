@@ -11,33 +11,42 @@ const ODOO_URL = 'https://erp.oneofakind.com.mx/api/sales/create_from_stripe';
 const ODOO_TOKEN = process.env.ODOO_API_TOKEN;
 
 async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.ApiList<Stripe.LineItem>) {
-    // Prepare Payload
     const payload = {
         stripe_session_id: session.id,
         customer: {
-            name: session.customer_details?.name,
+            name: session.customer_details?.name || session.shipping_details?.name || 'Unknown',
             email: session.customer_details?.email,
+            phone: session.customer_details?.phone || null,
             address: {
-                line1: session.shipping_details?.address?.line1,
-                line2: session.shipping_details?.address?.line2,
-                city: session.shipping_details?.address?.city,
-                state: session.shipping_details?.address?.state,
-                country: session.shipping_details?.address?.country,
-                postal_code: session.shipping_details?.address?.postal_code,
+                line1: session.customer_details?.address?.line1 || null,
+                line2: session.customer_details?.address?.line2 || null,
+                city: session.customer_details?.address?.city || null,
+                state: session.customer_details?.address?.state || null,
+                country: session.customer_details?.address?.country || null,
+                postal_code: session.customer_details?.address?.postal_code || null,
+            }
+        },
+        shipping: {
+            name: session.shipping_details?.name || session.customer_details?.name || 'Unknown',
+            address: {
+                line1: session.shipping_details?.address?.line1 || null,
+                line2: session.shipping_details?.address?.line2 || null,
+                city: session.shipping_details?.address?.city || null,
+                state: session.shipping_details?.address?.state || null,
+                country: session.shipping_details?.address?.country || null,
+                postal_code: session.shipping_details?.address?.postal_code || null,
             }
         },
         items: lineItems.data.map((item: any) => ({
             product_name: item.description,
             quantity: item.quantity,
-            price_unit: item.amount_total / 100, // Stripe uses cents
-            // Try to get SKU from product metadata if available
+            price_unit: item.amount_total / 100,
             sku: item.price?.product?.metadata?.sku || null
         }))
     };
 
-    console.log('📦 Sending payload to Odoo:', JSON.stringify(payload, null, 2));
+    console.log('📦 Sending payload to Odoo (Webhook):', JSON.stringify(payload, null, 2));
 
-    // Send to Odoo
     const response = await fetch(ODOO_URL, {
         method: 'POST',
         headers: {
@@ -47,8 +56,6 @@ async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.
         body: JSON.stringify(payload)
     });
 
-    console.log('📡 Odoo Response Status:', response.status);
-
     if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ Odoo Sync Error:', errorText);
@@ -56,7 +63,7 @@ async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.
     }
 
     const json = await response.json();
-    console.log('✅ Orden creada en Odoo:', json.data?.order_name);
+    console.log('✅ Orden creada en Odoo (Webhook):', json.data?.order_name);
     return json;
 }
 
@@ -78,7 +85,6 @@ export async function POST(req: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
 
         try {
-            // Fetch line items (Stripe doesn't send them by default in the webhook)
             const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
                 expand: ['data.price.product']
             });
@@ -87,7 +93,6 @@ export async function POST(req: Request) {
 
         } catch (error) {
             console.error('Error syncing with Odoo:', error);
-            // Return 500 to retry later
             return NextResponse.json({ error: 'Error syncing with Odoo' }, { status: 500 });
         }
     }
