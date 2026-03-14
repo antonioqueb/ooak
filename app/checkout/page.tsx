@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, User, Mail, Phone, MapPin, ChevronRight, ShieldCheck, Lock } from "lucide-react";
+import { ArrowLeft, User, MapPin, ChevronRight, ShieldCheck, Lock, ChevronDown, Search, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
 import { loadStripe } from "@stripe/stripe-js";
@@ -26,12 +26,189 @@ interface CustomerData {
     shipping_country: string;
 }
 
-const ALLOWED_COUNTRIES = [
+// ---------------------------------------------------------------------------
+// DATOS ESTÁTICOS: Países y Estados
+// ---------------------------------------------------------------------------
+const COUNTRIES = [
     { code: "MX", name: "Mexico" },
     { code: "US", name: "United States" },
     { code: "CA", name: "Canada" },
 ];
 
+const STATES: Record<string, { code: string; name: string }[]> = {
+    MX: [
+        { code: "AGU", name: "Aguascalientes" },
+        { code: "BCN", name: "Baja California" },
+        { code: "BCS", name: "Baja California Sur" },
+        { code: "CAM", name: "Campeche" },
+        { code: "CHP", name: "Chiapas" },
+        { code: "CHH", name: "Chihuahua" },
+        { code: "COA", name: "Coahuila" },
+        { code: "COL", name: "Colima" },
+        { code: "CMX", name: "Ciudad de México" },
+        { code: "DUR", name: "Durango" },
+        { code: "GUA", name: "Guanajuato" },
+        { code: "GRO", name: "Guerrero" },
+        { code: "HID", name: "Hidalgo" },
+        { code: "JAL", name: "Jalisco" },
+        { code: "MEX", name: "Estado de México" },
+        { code: "MIC", name: "Michoacán" },
+        { code: "MOR", name: "Morelos" },
+        { code: "NAY", name: "Nayarit" },
+        { code: "NLE", name: "Nuevo León" },
+        { code: "OAX", name: "Oaxaca" },
+        { code: "PUE", name: "Puebla" },
+        { code: "QUE", name: "Querétaro" },
+        { code: "ROO", name: "Quintana Roo" },
+        { code: "SLP", name: "San Luis Potosí" },
+        { code: "SIN", name: "Sinaloa" },
+        { code: "SON", name: "Sonora" },
+        { code: "TAB", name: "Tabasco" },
+        { code: "TAM", name: "Tamaulipas" },
+        { code: "TLA", name: "Tlaxcala" },
+        { code: "VER", name: "Veracruz" },
+        { code: "YUC", name: "Yucatán" },
+        { code: "ZAC", name: "Zacatecas" },
+    ],
+    US: [
+        { code: "AL", name: "Alabama" }, { code: "AK", name: "Alaska" }, { code: "AZ", name: "Arizona" },
+        { code: "AR", name: "Arkansas" }, { code: "CA", name: "California" }, { code: "CO", name: "Colorado" },
+        { code: "CT", name: "Connecticut" }, { code: "DE", name: "Delaware" }, { code: "FL", name: "Florida" },
+        { code: "GA", name: "Georgia" }, { code: "HI", name: "Hawaii" }, { code: "ID", name: "Idaho" },
+        { code: "IL", name: "Illinois" }, { code: "IN", name: "Indiana" }, { code: "IA", name: "Iowa" },
+        { code: "KS", name: "Kansas" }, { code: "KY", name: "Kentucky" }, { code: "LA", name: "Louisiana" },
+        { code: "ME", name: "Maine" }, { code: "MD", name: "Maryland" }, { code: "MA", name: "Massachusetts" },
+        { code: "MI", name: "Michigan" }, { code: "MN", name: "Minnesota" }, { code: "MS", name: "Mississippi" },
+        { code: "MO", name: "Missouri" }, { code: "MT", name: "Montana" }, { code: "NE", name: "Nebraska" },
+        { code: "NV", name: "Nevada" }, { code: "NH", name: "New Hampshire" }, { code: "NJ", name: "New Jersey" },
+        { code: "NM", name: "New Mexico" }, { code: "NY", name: "New York" }, { code: "NC", name: "North Carolina" },
+        { code: "ND", name: "North Dakota" }, { code: "OH", name: "Ohio" }, { code: "OK", name: "Oklahoma" },
+        { code: "OR", name: "Oregon" }, { code: "PA", name: "Pennsylvania" }, { code: "RI", name: "Rhode Island" },
+        { code: "SC", name: "South Carolina" }, { code: "SD", name: "South Dakota" }, { code: "TN", name: "Tennessee" },
+        { code: "TX", name: "Texas" }, { code: "UT", name: "Utah" }, { code: "VT", name: "Vermont" },
+        { code: "VA", name: "Virginia" }, { code: "WA", name: "Washington" }, { code: "WV", name: "West Virginia" },
+        { code: "WI", name: "Wisconsin" }, { code: "WY", name: "Wyoming" }, { code: "DC", name: "District of Columbia" },
+    ],
+    CA: [
+        { code: "AB", name: "Alberta" }, { code: "BC", name: "British Columbia" }, { code: "MB", name: "Manitoba" },
+        { code: "NB", name: "New Brunswick" }, { code: "NL", name: "Newfoundland and Labrador" },
+        { code: "NS", name: "Nova Scotia" }, { code: "NT", name: "Northwest Territories" },
+        { code: "NU", name: "Nunavut" }, { code: "ON", name: "Ontario" }, { code: "PE", name: "Prince Edward Island" },
+        { code: "QC", name: "Quebec" }, { code: "SK", name: "Saskatchewan" }, { code: "YT", name: "Yukon" },
+    ],
+};
+
+// ---------------------------------------------------------------------------
+// COMPONENTE: SearchableSelect
+// ---------------------------------------------------------------------------
+function SearchableSelect({
+    options,
+    value,
+    onChange,
+    placeholder,
+    error,
+    valueKey = "code",
+}: {
+    options: { code: string; name: string }[];
+    value: string;
+    onChange: (val: string) => void;
+    placeholder: string;
+    error?: string;
+    valueKey?: "name" | "code";
+}) {
+    const [isOpen, setIsOpen] = React.useState(false);
+    const [search, setSearch] = React.useState("");
+    const ref = React.useRef<HTMLDivElement>(null);
+    const inputRef = React.useRef<HTMLInputElement>(null);
+
+    const selectedOption = options.find((o) => o[valueKey] === value);
+    const displayValue = selectedOption ? selectedOption.name : "";
+
+    const filtered = React.useMemo(() => {
+        if (!search) return options;
+        const q = search.toLowerCase();
+        return options.filter(
+            (o) => o.name.toLowerCase().includes(q) || o.code.toLowerCase().includes(q)
+        );
+    }, [search, options]);
+
+    React.useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                setIsOpen(false);
+                setSearch("");
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    React.useEffect(() => {
+        if (isOpen && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [isOpen]);
+
+    return (
+        <div ref={ref} className="relative">
+            <button
+                type="button"
+                onClick={() => { setIsOpen(!isOpen); setSearch(""); }}
+                className={`w-full h-12 px-4 bg-white border ${error ? "border-red-400" : "border-[#6C7466]/20"} text-sm text-left flex items-center justify-between focus:outline-none focus:border-[#6C7466] transition-colors`}
+            >
+                <span className={displayValue ? "text-[#2B2B2B]" : "text-gray-300"}>
+                    {displayValue || placeholder}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {error && !isOpen && <p className="text-red-500 text-xs mt-1">{error}</p>}
+
+            {isOpen && (
+                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-[#6C7466]/20 shadow-lg max-h-64 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="p-2 border-b border-[#6C7466]/10 shrink-0">
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                            <input
+                                ref={inputRef}
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Search..."
+                                className="w-full h-9 pl-8 pr-3 text-sm bg-[#FDFBF7] border border-[#6C7466]/10 focus:outline-none focus:border-[#6C7466] text-[#2B2B2B] placeholder:text-gray-300"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="overflow-y-auto flex-1">
+                        {filtered.length === 0 ? (
+                            <div className="px-4 py-3 text-sm text-gray-400 text-center">No results found</div>
+                        ) : (
+                            filtered.map((option) => {
+                                const isSelected = option[valueKey] === value;
+                                return (
+                                    <button
+                                        key={option.code}
+                                        type="button"
+                                        onClick={() => { onChange(option[valueKey]); setIsOpen(false); setSearch(""); }}
+                                        className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors ${isSelected ? "bg-[#6C7466]/10 text-[#6C7466] font-medium" : "text-[#2B2B2B] hover:bg-[#FDFBF7]"}`}
+                                    >
+                                        <span>{option.name}</span>
+                                        {isSelected && <Check className="w-4 h-4 text-[#6C7466]" />}
+                                    </button>
+                                );
+                            })
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// COMPONENTE PRINCIPAL: CheckoutPage
+// ---------------------------------------------------------------------------
 export default function CheckoutPage() {
     const { items, cartTotal } = useCart();
     const [step, setStep] = React.useState<"details" | "payment">("details");
@@ -54,12 +231,26 @@ export default function CheckoutPage() {
 
     const [sameAsShipping, setSameAsShipping] = React.useState(true);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const availableStates = STATES[customerData.shipping_country] || [];
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setCustomerData((prev) => ({ ...prev, [name]: value }));
-        // Clear error on change
         if (errors[name as keyof CustomerData]) {
             setErrors((prev) => ({ ...prev, [name]: undefined }));
+        }
+    };
+
+    const handleSelectChange = (field: keyof CustomerData, value: string) => {
+        setCustomerData((prev) => {
+            const updated = { ...prev, [field]: value };
+            if (field === "shipping_country") {
+                updated.shipping_state = "";
+            }
+            return updated;
+        });
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: undefined }));
         }
     };
 
@@ -83,7 +274,6 @@ export default function CheckoutPage() {
     const handleContinueToPayment = async () => {
         if (!validate()) return;
 
-        // Auto-fill shipping name if same as buyer
         const finalData = {
             ...customerData,
             shipping_name: sameAsShipping ? customerData.name : (customerData.shipping_name || customerData.name),
@@ -95,10 +285,7 @@ export default function CheckoutPage() {
             const res = await fetch("/api/checkout_sessions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    items,
-                    customer: finalData,
-                }),
+                body: JSON.stringify({ items, customer: finalData }),
             });
 
             const data = await res.json();
@@ -118,13 +305,21 @@ export default function CheckoutPage() {
         }
     };
 
+    const getStateName = () => {
+        const st = availableStates.find((s) => s.name === customerData.shipping_state || s.code === customerData.shipping_state);
+        return st ? st.name : customerData.shipping_state;
+    };
+
+    const getCountryName = () => {
+        const c = COUNTRIES.find((c) => c.code === customerData.shipping_country);
+        return c ? c.name : customerData.shipping_country;
+    };
+
     if (items.length === 0) {
         return (
             <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-6">
                 <p className="text-gray-500 mb-4">Your cart is empty.</p>
-                <Button asChild variant="link">
-                    <Link href="/">Continue Shopping</Link>
-                </Button>
+                <Button asChild variant="link"><Link href="/">Continue Shopping</Link></Button>
             </div>
         );
     }
@@ -135,16 +330,9 @@ export default function CheckoutPage() {
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-8">
                     {step === "payment" ? (
-                        <button
-                            onClick={() => setStep("details")}
-                            className="text-[#6C7466] hover:text-[#2B2B2B] transition-colors"
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
+                        <button onClick={() => setStep("details")} className="text-[#6C7466] hover:text-[#2B2B2B] transition-colors"><ArrowLeft className="w-5 h-5" /></button>
                     ) : (
-                        <Link href="/cart" className="text-[#6C7466] hover:text-[#2B2B2B] transition-colors">
-                            <ArrowLeft className="w-5 h-5" />
-                        </Link>
+                        <Link href="/cart" className="text-[#6C7466] hover:text-[#2B2B2B] transition-colors"><ArrowLeft className="w-5 h-5" /></Link>
                     )}
                     <h1 className="text-3xl md:text-4xl font-serif text-[#2B2B2B]">Checkout</h1>
                 </div>
@@ -152,7 +340,7 @@ export default function CheckoutPage() {
                 {/* Step Indicator */}
                 <div className="flex items-center gap-3 mb-12">
                     <div className={`flex items-center gap-2 text-xs font-bold tracking-[0.15em] uppercase ${step === "details" ? "text-[#6C7466]" : "text-gray-400"}`}>
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] ${step === "details" ? "bg-[#6C7466] text-white" : "bg-[#6C7466] text-white"}`}>1</span>
+                        <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] bg-[#6C7466] text-white">1</span>
                         Your Details
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-300" />
@@ -164,7 +352,7 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
 
-                    {/* LEFT COLUMN: Form or Stripe */}
+                    {/* LEFT COLUMN */}
                     <div className="lg:col-span-7">
                         {step === "details" && (
                             <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
@@ -175,56 +363,28 @@ export default function CheckoutPage() {
                                         <User className="w-4 h-4 text-[#6C7466]" />
                                         <h2 className="text-lg font-serif text-[#2B2B2B]">Personal Information</h2>
                                     </div>
-
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="md:col-span-2">
-                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">
-                                                Full Name *
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="name"
-                                                value={customerData.name}
-                                                onChange={handleChange}
-                                                placeholder="e.g. María García López"
-                                                className={`w-full h-12 px-4 bg-white border ${errors.name ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`}
-                                            />
+                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">Full Name *</label>
+                                            <input type="text" name="name" value={customerData.name} onChange={handleChange} placeholder="e.g. María García López"
+                                                className={`w-full h-12 px-4 bg-white border ${errors.name ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`} />
                                             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                                         </div>
-
                                         <div>
-                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">
-                                                Email *
-                                            </label>
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={customerData.email}
-                                                onChange={handleChange}
-                                                placeholder="email@example.com"
-                                                className={`w-full h-12 px-4 bg-white border ${errors.email ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`}
-                                            />
+                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">Email *</label>
+                                            <input type="email" name="email" value={customerData.email} onChange={handleChange} placeholder="email@example.com"
+                                                className={`w-full h-12 px-4 bg-white border ${errors.email ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`} />
                                             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                                         </div>
-
                                         <div>
-                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">
-                                                Phone *
-                                            </label>
-                                            <input
-                                                type="tel"
-                                                name="phone"
-                                                value={customerData.phone}
-                                                onChange={handleChange}
-                                                placeholder="+52 81 1234 5678"
-                                                className={`w-full h-12 px-4 bg-white border ${errors.phone ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`}
-                                            />
+                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">Phone *</label>
+                                            <input type="tel" name="phone" value={customerData.phone} onChange={handleChange} placeholder="+52 81 1234 5678"
+                                                className={`w-full h-12 px-4 bg-white border ${errors.phone ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`} />
                                             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Divider */}
                                 <div className="h-px bg-[#6C7466]/10" />
 
                                 {/* Shipping Address */}
@@ -234,152 +394,95 @@ export default function CheckoutPage() {
                                         <h2 className="text-lg font-serif text-[#2B2B2B]">Shipping Address</h2>
                                     </div>
 
-                                    {/* Same name toggle */}
                                     <div className="mb-4">
                                         <label className="flex items-center gap-3 cursor-pointer group">
-                                            <input
-                                                type="checkbox"
-                                                checked={sameAsShipping}
-                                                onChange={(e) => setSameAsShipping(e.target.checked)}
-                                                className="w-4 h-4 accent-[#6C7466]"
-                                            />
-                                            <span className="text-sm text-gray-600 group-hover:text-[#2B2B2B] transition-colors">
-                                                Ship to the same name as above
-                                            </span>
+                                            <input type="checkbox" checked={sameAsShipping} onChange={(e) => setSameAsShipping(e.target.checked)} className="w-4 h-4 accent-[#6C7466]" />
+                                            <span className="text-sm text-gray-600 group-hover:text-[#2B2B2B] transition-colors">Ship to the same name as above</span>
                                         </label>
                                     </div>
 
                                     {!sameAsShipping && (
                                         <div className="mb-4">
-                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">
-                                                Recipient Name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="shipping_name"
-                                                value={customerData.shipping_name}
-                                                onChange={handleChange}
-                                                placeholder="Name of the person receiving the package"
-                                                className="w-full h-12 px-4 bg-white border border-[#6C7466]/20 text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300"
-                                            />
+                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">Recipient Name</label>
+                                            <input type="text" name="shipping_name" value={customerData.shipping_name} onChange={handleChange} placeholder="Name of the person receiving the package"
+                                                className="w-full h-12 px-4 bg-white border border-[#6C7466]/20 text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300" />
                                         </div>
                                     )}
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Country */}
                                         <div className="md:col-span-2">
-                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">
-                                                Street Address *
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="shipping_line1"
-                                                value={customerData.shipping_line1}
-                                                onChange={handleChange}
-                                                placeholder="Street, number, neighborhood"
-                                                className={`w-full h-12 px-4 bg-white border ${errors.shipping_line1 ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`}
+                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">Country *</label>
+                                            <SearchableSelect
+                                                options={COUNTRIES}
+                                                value={customerData.shipping_country}
+                                                onChange={(val) => handleSelectChange("shipping_country", val)}
+                                                placeholder="Select country"
+                                                error={errors.shipping_country}
+                                                valueKey="code"
                                             />
+                                        </div>
+
+                                        {/* Street */}
+                                        <div className="md:col-span-2">
+                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">Street Address *</label>
+                                            <input type="text" name="shipping_line1" value={customerData.shipping_line1} onChange={handleChange} placeholder="Street, number, neighborhood"
+                                                className={`w-full h-12 px-4 bg-white border ${errors.shipping_line1 ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`} />
                                             {errors.shipping_line1 && <p className="text-red-500 text-xs mt-1">{errors.shipping_line1}</p>}
                                         </div>
 
                                         <div className="md:col-span-2">
-                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">
-                                                Apt, Suite, etc. (optional)
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="shipping_line2"
-                                                value={customerData.shipping_line2}
-                                                onChange={handleChange}
-                                                placeholder="Apartment, suite, unit, floor"
-                                                className="w-full h-12 px-4 bg-white border border-[#6C7466]/20 text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300"
-                                            />
+                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">Apt, Suite, etc. (optional)</label>
+                                            <input type="text" name="shipping_line2" value={customerData.shipping_line2} onChange={handleChange} placeholder="Apartment, suite, unit, floor"
+                                                className="w-full h-12 px-4 bg-white border border-[#6C7466]/20 text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300" />
                                         </div>
 
+                                        {/* City */}
                                         <div>
-                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">
-                                                City *
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="shipping_city"
-                                                value={customerData.shipping_city}
-                                                onChange={handleChange}
-                                                placeholder="City"
-                                                className={`w-full h-12 px-4 bg-white border ${errors.shipping_city ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`}
-                                            />
+                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">City *</label>
+                                            <input type="text" name="shipping_city" value={customerData.shipping_city} onChange={handleChange} placeholder="City"
+                                                className={`w-full h-12 px-4 bg-white border ${errors.shipping_city ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`} />
                                             {errors.shipping_city && <p className="text-red-500 text-xs mt-1">{errors.shipping_city}</p>}
                                         </div>
 
+                                        {/* State */}
                                         <div>
-                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">
-                                                State / Province *
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="shipping_state"
+                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">State / Province *</label>
+                                            <SearchableSelect
+                                                options={availableStates}
                                                 value={customerData.shipping_state}
-                                                onChange={handleChange}
-                                                placeholder="State"
-                                                className={`w-full h-12 px-4 bg-white border ${errors.shipping_state ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`}
+                                                onChange={(val) => handleSelectChange("shipping_state", val)}
+                                                placeholder="Select state"
+                                                error={errors.shipping_state}
+                                                valueKey="name"
                                             />
-                                            {errors.shipping_state && <p className="text-red-500 text-xs mt-1">{errors.shipping_state}</p>}
                                         </div>
 
+                                        {/* Postal Code */}
                                         <div>
-                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">
-                                                Postal Code *
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="shipping_postal_code"
-                                                value={customerData.shipping_postal_code}
-                                                onChange={handleChange}
-                                                placeholder="64000"
-                                                className={`w-full h-12 px-4 bg-white border ${errors.shipping_postal_code ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`}
-                                            />
+                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">Postal Code *</label>
+                                            <input type="text" name="shipping_postal_code" value={customerData.shipping_postal_code} onChange={handleChange} placeholder="64000"
+                                                className={`w-full h-12 px-4 bg-white border ${errors.shipping_postal_code ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors placeholder:text-gray-300`} />
                                             {errors.shipping_postal_code && <p className="text-red-500 text-xs mt-1">{errors.shipping_postal_code}</p>}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">
-                                                Country *
-                                            </label>
-                                            <select
-                                                name="shipping_country"
-                                                value={customerData.shipping_country}
-                                                onChange={handleChange}
-                                                className={`w-full h-12 px-4 bg-white border ${errors.shipping_country ? "border-red-400" : "border-[#6C7466]/20"} text-[#2B2B2B] text-sm focus:outline-none focus:border-[#6C7466] transition-colors appearance-none`}
-                                            >
-                                                {ALLOWED_COUNTRIES.map((c) => (
-                                                    <option key={c.code} value={c.code}>{c.name}</option>
-                                                ))}
-                                            </select>
-                                            {errors.shipping_country && <p className="text-red-500 text-xs mt-1">{errors.shipping_country}</p>}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Continue Button */}
-                                <Button
-                                    onClick={handleContinueToPayment}
-                                    disabled={isLoadingPayment}
-                                    className="w-full bg-[#2B2B2B] text-white hover:bg-[#6C7466] h-14 rounded-none text-xs font-bold tracking-[0.2em] uppercase transition-colors"
-                                >
+                                {/* Continue */}
+                                <Button onClick={handleContinueToPayment} disabled={isLoadingPayment}
+                                    className="w-full bg-[#2B2B2B] text-white hover:bg-[#6C7466] h-14 rounded-none text-xs font-bold tracking-[0.2em] uppercase transition-colors">
                                     {isLoadingPayment ? (
                                         <span className="flex items-center gap-2">
                                             <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                                             Preparing payment...
                                         </span>
                                     ) : (
-                                        <span className="flex items-center gap-2">
-                                            Continue to Payment <ChevronRight className="w-4 h-4" />
-                                        </span>
+                                        <span className="flex items-center gap-2">Continue to Payment <ChevronRight className="w-4 h-4" /></span>
                                     )}
                                 </Button>
 
                                 <div className="flex items-center justify-center gap-2 text-[10px] text-gray-400 uppercase tracking-widest">
-                                    <Lock className="w-3 h-3" />
-                                    <span>Your data is encrypted and secure</span>
+                                    <Lock className="w-3 h-3" /><span>Your data is encrypted and secure</span>
                                 </div>
                             </div>
                         )}
@@ -387,50 +490,35 @@ export default function CheckoutPage() {
                         {step === "payment" && (
                             <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div className="bg-white p-6 rounded-sm shadow-sm border border-[#6C7466]/10">
-                                    {/* Customer summary */}
                                     <div className="mb-6 p-4 bg-[#FDFBF7] border border-[#6C7466]/10 rounded-sm">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#6C7466]">Shipping to</span>
-                                            <button
-                                                onClick={() => setStep("details")}
-                                                className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#6C7466] hover:text-[#2B2B2B] transition-colors underline underline-offset-2"
-                                            >
-                                                Edit
-                                            </button>
+                                            <button onClick={() => setStep("details")}
+                                                className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#6C7466] hover:text-[#2B2B2B] transition-colors underline underline-offset-2">Edit</button>
                                         </div>
                                         <p className="text-sm text-[#2B2B2B] font-medium">{sameAsShipping ? customerData.name : (customerData.shipping_name || customerData.name)}</p>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            {customerData.shipping_line1}
-                                            {customerData.shipping_line2 && `, ${customerData.shipping_line2}`}
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                            {customerData.shipping_city}, {customerData.shipping_state} {customerData.shipping_postal_code}
-                                        </p>
-                                        <p className="text-xs text-gray-500">{customerData.email} · {customerData.phone}</p>
+                                        <p className="text-xs text-gray-500 mt-1">{customerData.shipping_line1}{customerData.shipping_line2 && `, ${customerData.shipping_line2}`}</p>
+                                        <p className="text-xs text-gray-500">{customerData.shipping_city}, {getStateName()} {customerData.shipping_postal_code}</p>
+                                        <p className="text-xs text-gray-500">{getCountryName()}</p>
+                                        <p className="text-xs text-gray-500 mt-1">{customerData.email} · {customerData.phone}</p>
                                     </div>
 
                                     {clientSecret ? (
-                                        <EmbeddedCheckoutProvider
-                                            stripe={stripePromise}
-                                            options={{ clientSecret }}
-                                        >
+                                        <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
                                             <EmbeddedCheckout />
                                         </EmbeddedCheckoutProvider>
                                     ) : (
-                                        <div className="flex justify-center py-12">
-                                            <p className="text-gray-500">Loading payment form...</p>
-                                        </div>
+                                        <div className="flex justify-center py-12"><p className="text-gray-500">Loading payment form...</p></div>
                                     )}
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    {/* RIGHT COLUMN: Order Summary (always visible) */}
+                    {/* RIGHT COLUMN */}
                     <div className="lg:col-span-5">
                         <div className="bg-white p-8 rounded-sm shadow-sm sticky top-32 border border-[#6C7466]/10">
                             <h2 className="text-lg font-serif text-[#2B2B2B] mb-6">Order Summary</h2>
-
                             <div className="space-y-4 mb-6">
                                 {items.map((item) => (
                                     <div key={item.id} className="flex justify-between items-center text-sm">
@@ -447,22 +535,11 @@ export default function CheckoutPage() {
                                     </div>
                                 ))}
                             </div>
-
                             <div className="border-t border-[#6C7466]/10 pt-4 space-y-2 text-sm">
-                                <div className="flex justify-between text-gray-600">
-                                    <span>Subtotal</span>
-                                    <span>${cartTotal.toLocaleString("en-US")}</span>
-                                </div>
-                                <div className="flex justify-between text-gray-600">
-                                    <span>Tax</span>
-                                    <span className="text-xs text-[#6C7466] font-medium">Included</span>
-                                </div>
-                                <div className="flex justify-between text-gray-600">
-                                    <span>Shipping</span>
-                                    <span className="text-xs text-gray-400">Free</span>
-                                </div>
+                                <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>${cartTotal.toLocaleString("en-US")}</span></div>
+                                <div className="flex justify-between text-gray-600"><span>Tax</span><span className="text-xs text-[#6C7466] font-medium">Included</span></div>
+                                <div className="flex justify-between text-gray-600"><span>Shipping</span><span className="text-xs text-gray-400">Free</span></div>
                             </div>
-
                             <div className="border-t border-[#6C7466]/10 pt-4 mt-4">
                                 <div className="flex justify-between items-end">
                                     <span className="text-base font-bold text-[#2B2B2B]">Total</span>
@@ -470,10 +547,8 @@ export default function CheckoutPage() {
                                 </div>
                                 <p className="text-[10px] text-[#6C7466] mt-1 text-right">Tax included</p>
                             </div>
-
                             <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-gray-400 uppercase tracking-widest">
-                                <ShieldCheck className="w-3 h-3" />
-                                <span>Secure Checkout · Powered by Stripe</span>
+                                <ShieldCheck className="w-3 h-3" /><span>Secure Checkout · Powered by Stripe</span>
                             </div>
                         </div>
                     </div>
