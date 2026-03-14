@@ -9,30 +9,32 @@ const ODOO_URL = 'https://erp.oneofakind.com.mx/api/sales/create_from_stripe';
 const ODOO_TOKEN = process.env.ODOO_API_TOKEN;
 
 async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.ApiList<Stripe.LineItem>) {
+    const meta = session.metadata || {};
+
     const payload = {
         stripe_session_id: session.id,
         customer: {
-            name: session.customer_details?.name || session.shipping_details?.name || 'Unknown',
-            email: session.customer_details?.email,
-            phone: session.customer_details?.phone || null,
+            name: meta.customer_name || session.customer_details?.name || 'Unknown',
+            email: meta.customer_email || session.customer_details?.email || '',
+            phone: meta.customer_phone || session.customer_details?.phone || null,
             address: {
-                line1: session.customer_details?.address?.line1 || null,
-                line2: session.customer_details?.address?.line2 || null,
-                city: session.customer_details?.address?.city || null,
-                state: session.customer_details?.address?.state || null,
-                country: session.customer_details?.address?.country || null,
-                postal_code: session.customer_details?.address?.postal_code || null,
+                line1: meta.shipping_line1 || null,
+                line2: meta.shipping_line2 || null,
+                city: meta.shipping_city || null,
+                state: meta.shipping_state || null,
+                country: meta.shipping_country || null,
+                postal_code: meta.shipping_postal_code || null,
             }
         },
         shipping: {
-            name: session.shipping_details?.name || session.customer_details?.name || 'Unknown',
+            name: meta.shipping_name || meta.customer_name || 'Unknown',
             address: {
-                line1: session.shipping_details?.address?.line1 || null,
-                line2: session.shipping_details?.address?.line2 || null,
-                city: session.shipping_details?.address?.city || null,
-                state: session.shipping_details?.address?.state || null,
-                country: session.shipping_details?.address?.country || null,
-                postal_code: session.shipping_details?.address?.postal_code || null,
+                line1: meta.shipping_line1 || null,
+                line2: meta.shipping_line2 || null,
+                city: meta.shipping_city || null,
+                state: meta.shipping_state || null,
+                country: meta.shipping_country || null,
+                postal_code: meta.shipping_postal_code || null,
             }
         },
         items: lineItems.data.map((item: any) => ({
@@ -81,9 +83,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing session_id' }, { status: 400 });
         }
 
-        const session = await stripe.checkout.sessions.retrieve(session_id, {
-            expand: ['shipping_details'],
-        });
+        const session = await stripe.checkout.sessions.retrieve(session_id);
 
         if (session.payment_status !== 'paid') {
             return NextResponse.json({ error: 'Payment not completed' }, { status: 400 });
