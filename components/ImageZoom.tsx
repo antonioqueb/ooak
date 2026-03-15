@@ -13,8 +13,8 @@ interface ImageZoomProps {
 export function ImageZoom({
     src,
     alt,
-    zoomScale = 2.5,
-    lensSize = 150,
+    zoomScale = 3.5,
+    lensSize = 250,
 }: ImageZoomProps) {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const [isZooming, setIsZooming] = React.useState(false);
