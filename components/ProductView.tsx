@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
+import { ImageZoom } from "@/components/ImageZoom";
 import Link from "next/link";
 import {
     X,
@@ -76,13 +77,9 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
 
                 {/* Image Container */}
                 <div className="w-full h-full relative flex items-center justify-center p-8 bg-[#EBEBE8]">
-                    <Image
+                    <ImageZoom
                         src={images[selectedImageIndex]}
                         alt={product.name}
-                        fill
-                        className="object-contain"
-                        sizes="(max-width: 768px) 100vw, 60vw"
-                        priority
                     />
                 </div>
 
