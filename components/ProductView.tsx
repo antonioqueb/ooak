@@ -56,7 +56,7 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
             </Link>
 
             {/* LEFT SIDE: Image Gallery */}
-            <div className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-[#EBEBE8] overflow-hidden group h-[50vh] md:h-screen sticky top-0">
+            <div className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-white overflow-hidden group h-[50vh] md:h-screen sticky top-0">
                 {/* Navigation Buttons */}
                 {images.length > 1 && (
                     <>
@@ -76,7 +76,7 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                 )}
 
                 {/* Image Container */}
-                <div className="w-full h-full relative flex items-center justify-center p-8 bg-[#EBEBE8]">
+                <div className="w-full h-full relative flex items-center justify-center p-8 bg-white">
                     <ImageZoom
                         src={images[selectedImageIndex]}
                         alt={product.name}

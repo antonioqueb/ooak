@@ -14,7 +14,7 @@ export function ImageZoom({
     src,
     alt,
     zoomScale = 3.5,
-    lensSize = 250,
+    lensSize = 220,
 }: ImageZoomProps) {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const [isZooming, setIsZooming] = React.useState(false);
@@ -142,6 +142,7 @@ export function ImageZoom({
                 className="object-contain pointer-events-none select-none"
                 sizes="(max-width: 768px) 100vw, 60vw"
                 priority
+                unoptimized
                 onLoad={(e) => {
                     const img = e.currentTarget as HTMLImageElement;
                     setImgNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
