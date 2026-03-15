@@ -1,16 +1,27 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle2, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/context/cart-context";
 
 function SuccessContent() {
     const searchParams = useSearchParams();
     const sessionId = searchParams.get('session_id');
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
     const [orderName, setOrderName] = useState<string | null>(null);
+    const { clearCart } = useCart();
+    const cartCleared = useRef(false);
+
+    // Clear the cart once when the order is confirmed
+    useEffect(() => {
+        if (status === 'success' && !cartCleared.current) {
+            clearCart();
+            cartCleared.current = true;
+        }
+    }, [status, clearCart]);
 
     useEffect(() => {
         if (!sessionId) {
