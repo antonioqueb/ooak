@@ -81,6 +81,7 @@ export function ImageZoom({
     };
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!isTouchDevice) {
+            if (!isZooming) setIsZooming(true);
             const pos = getCursorPosition(e);
             if (pos) setCursorPos(pos);
         }
