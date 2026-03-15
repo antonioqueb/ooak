@@ -201,16 +201,19 @@ export function ImageZoom({
                         <span className="text-[10px] uppercase font-bold tracking-widest mt-1 opacity-70">Cerrar</span>
                     </button>
                     
-                    <div 
-                        className="relative"
-                        style={{ 
-                            width: imgNaturalSize.w > 0 ? `${imgNaturalSize.w * zoomScale}px` : '300vw',
-                            height: imgNaturalSize.w > 0 && imgNaturalSize.h > 0 
-                                ? `${(imgNaturalSize.h / imgNaturalSize.w) * (imgNaturalSize.w * zoomScale)}px`
-                                : '300vh',
-                            margin: 'auto'
-                        }}
-                    >
+                        <div 
+                            className="relative m-auto flex-shrink-0 origin-center"
+                            style={{ 
+                                width: imgNaturalSize.w > 0 && imgNaturalSize.h > imgNaturalSize.w
+                                    ? `calc(${zoomScale * 100}vh * ${(imgNaturalSize.w / imgNaturalSize.h)})`
+                                    : `${zoomScale * 100}vw`,
+                                height: imgNaturalSize.w > 0 && imgNaturalSize.h > imgNaturalSize.w
+                                    ? `${zoomScale * 100}vh`
+                                    : (imgNaturalSize.w > 0 && imgNaturalSize.h > 0 
+                                        ? `calc(${zoomScale * 100}vw * ${(imgNaturalSize.h / imgNaturalSize.w)})`
+                                        : `${zoomScale * 100}vh`),
+                            }}
+                        >
                         <Image
                             src={src}
                             alt={alt}
