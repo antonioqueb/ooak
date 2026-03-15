@@ -28,19 +28,25 @@ export function ImageZoom({
     // ----- mobile zoom state -----
     const [viewportSize, setViewportSize] = React.useState({ w: 0, h: 0 });
     const [mobileTranslate, setMobileTranslate] = React.useState({ x: 0, y: 0 });
+
     const dragRef = React.useRef<{
         active: boolean;
-        startX: number;
-        startY: number;
-        startTranslateX: number;
-        startTranslateY: number;
+        lastX: number;
+        lastY: number;
     }>({
         active: false,
-        startX: 0,
-        startY: 0,
-        startTranslateX: 0,
-        startTranslateY: 0,
+        lastX: 0,
+        lastY: 0,
     });
+
+    const mobileGestureRef = React.useRef<{
+        justOpenedFromTouch: boolean;
+    }>({
+        justOpenedFromTouch: false,
+    });
+
+    const rafRef = React.useRef<number | null>(null);
+    const pendingTranslateRef = React.useRef<{ x: number; y: number } | null>(null);
 
     React.useEffect(() => {
         setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
@@ -67,6 +73,14 @@ export function ImageZoom({
         setIsZooming(false);
         setIsMobileModalOpen(false);
         setMobileTranslate({ x: 0, y: 0 });
+        dragRef.current.active = false;
+        mobileGestureRef.current.justOpenedFromTouch = false;
+
+        if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+        }
+        pendingTranslateRef.current = null;
     }, [src]);
 
     React.useEffect(() => {
@@ -81,10 +95,24 @@ export function ImageZoom({
 
         updateViewport();
         window.addEventListener("resize", updateViewport);
-        return () => window.removeEventListener("resize", updateViewport);
+
+        return () => {
+            window.removeEventListener("resize", updateViewport);
+        };
     }, [isMobileModalOpen]);
 
+    React.useEffect(() => {
+        return () => {
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+            }
+        };
+    }, []);
+
     const actualLensSize = isTouchDevice ? Math.max(120, lensSize) : lensSize;
+
+    const clamp = (value: number, min: number, max: number) =>
+        Math.min(Math.max(value, min), max);
 
     const getCursorPosition = (
         e: React.MouseEvent | React.TouchEvent
@@ -94,7 +122,8 @@ export function ImageZoom({
 
         const rect = container.getBoundingClientRect();
 
-        let clientX: number, clientY: number;
+        let clientX: number;
+        let clientY: number;
 
         if ("touches" in e) {
             if (e.touches.length === 0) return null;
@@ -144,9 +173,6 @@ export function ImageZoom({
         };
     };
 
-    const clamp = (value: number, min: number, max: number) =>
-        Math.min(Math.max(value, min), max);
-
     const getMobileBaseSize = () => {
         const rect = getContainedImageRect(
             viewportSize.w,
@@ -182,12 +208,32 @@ export function ImageZoom({
             const maxY = 0;
 
             return {
-                x: zoomedW > viewportSize.w ? clamp(x, minX, maxX) : (viewportSize.w - zoomedW) / 2,
-                y: zoomedH > viewportSize.h ? clamp(y, minY, maxY) : (viewportSize.h - zoomedH) / 2,
+                x:
+                    zoomedW > viewportSize.w
+                        ? clamp(x, minX, maxX)
+                        : (viewportSize.w - zoomedW) / 2,
+                y:
+                    zoomedH > viewportSize.h
+                        ? clamp(y, minY, maxY)
+                        : (viewportSize.h - zoomedH) / 2,
             };
         },
         [viewportSize.w, viewportSize.h, zoomScale, imgNaturalSize.w, imgNaturalSize.h]
     );
+
+    const setMobileTranslateSmooth = React.useCallback((next: { x: number; y: number }) => {
+        pendingTranslateRef.current = next;
+
+        if (rafRef.current !== null) return;
+
+        rafRef.current = requestAnimationFrame(() => {
+            if (pendingTranslateRef.current) {
+                setMobileTranslate(pendingTranslateRef.current);
+            }
+            pendingTranslateRef.current = null;
+            rafRef.current = null;
+        });
+    }, []);
 
     // ---------- Mouse handlers (desktop) ----------
     const handleMouseEnter = () => {
@@ -206,12 +252,16 @@ export function ImageZoom({
         }
     };
 
-    // ---------- Mobile open at tapped point ----------
+    // ---------- Mobile open at touched point ----------
     const openMobileZoomAtPoint = (clientX: number, clientY: number) => {
         const container = containerRef.current;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
         if (!container || !imgNaturalSize.w || !imgNaturalSize.h) {
+            setViewportSize({ w: vw, h: vh });
             setIsMobileModalOpen(true);
-            return;
+            return { x: 0, y: 0 };
         }
 
         const rect = container.getBoundingClientRect();
@@ -231,9 +281,6 @@ export function ImageZoom({
         const u = contained.w ? relativeX / contained.w : 0.5;
         const v = contained.h ? relativeY / contained.h : 0.5;
 
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-
         const targetRect = getContainedImageRect(
             vw,
             vh,
@@ -250,24 +297,39 @@ export function ImageZoom({
         const minX = Math.min(0, vw - zoomedW);
         const minY = Math.min(0, vh - zoomedH);
 
-        setViewportSize({ w: vw, h: vh });
-        setMobileTranslate({
+        const nextTranslate = {
             x: zoomedW > vw ? clamp(rawX, minX, 0) : (vw - zoomedW) / 2,
             y: zoomedH > vh ? clamp(rawY, minY, 0) : (vh - zoomedH) / 2,
-        });
+        };
+
+        setViewportSize({ w: vw, h: vh });
+        setMobileTranslate(nextTranslate);
         setIsMobileModalOpen(true);
+
+        return nextTranslate;
     };
 
-    const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!isTouchDevice) return;
-        openMobileZoomAtPoint(e.clientX, e.clientY);
+    const handleContainerClick = () => {
+        // En móvil no usamos click para evitar dobles disparos y "saltos".
+        if (isTouchDevice) return;
     };
 
     const handleContainerTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
         if (!isTouchDevice) return;
         if (e.touches.length !== 1) return;
+        if (isMobileModalOpen) return;
+
         const touch = e.touches[0];
-        openMobileZoomAtPoint(touch.clientX, touch.clientY);
+        const nextTranslate = openMobileZoomAtPoint(touch.clientX, touch.clientY);
+
+        dragRef.current = {
+            active: true,
+            lastX: touch.clientX,
+            lastY: touch.clientY,
+        };
+
+        mobileGestureRef.current.justOpenedFromTouch = true;
+        pendingTranslateRef.current = nextTranslate;
     };
 
     // ---------- Mobile pan ----------
@@ -275,32 +337,53 @@ export function ImageZoom({
         if (e.touches.length !== 1) return;
 
         const touch = e.touches[0];
+
         dragRef.current = {
             active: true,
-            startX: touch.clientX,
-            startY: touch.clientY,
-            startTranslateX: mobileTranslate.x,
-            startTranslateY: mobileTranslate.y,
+            lastX: touch.clientX,
+            lastY: touch.clientY,
         };
+
+        if (mobileGestureRef.current.justOpenedFromTouch) {
+            mobileGestureRef.current.justOpenedFromTouch = false;
+        }
     };
 
     const handleMobileTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
         if (!dragRef.current.active || e.touches.length !== 1) return;
 
+        e.preventDefault();
+
         const touch = e.touches[0];
-        const dx = touch.clientX - dragRef.current.startX;
-        const dy = touch.clientY - dragRef.current.startY;
+        const dx = touch.clientX - dragRef.current.lastX;
+        const dy = touch.clientY - dragRef.current.lastY;
+
+        dragRef.current.lastX = touch.clientX;
+        dragRef.current.lastY = touch.clientY;
 
         const next = clampMobileTranslate(
-            dragRef.current.startTranslateX + dx,
-            dragRef.current.startTranslateY + dy
+            mobileTranslate.x + dx,
+            mobileTranslate.y + dy
         );
 
-        setMobileTranslate(next);
+        setMobileTranslateSmooth(next);
     };
 
     const handleMobileTouchEnd = () => {
         dragRef.current.active = false;
+        mobileGestureRef.current.justOpenedFromTouch = false;
+    };
+
+    const handleCloseMobile = () => {
+        setIsMobileModalOpen(false);
+        dragRef.current.active = false;
+        mobileGestureRef.current.justOpenedFromTouch = false;
+
+        if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+        }
+        pendingTranslateRef.current = null;
     };
 
     const getBackgroundProps = (): React.CSSProperties => {
@@ -319,7 +402,6 @@ export function ImageZoom({
 
     const lensLeft = cursorPos.x - actualLensSize / 2;
     const lensTop = cursorPos.y - actualLensSize / 2;
-
     const mobileMetrics = getZoomedImageMetrics();
 
     return (
@@ -333,7 +415,6 @@ export function ImageZoom({
             onClick={handleContainerClick}
             onTouchStart={handleContainerTouchStart}
         >
-            {/* Base product image */}
             <Image
                 src={src}
                 alt={alt}
@@ -348,7 +429,6 @@ export function ImageZoom({
                 }}
             />
 
-            {/* Desktop lens */}
             {isZooming && !isTouchDevice && (
                 <div
                     className="pointer-events-none absolute z-40"
@@ -363,15 +443,12 @@ export function ImageZoom({
                         boxShadow:
                             "0 8px 32px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.08), inset 0 0 30px rgba(255,255,255,0.08)",
                         backdropFilter: "blur(1px)",
-                        transition: isTouchDevice
-                            ? "left 0.1s ease-out, top 0.1s ease-out, opacity 0.15s ease"
-                            : "opacity 0.15s ease, transform 0.1s ease",
+                        transition: "opacity 0.15s ease, transform 0.1s ease",
                         animation: "lensIn 0.2s ease-out",
                     }}
                 />
             )}
 
-            {/* Desktop crosshair */}
             {isZooming && !isTouchDevice && (
                 <div
                     className="pointer-events-none absolute z-50"
@@ -387,28 +464,32 @@ export function ImageZoom({
                 />
             )}
 
-            {/* Hint */}
             {!isZooming && (
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md text-white text-[10px] font-semibold tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {isTouchDevice ? "Tap to zoom" : "Hover to zoom"}
                 </div>
             )}
 
-            {/* Mobile full-screen zoom */}
             {isMobileModalOpen && isTouchDevice && (
                 <div
                     className="fixed inset-0 z-[100] bg-black/95 overflow-hidden touch-none"
-                    onClick={() => setIsMobileModalOpen(false)}
+                    onClick={handleCloseMobile}
                 >
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            setIsMobileModalOpen(false);
+                            handleCloseMobile();
                         }}
                         className="fixed top-6 right-6 z-[120] flex flex-col items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md p-3 transition-colors active:scale-95 border border-white/20"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            fill="currentColor"
+                            viewBox="0 0 16 16"
+                        >
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
                         </svg>
                         <span className="text-[10px] uppercase font-bold tracking-widest mt-1 opacity-70">
                             Cerrar
@@ -429,7 +510,7 @@ export function ImageZoom({
                                 width: `${mobileMetrics.zoomedW}px`,
                                 height: `${mobileMetrics.zoomedH}px`,
                                 transform: `translate3d(${mobileTranslate.x}px, ${mobileTranslate.y}px, 0)`,
-                                transition: dragRef.current.active ? "none" : "transform 0.18s ease-out",
+                                transition: dragRef.current.active ? "none" : "none",
                             }}
                         >
                             <Image
@@ -440,6 +521,7 @@ export function ImageZoom({
                                 className="block select-none pointer-events-none"
                                 unoptimized
                                 priority
+                                draggable={false}
                             />
                         </div>
                     </div>
