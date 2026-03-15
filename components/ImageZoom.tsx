@@ -22,6 +22,7 @@ export function ImageZoom({
     const [imgNaturalSize, setImgNaturalSize] = React.useState({ w: 0, h: 0 });
     const [containerSize, setContainerSize] = React.useState({ w: 0, h: 0 });
     const [isTouchDevice, setIsTouchDevice] = React.useState(false);
+    const [isMobileModalOpen, setIsMobileModalOpen] = React.useState(false);
 
     // Detect touch device
     React.useEffect(() => {
@@ -88,23 +89,8 @@ export function ImageZoom({
     };
 
     // ---------- Touch handlers (mobile) ----------
-    const handleTouchStart = (e: React.TouchEvent) => {
-        if (isTouchDevice) {
-            e.preventDefault();
-            setIsZooming(true);
-            const pos = getCursorPosition(e);
-            if (pos) setCursorPos(pos);
-        }
-    };
-    const handleTouchMove = (e: React.TouchEvent) => {
-        if (isTouchDevice && isZooming) {
-            e.preventDefault();
-            const pos = getCursorPosition(e);
-            if (pos) setCursorPos(pos);
-        }
-    };
-    const handleTouchEnd = () => {
-        // Do not set isZooming(false) here so the zoom persists when the finger is lifted
+    const handleContainerClick = () => {
+        if (isTouchDevice) setIsMobileModalOpen(true);
     };
 
     // Compute the background-position for the zoom lens
@@ -123,26 +109,9 @@ export function ImageZoom({
         };
     };
 
-    // Calculate lens position dynamically to avoid the finger blocking the view on mobile
-    let lensLeft = cursorPos.x - actualLensSize / 2;
-    let lensTop = cursorPos.y - actualLensSize / 2;
-
-    if (isTouchDevice) {
-        // Offset lens vertically above the finger
-        lensTop = cursorPos.y - actualLensSize - 40;
-        // If it goes off the top edge, place it below the finger
-        if (lensTop < 10) {
-            lensTop = cursorPos.y + 40;
-        }
-        
-        // Clamp horizontally so the lens stays reasonably within bounds
-        if (containerSize.w > 0) {
-            if (lensLeft < 10) lensLeft = 10;
-            if (lensLeft + actualLensSize > containerSize.w - 10) {
-                lensLeft = containerSize.w - actualLensSize - 10;
-            }
-        }
-    }
+    // Normal desktop lens position centered on cursor
+    const lensLeft = cursorPos.x - actualLensSize / 2;
+    const lensTop = cursorPos.y - actualLensSize / 2;
 
     return (
         <div
@@ -152,9 +121,7 @@ export function ImageZoom({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onMouseMove={handleMouseMove}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+            onClick={handleContainerClick}
         >
             {/* Base product image */}
             <Image
@@ -172,7 +139,7 @@ export function ImageZoom({
             />
 
             {/* Magnifying-glass lens */}
-            {isZooming && (
+            {isZooming && !isTouchDevice && (
                 <div
                     className="pointer-events-none absolute z-40"
                     style={{
@@ -193,7 +160,7 @@ export function ImageZoom({
             )}
 
             {/* Crosshair dot inside the lens */}
-            {isZooming && (
+            {isZooming && !isTouchDevice && (
                 <div
                     className="pointer-events-none absolute z-50"
                     style={{
@@ -215,24 +182,42 @@ export function ImageZoom({
                 </div>
             )}
 
-            {/* Close button for mobile */}
-            {isZooming && isTouchDevice && (
-                <button
-                    onTouchStart={(e) => {
-                        e.stopPropagation();
-                        setIsZooming(false);
-                    }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setIsZooming(false);
-                    }}
-                    className="absolute top-4 right-4 z-50 flex items-center justify-center bg-black/50 text-white rounded-full backdrop-blur-md transition-transform active:scale-95"
-                    style={{ width: 32, height: 32 }}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                    </svg>
-                </button>
+            {/* Full-screen mobile zoom modal */}
+            {isMobileModalOpen && isTouchDevice && (
+                <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsMobileModalOpen(false);
+                        }}
+                        className="absolute top-6 right-6 z-50 flex flex-col items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md p-3 transition-colors active:scale-95 border border-white/20"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                        <span className="text-[10px] uppercase font-bold tracking-widest mt-1 opacity-70">Cerrar</span>
+                    </button>
+                    
+                    <div className="w-full h-full overflow-auto touch-pan-x touch-pan-y flex bg-black">
+                        <div 
+                            style={{ 
+                                width: Math.max(containerSize.w * (zoomScale * 0.8), window.innerWidth * 2), 
+                                height: Math.max(containerSize.h * (zoomScale * 0.8), window.innerHeight * 2), 
+                                position: 'relative' 
+                            }}
+                            className="m-auto"
+                        >
+                            <Image
+                                src={src}
+                                alt={alt}
+                                fill
+                                className="object-contain pointer-events-none"
+                                unoptimized
+                                priority
+                            />
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Keyframe animation */}
