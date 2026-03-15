@@ -104,7 +104,7 @@ export function ImageZoom({
         }
     };
     const handleTouchEnd = () => {
-        if (isTouchDevice) setIsZooming(false);
+        // Do not set isZooming(false) here so the zoom persists when the finger is lifted
     };
 
     // Compute the background-position for the zoom lens
@@ -122,6 +122,27 @@ export function ImageZoom({
             backgroundRepeat: "no-repeat",
         };
     };
+
+    // Calculate lens position dynamically to avoid the finger blocking the view on mobile
+    let lensLeft = cursorPos.x - actualLensSize / 2;
+    let lensTop = cursorPos.y - actualLensSize / 2;
+
+    if (isTouchDevice) {
+        // Offset lens vertically above the finger
+        lensTop = cursorPos.y - actualLensSize - 40;
+        // If it goes off the top edge, place it below the finger
+        if (lensTop < 10) {
+            lensTop = cursorPos.y + 40;
+        }
+        
+        // Clamp horizontally so the lens stays reasonably within bounds
+        if (containerSize.w > 0) {
+            if (lensLeft < 10) lensLeft = 10;
+            if (lensLeft + actualLensSize > containerSize.w - 10) {
+                lensLeft = containerSize.w - actualLensSize - 10;
+            }
+        }
+    }
 
     return (
         <div
@@ -158,20 +179,20 @@ export function ImageZoom({
                         width: actualLensSize,
                         height: actualLensSize,
                         borderRadius: "50%",
-                        left: cursorPos.x - actualLensSize / 2,
-                        top: cursorPos.y - actualLensSize / 2,
+                        left: lensLeft,
+                        top: lensTop,
                         ...getBackgroundProps(),
                         border: "3px solid rgba(255,255,255,0.6)",
                         boxShadow:
                             "0 8px 32px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.08), inset 0 0 30px rgba(255,255,255,0.08)",
                         backdropFilter: "blur(1px)",
-                        transition: "opacity 0.15s ease, transform 0.1s ease",
+                        transition: isTouchDevice ? "left 0.1s ease-out, top 0.1s ease-out, opacity 0.15s ease" : "opacity 0.15s ease, transform 0.1s ease",
                         animation: "lensIn 0.2s ease-out",
                     }}
                 />
             )}
 
-            {/* Crosshair dot at cursor when zooming */}
+            {/* Crosshair dot inside the lens */}
             {isZooming && (
                 <div
                     className="pointer-events-none absolute z-50"
@@ -181,8 +202,8 @@ export function ImageZoom({
                         borderRadius: "50%",
                         backgroundColor: "rgba(255,255,255,0.85)",
                         border: "1px solid rgba(0,0,0,0.3)",
-                        left: cursorPos.x - 3,
-                        top: cursorPos.y - 3,
+                        left: lensLeft + actualLensSize / 2 - 3,
+                        top: lensTop + actualLensSize / 2 - 3,
                     }}
                 />
             )}
@@ -192,6 +213,26 @@ export function ImageZoom({
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md text-white text-[10px] font-semibold tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {isTouchDevice ? "Tap to zoom" : "Hover to zoom"}
                 </div>
+            )}
+
+            {/* Close button for mobile */}
+            {isZooming && isTouchDevice && (
+                <button
+                    onTouchStart={(e) => {
+                        e.stopPropagation();
+                        setIsZooming(false);
+                    }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsZooming(false);
+                    }}
+                    className="absolute top-4 right-4 z-50 flex items-center justify-center bg-black/50 text-white rounded-full backdrop-blur-md transition-transform active:scale-95"
+                    style={{ width: 32, height: 32 }}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                    </svg>
+                </button>
             )}
 
             {/* Keyframe animation */}
