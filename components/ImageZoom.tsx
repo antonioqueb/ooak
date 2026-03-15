@@ -184,7 +184,10 @@ export function ImageZoom({
 
             {/* Full-screen mobile zoom modal */}
             {isMobileModalOpen && isTouchDevice && (
-                <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center">
+                <div 
+                    className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center overflow-auto touch-pan-x touch-pan-y"
+                    onClick={() => setIsMobileModalOpen(false)}
+                >
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -198,24 +201,24 @@ export function ImageZoom({
                         <span className="text-[10px] uppercase font-bold tracking-widest mt-1 opacity-70">Cerrar</span>
                     </button>
                     
-                    <div className="w-full h-full overflow-auto touch-pan-x touch-pan-y flex bg-black">
-                        <div 
-                            style={{ 
-                                width: Math.max(containerSize.w * (zoomScale * 0.8), window.innerWidth * 2), 
-                                height: Math.max(containerSize.h * (zoomScale * 0.8), window.innerHeight * 2), 
-                                position: 'relative' 
-                            }}
-                            className="m-auto"
-                        >
-                            <Image
-                                src={src}
-                                alt={alt}
-                                fill
-                                className="object-contain pointer-events-none"
-                                unoptimized
-                                priority
-                            />
-                        </div>
+                    <div 
+                        className="relative"
+                        style={{ 
+                            width: imgNaturalSize.w > 0 ? `${imgNaturalSize.w * zoomScale}px` : '300vw',
+                            height: imgNaturalSize.w > 0 && imgNaturalSize.h > 0 
+                                ? `${(imgNaturalSize.h / imgNaturalSize.w) * (imgNaturalSize.w * zoomScale)}px`
+                                : '300vh',
+                            margin: 'auto'
+                        }}
+                    >
+                        <Image
+                            src={src}
+                            alt={alt}
+                            fill
+                            className="object-contain pointer-events-none"
+                            unoptimized
+                            priority
+                        />
                     </div>
                 </div>
             )}
