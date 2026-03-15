@@ -185,7 +185,7 @@ export function ImageZoom({
             {/* Full-screen mobile zoom modal */}
             {isMobileModalOpen && isTouchDevice && (
                 <div 
-                    className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center overflow-auto touch-pan-x touch-pan-y"
+                    className="fixed inset-0 z-[100] bg-black/95 overflow-auto touch-pan-x touch-pan-y"
                     onClick={() => setIsMobileModalOpen(false)}
                 >
                     <button
@@ -193,7 +193,7 @@ export function ImageZoom({
                             e.stopPropagation();
                             setIsMobileModalOpen(false);
                         }}
-                        className="absolute top-6 right-6 z-50 flex flex-col items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md p-3 transition-colors active:scale-95 border border-white/20"
+                        className="fixed top-6 right-6 z-50 flex flex-col items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md p-3 transition-colors active:scale-95 border border-white/20"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
@@ -201,19 +201,13 @@ export function ImageZoom({
                         <span className="text-[10px] uppercase font-bold tracking-widest mt-1 opacity-70">Cerrar</span>
                     </button>
                     
-                        <div 
-                            className="relative m-auto flex-shrink-0 origin-center"
-                            style={{ 
-                                width: imgNaturalSize.w > 0 && imgNaturalSize.h > imgNaturalSize.w
-                                    ? `calc(${zoomScale * 100}vh * ${(imgNaturalSize.w / imgNaturalSize.h)})`
-                                    : `${zoomScale * 100}vw`,
-                                height: imgNaturalSize.w > 0 && imgNaturalSize.h > imgNaturalSize.w
-                                    ? `${zoomScale * 100}vh`
-                                    : (imgNaturalSize.w > 0 && imgNaturalSize.h > 0 
-                                        ? `calc(${zoomScale * 100}vw * ${(imgNaturalSize.h / imgNaturalSize.w)})`
-                                        : `${zoomScale * 100}vh`),
-                            }}
-                        >
+                    <div 
+                        className="relative min-w-full min-h-full flex items-center justify-center"
+                        style={{
+                            width: `${zoomScale * 100}vw`,
+                            height: `${zoomScale * 100}vh`,
+                        }}
+                    >
                         <Image
                             src={src}
                             alt={alt}
