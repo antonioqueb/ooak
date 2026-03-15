@@ -187,29 +187,18 @@ export function ImageZoom({
 
             {/* Hint label */}
             {!isZooming && (
-                <div
-                    className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none
-                        px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md
-                        text-white text-[10px] font-semibold tracking-widest uppercase
-                        opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                >
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md text-white text-[10px] font-semibold tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {isTouchDevice ? "Tap to zoom" : "Hover to zoom"}
                 </div>
             )}
 
-            {/* Keyframe animation injected via style tag */}
-            <style jsx>{`
+            {/* Keyframe animation */}
+            <style dangerouslySetInnerHTML={{ __html: `
                 @keyframes lensIn {
-                    0% {
-                        opacity: 0;
-                        transform: scale(0.7);
-                    }
-                    100% {
-                        opacity: 1;
-                        transform: scale(1);
-                    }
+                    0% { opacity: 0; transform: scale(0.7); }
+                    100% { opacity: 1; transform: scale(1); }
                 }
-            `}</style>
+            `}} />
         </div>
     );
 }
