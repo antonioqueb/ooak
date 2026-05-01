@@ -531,7 +531,7 @@ export default function CheckoutPage() {
                                             </div>
                                             <div>
                                                 <p className="font-medium text-[#2B2B2B] text-sm leading-tight">{item.name}</p>
-                                                <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                                                <p className="text-xs text-gray-500">Pieces: {item.quantity}</p>
                                             </div>
                                         </div>
                                         <p className="font-medium text-[#2B2B2B] shrink-0">${formatMoney(item.price * item.quantity)}</p>
