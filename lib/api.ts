@@ -2,8 +2,15 @@ import { Product } from "./products";
 
 // ... existing imports ...
 
-const API_URL = "https://erp.oneofakind.com.mx/api/collections_data";
-const API_COLLECTION_URL = "https://erp.oneofakind.com.mx/api/collection";
+const isServer = typeof window === "undefined";
+
+const API_URL = isServer
+    ? "https://erp.oneofakind.com.mx/api/collections_data"
+    : "/api/collections";
+
+const API_COLLECTION_URL = isServer
+    ? "https://erp.oneofakind.com.mx/api/collection"
+    : "/api/collections";
 
 export interface ApiProduct {
     id: number;
