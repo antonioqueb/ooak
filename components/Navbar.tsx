@@ -155,7 +155,7 @@ export function Navbar() {
       {/* Logo grande colapsable */}
       <div
         className={cn(
-          "hidden lg:block border-b border-white/15 overflow-hidden py-5",
+          "hidden lg:block border-b border-white/15 overflow-hidden py-[14px]",
           "will-change-[max-height,opacity]",
           smoothTransition,
           showCompactNav
@@ -186,7 +186,7 @@ export function Navbar() {
             "flex items-center justify-between",
             "will-change-[height]",
             smoothTransition,
-            showCompactNav ? "h-14" : "h-[68px]"
+            showCompactNav ? "h-14" : "h-[62px]"
           )}>
             {/* Logo compacto */}
             <div className={cn(
