@@ -53,6 +53,17 @@ export interface ApiProductDetail {
     is_sold?: boolean;
     availability_status?: string;
     sold_source?: string | null;
+    media_type?: "image" | "video";
+    has_video?: boolean;
+    video_url?: string;
+    video?: {
+        has_video: boolean;
+        url: string;
+        poster: string;
+        source: string | null;
+        filename: string;
+        mimetype: string;
+    };
 }
 
 export interface ApiCollection {
@@ -114,6 +125,17 @@ export function mapApiProductDetailToProduct(apiProduct: ApiProductDetail, categ
         toHttps(apiProduct.images.image_4 || ""),
     ].filter(Boolean);
 
+    const rawVideoUrl = apiProduct.video?.url || apiProduct.video_url || "";
+    const videoUrl = toHttps(rawVideoUrl);
+    const hasVideo = Boolean(apiProduct.has_video && videoUrl);
+    const video = hasVideo
+        ? {
+              url: videoUrl,
+              poster: toHttps(apiProduct.video?.poster || mainImage),
+              mimetype: apiProduct.video?.mimetype || "",
+          }
+        : undefined;
+
     return {
         id: apiProduct.id.toString(),
         name: apiProduct.name,
@@ -138,6 +160,8 @@ export function mapApiProductDetailToProduct(apiProduct: ApiProductDetail, categ
         inStock: !apiProduct.is_sold,
         isSold: Boolean(apiProduct.is_sold),
         availabilityStatus: apiProduct.availability_status,
+        hasVideo,
+        video,
     };
 }
 

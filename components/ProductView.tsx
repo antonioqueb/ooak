@@ -11,7 +11,8 @@ import {
     ChevronRight,
     ArrowRight,
     ArrowLeft,
-    RefreshCcw
+    RefreshCcw,
+    Play
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,23 +24,53 @@ interface ProductViewProps {
     collectionSlug?: string;
 }
 
+type MediaItem =
+    | { type: "image"; src: string }
+    | { type: "video"; src: string; poster?: string; mimetype?: string };
+
 export function ProductView({ product, collectionSlug }: ProductViewProps) {
     const { addItem } = useCart();
-    const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
+    const [selectedMediaIndex, setSelectedMediaIndex] = React.useState(0);
     const [activeTab, setActiveTab] = React.useState<"measurements" | "shipping">("measurements");
     const [showMoreDescription, setShowMoreDescription] = React.useState(false);
+    const videoRef = React.useRef<HTMLVideoElement | null>(null);
 
+    const media: MediaItem[] = React.useMemo(() => {
+        const images = (product.images && product.images.length > 0)
+            ? product.images
+            : [product.image];
+        const [mainImage, ...restImages] = images;
+        const items: MediaItem[] = [{ type: "image", src: mainImage }];
+        if (product.hasVideo && product.video?.url) {
+            items.push({
+                type: "video",
+                src: product.video.url,
+                poster: product.video.poster,
+                mimetype: product.video.mimetype,
+            });
+        }
+        for (const img of restImages) {
+            items.push({ type: "image", src: img });
+        }
+        return items;
+    }, [product.image, product.images, product.hasVideo, product.video]);
 
-    const images = product.images || [product.image];
+    const currentMedia = media[selectedMediaIndex] ?? media[0];
+
+    React.useEffect(() => {
+        if (currentMedia?.type !== "video" && videoRef.current) {
+            videoRef.current.pause();
+        }
+    }, [currentMedia]);
 
     const handlePrevImage = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+        setSelectedMediaIndex((prev) => (prev === 0 ? media.length - 1 : prev - 1));
     };
 
     const handleNextImage = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+        setSelectedMediaIndex((prev) => (prev === media.length - 1 ? 0 : prev + 1));
     };
 
     return (
@@ -47,7 +78,7 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
             {/* LEFT SIDE: Image Gallery */}
             <div className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-white overflow-hidden group h-[50vh] md:h-screen sticky top-0">
                 {/* Navigation Buttons */}
-                {images.length > 1 && (
+                {media.length > 1 && (
                     <>
                         <button
                             onClick={handlePrevImage}
@@ -64,12 +95,29 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                     </>
                 )}
 
-                {/* Image Container */}
+                {/* Media Container */}
                 <div className="w-full h-full relative flex items-center justify-center p-8 bg-white">
-                    <ImageZoom
-                        src={images[selectedImageIndex]}
-                        alt={product.name}
-                    />
+                    {currentMedia?.type === "video" ? (
+                        <video
+                            ref={videoRef}
+                            key={currentMedia.src}
+                            src={currentMedia.src}
+                            poster={currentMedia.poster}
+                            controls
+                            playsInline
+                            preload="metadata"
+                            className="w-full h-full object-contain"
+                        >
+                            {currentMedia.mimetype && (
+                                <source src={currentMedia.src} type={currentMedia.mimetype} />
+                            )}
+                        </video>
+                    ) : (
+                        <ImageZoom
+                            src={currentMedia?.src ?? product.image}
+                            alt={product.name}
+                        />
+                    )}
                     {product.isSold && (
                         <div className="absolute top-8 -right-12 z-30 rotate-45 bg-[#2B2B2B] text-white px-16 py-2 text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase shadow-lg pointer-events-none">
                             Sold
@@ -78,17 +126,38 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                 </div>
 
                 {/* Thumbnails */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 px-3 py-1.5 bg-white/30 backdrop-blur-md rounded-full z-20">
-                    {images.map((img, index) => (
-                        <button
-                            key={index}
-                            onClick={(e) => { e.stopPropagation(); setSelectedImageIndex(index); }}
-                            className={cn(
-                                "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                                selectedImageIndex === index ? "bg-[#2B2B2B] scale-150" : "bg-white/80 hover:bg-white"
-                            )}
-                        />
-                    ))}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 bg-white/30 backdrop-blur-md rounded-full z-20">
+                    {media.map((item, index) => {
+                        const isActive = selectedMediaIndex === index;
+                        if (item.type === "video") {
+                            return (
+                                <button
+                                    key={`video-${index}`}
+                                    onClick={(e) => { e.stopPropagation(); setSelectedMediaIndex(index); }}
+                                    aria-label="Ver video del producto"
+                                    className={cn(
+                                        "flex items-center justify-center rounded-full transition-all duration-300",
+                                        isActive
+                                            ? "bg-[#2B2B2B] text-white w-5 h-5"
+                                            : "bg-white/90 text-[#2B2B2B] w-4 h-4 hover:bg-white"
+                                    )}
+                                >
+                                    <Play className={cn("fill-current", isActive ? "w-2.5 h-2.5" : "w-2 h-2")} />
+                                </button>
+                            );
+                        }
+                        return (
+                            <button
+                                key={`image-${index}`}
+                                onClick={(e) => { e.stopPropagation(); setSelectedMediaIndex(index); }}
+                                aria-label={`Ver imagen ${index + 1}`}
+                                className={cn(
+                                    "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                                    isActive ? "bg-[#2B2B2B] scale-150" : "bg-white/80 hover:bg-white"
+                                )}
+                            />
+                        );
+                    })}
                 </div>
             </div>
 

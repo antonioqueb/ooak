@@ -1,3 +1,9 @@
+export interface ProductVideo {
+    url: string;
+    poster?: string;
+    mimetype?: string;
+}
+
 export interface Product {
     id: string;
     name: string;
@@ -22,6 +28,8 @@ export interface Product {
     inStock?: boolean;
     isSold?: boolean;
     availabilityStatus?: string;
+    hasVideo?: boolean;
+    video?: ProductVideo;
 }
 
 export const products: Product[] = [
