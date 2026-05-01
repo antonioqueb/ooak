@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { getCartShipping } from '@/lib/shipping';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-10-28.acacia',
@@ -52,6 +53,22 @@ export async function POST(req: Request) {
                         name: 'VAT (IVA 16%)',
                     },
                     unit_amount: taxCents,
+                    tax_behavior: 'exclusive',
+                },
+                quantity: 1,
+            });
+        }
+
+        const shippingCents = Math.round(getCartShipping(items) * 100);
+
+        if (shippingCents > 0) {
+            lineItems.push({
+                price_data: {
+                    currency: 'mxn',
+                    product_data: {
+                        name: 'Shipping',
+                    },
+                    unit_amount: shippingCents,
                     tax_behavior: 'exclusive',
                 },
                 quantity: 1,

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, User, MapPin, ChevronRight, ShieldCheck, Lock, ChevronDown, Search, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
+import { getItemShipping, getItemUnitShipping, getCartShipping } from "@/lib/shipping";
 import { loadStripe } from "@stripe/stripe-js";
 import {
     EmbeddedCheckoutProvider,
@@ -214,6 +215,9 @@ export default function CheckoutPage() {
 
     const formatMoney = (value: number) =>
         value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const cartShipping = getCartShipping(items);
+    const grandTotal = cartTotal + cartShipping;
     const [step, setStep] = React.useState<"details" | "payment">("details");
     const [clientSecret, setClientSecret] = React.useState<string | null>(null);
     const [isLoadingPayment, setIsLoadingPayment] = React.useState(false);
@@ -523,31 +527,44 @@ export default function CheckoutPage() {
                         <div className="bg-white p-8 rounded-sm shadow-sm sticky top-32 border border-[#6C7466]/10">
                             <h2 className="text-lg font-serif text-[#2B2B2B] mb-6">Order Summary</h2>
                             <div className="space-y-4 mb-6">
-                                {items.map((item) => (
-                                    <div key={item.id} className="flex justify-between items-center text-sm">
-                                        <div className="flex items-center gap-3">
-                                            <div className="relative w-12 h-12 bg-[#EBEBE8] rounded-sm overflow-hidden shrink-0">
-                                                <img src={item.image} alt={item.name} className="object-cover w-full h-full" />
+                                {items.map((item) => {
+                                    const itemUnitShipping = getItemUnitShipping(item);
+                                    const itemShipping = getItemShipping(item);
+                                    return (
+                                        <div key={item.id} className="flex justify-between items-start text-sm">
+                                            <div className="flex items-start gap-3 min-w-0">
+                                                <div className="relative w-12 h-12 bg-[#EBEBE8] rounded-sm overflow-hidden shrink-0">
+                                                    <img src={item.image} alt={item.name} className="object-cover w-full h-full" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="font-medium text-[#2B2B2B] text-sm leading-tight">{item.name}</p>
+                                                    <p className="text-xs text-gray-500">Pieces: {item.quantity}</p>
+                                                    {itemUnitShipping > 0 && (
+                                                        <p className="text-xs text-gray-500">
+                                                            Shipping: ${formatMoney(itemUnitShipping)}
+                                                            {item.quantity > 1 && (
+                                                                <span className="text-gray-400"> × {item.quantity} = ${formatMoney(itemShipping)}</span>
+                                                            )}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="font-medium text-[#2B2B2B] text-sm leading-tight">{item.name}</p>
-                                                <p className="text-xs text-gray-500">Pieces: {item.quantity}</p>
-                                            </div>
+                                            <p className="font-medium text-[#2B2B2B] shrink-0">${formatMoney(item.price * item.quantity)}</p>
                                         </div>
-                                        <p className="font-medium text-[#2B2B2B] shrink-0">${formatMoney(item.price * item.quantity)}</p>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                             <div className="border-t border-[#6C7466]/10 pt-4 space-y-2 text-sm">
                                 <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>${formatMoney(cartSubtotal)}</span></div>
                                 <div className="flex justify-between text-gray-600"><span>VAT (IVA 16%)</span><span>${formatMoney(cartTax)}</span></div>
+                                <div className="flex justify-between text-gray-600"><span>Shipping</span><span>${formatMoney(cartShipping)}</span></div>
                             </div>
                             <div className="border-t border-[#6C7466]/10 pt-4 mt-4">
                                 <div className="flex justify-between items-end">
                                     <span className="text-base font-bold text-[#2B2B2B]">Total</span>
-                                    <span className="text-2xl font-serif text-[#2B2B2B]">${formatMoney(cartTotal)}</span>
+                                    <span className="text-2xl font-serif text-[#2B2B2B]">${formatMoney(grandTotal)}</span>
                                 </div>
-                                <p className="text-[10px] text-[#6C7466] mt-1 text-right">VAT included</p>
+                                <p className="text-[10px] text-[#6C7466] mt-1 text-right">VAT & shipping included</p>
                             </div>
                             <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-gray-400 uppercase tracking-widest">
                                 <ShieldCheck className="w-3 h-3" /><span>Secure Checkout · Powered by Stripe</span>
