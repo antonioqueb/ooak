@@ -4,10 +4,9 @@ import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { ShoppingCart, Search, Menu, X, ChevronRight } from "lucide-react"
+import { ShoppingCart, Search, Menu, ChevronRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Sheet,
   SheetContent,
@@ -17,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useCart } from "@/context/cart-context"
+import { SearchOverlay } from "@/components/SearchOverlay"
 
 const topBarLinks = [
   { name: "SHOP", href: "#", hasMenu: true },
@@ -464,40 +464,7 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Search Bar */}
-      {isSearchOpen && (
-        <div
-          className={cn(
-            "border-t border-white/20 overflow-hidden",
-            "will-change-[max-height,opacity]",
-            smoothTransition,
-            isSearchOpen ? "max-h-20 opacity-100" : "max-h-0 opacity-0"
-          )}
-          style={{ backgroundColor: '#6C7466' }}
-        >
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-2 py-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" />
-                <Input
-                  type="search"
-                  placeholder="Search products..."
-                  className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus-visible:ring-white/50 h-10"
-                  autoFocus
-                />
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSearchOpen(false)}
-                className="text-white hover:bg-white/10 hover:text-white h-9 w-9 flex-shrink-0"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SearchOverlay open={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   )
 }
