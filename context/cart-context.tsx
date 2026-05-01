@@ -7,6 +7,8 @@ export interface CartItem extends Product {
     quantity: number;
 }
 
+export const TAX_RATE = 0.16;
+
 interface CartContextType {
     items: CartItem[];
     isCartOpen: boolean;
@@ -15,6 +17,8 @@ interface CartContextType {
     updateQuantity: (productId: string, quantity: number) => void;
     clearCart: () => void;
     toggleCart: () => void;
+    cartSubtotal: number;
+    cartTax: number;
     cartTotal: number;
     cartCount: number;
 }
@@ -85,10 +89,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setIsCartOpen((prev) => !prev);
     };
 
-    const cartTotal = items.reduce(
+    const cartSubtotal = items.reduce(
         (total, item) => total + item.price * item.quantity,
         0
     );
+
+    const cartTax = Math.round(cartSubtotal * TAX_RATE * 100) / 100;
+    const cartTotal = Math.round((cartSubtotal + cartTax) * 100) / 100;
 
     const cartCount = items.reduce((count, item) => count + item.quantity, 0);
 
@@ -102,6 +109,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 updateQuantity,
                 clearCart,
                 toggleCart,
+                cartSubtotal,
+                cartTax,
                 cartTotal,
                 cartCount,
             }}

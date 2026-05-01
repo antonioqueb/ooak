@@ -17,7 +17,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing customer information' }, { status: 400 });
         }
 
-        const lineItems = items.map((item: any) => {
+        const TAX_RATE = 0.16;
+
+        const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item: any) => {
             return {
                 price_data: {
                     currency: 'mxn',
@@ -30,10 +32,31 @@ export async function POST(req: Request) {
                         }
                     },
                     unit_amount: Math.round(item.price * 100),
+                    tax_behavior: 'exclusive',
                 },
                 quantity: item.quantity,
             };
         });
+
+        const subtotalCents = items.reduce(
+            (acc: number, item: any) => acc + Math.round(item.price * 100) * item.quantity,
+            0
+        );
+        const taxCents = Math.round(subtotalCents * TAX_RATE);
+
+        if (taxCents > 0) {
+            lineItems.push({
+                price_data: {
+                    currency: 'mxn',
+                    product_data: {
+                        name: 'VAT (IVA 16%)',
+                    },
+                    unit_amount: taxCents,
+                    tax_behavior: 'exclusive',
+                },
+                quantity: 1,
+            });
+        }
 
         // Guardar todos los datos del cliente en metadata de la sesión de Stripe.
         // Stripe metadata tiene límite de 500 chars por value y 50 keys.

@@ -210,7 +210,10 @@ function SearchableSelect({
 // COMPONENTE PRINCIPAL: CheckoutPage
 // ---------------------------------------------------------------------------
 export default function CheckoutPage() {
-    const { items, cartTotal } = useCart();
+    const { items, cartSubtotal, cartTax, cartTotal } = useCart();
+
+    const formatMoney = (value: number) =>
+        value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const [step, setStep] = React.useState<"details" | "payment">("details");
     const [clientSecret, setClientSecret] = React.useState<string | null>(null);
     const [isLoadingPayment, setIsLoadingPayment] = React.useState(false);
@@ -531,21 +534,20 @@ export default function CheckoutPage() {
                                                 <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                                             </div>
                                         </div>
-                                        <p className="font-medium text-[#2B2B2B] shrink-0">${(item.price * item.quantity).toLocaleString("en-US")}</p>
+                                        <p className="font-medium text-[#2B2B2B] shrink-0">${formatMoney(item.price * item.quantity)}</p>
                                     </div>
                                 ))}
                             </div>
                             <div className="border-t border-[#6C7466]/10 pt-4 space-y-2 text-sm">
-                                <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>${cartTotal.toLocaleString("en-US")}</span></div>
-                                <div className="flex justify-between text-gray-600"><span>Tax</span><span className="text-xs text-[#6C7466] font-medium">Included</span></div>
-                                <div className="flex justify-between text-gray-600"><span>Shipping</span><span className="text-xs text-gray-400">Free</span></div>
+                                <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>${formatMoney(cartSubtotal)}</span></div>
+                                <div className="flex justify-between text-gray-600"><span>VAT (IVA 16%)</span><span>${formatMoney(cartTax)}</span></div>
                             </div>
                             <div className="border-t border-[#6C7466]/10 pt-4 mt-4">
                                 <div className="flex justify-between items-end">
                                     <span className="text-base font-bold text-[#2B2B2B]">Total</span>
-                                    <span className="text-2xl font-serif text-[#2B2B2B]">${cartTotal.toLocaleString("en-US")}</span>
+                                    <span className="text-2xl font-serif text-[#2B2B2B]">${formatMoney(cartTotal)}</span>
                                 </div>
-                                <p className="text-[10px] text-[#6C7466] mt-1 text-right">Tax included</p>
+                                <p className="text-[10px] text-[#6C7466] mt-1 text-right">VAT included</p>
                             </div>
                             <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-gray-400 uppercase tracking-widest">
                                 <ShieldCheck className="w-3 h-3" /><span>Secure Checkout · Powered by Stripe</span>

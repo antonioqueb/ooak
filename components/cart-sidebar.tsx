@@ -15,7 +15,10 @@ import { useCart } from "@/context/cart-context";
 import { cn } from "@/lib/utils";
 
 export function CartSidebar() {
-    const { items, isCartOpen, toggleCart, removeItem, updateQuantity, cartTotal } = useCart();
+    const { items, isCartOpen, toggleCart, removeItem, updateQuantity, cartSubtotal } = useCart();
+
+    const formatMoney = (value: number) =>
+        value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     return (
         <Sheet open={isCartOpen} onOpenChange={toggleCart}>
@@ -88,7 +91,7 @@ export function CartSidebar() {
                                                 </button>
                                             </div>
                                             <p className="text-sm font-medium text-[#2B2B2B]">
-                                                ${(item.price * item.quantity).toLocaleString("en-US")}
+                                                ${formatMoney(item.price * item.quantity)}
                                             </p>
                                         </div>
                                     </div>
@@ -102,7 +105,7 @@ export function CartSidebar() {
                     <div className="p-6 border-t border-[#6C7466]/10 bg-[#FDFBF7] space-y-4">
                         <div className="flex justify-between items-center text-lg font-serif text-[#2B2B2B]">
                             <span>Subtotal</span>
-                            <span>${cartTotal.toLocaleString("en-US")}</span>
+                            <span>${formatMoney(cartSubtotal)}</span>
                         </div>
                         <p className="text-[10px] text-gray-400 text-center uppercase tracking-widest">
                             Shipping & taxes calculated at checkout

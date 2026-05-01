@@ -9,7 +9,10 @@ import { useCart } from "@/context/cart-context";
 import { cn } from "@/lib/utils";
 
 export default function CartPage() {
-    const { items, removeItem, updateQuantity, cartTotal } = useCart();
+    const { items, removeItem, updateQuantity, cartSubtotal } = useCart();
+
+    const formatMoney = (value: number) =>
+        value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     if (items.length === 0) {
         return (
@@ -112,24 +115,19 @@ export default function CartPage() {
                             <div className="space-y-4 mb-6 text-sm">
                                 <div className="flex justify-between text-gray-600">
                                     <span>Subtotal</span>
-                                    <span>${cartTotal.toLocaleString("en-US")}</span>
+                                    <span>${formatMoney(cartSubtotal)}</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
-                                    <span>Tax</span>
-                                    <span className="text-xs text-[#6C7466] font-medium">Included</span>
-                                </div>
-                                <div className="flex justify-between text-gray-600">
-                                    <span>Shipping</span>
+                                    <span>Taxes & Shipping</span>
                                     <span className="text-xs text-gray-400">Calculated at checkout</span>
                                 </div>
                             </div>
 
                             <div className="border-t border-gray-100 pt-4 mb-8">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-base font-bold text-[#2B2B2B]">Total</span>
-                                    <span className="text-2xl font-serif text-[#2B2B2B]">${cartTotal.toLocaleString("en-US")}</span>
+                                    <span className="text-base font-bold text-[#2B2B2B]">Subtotal</span>
+                                    <span className="text-2xl font-serif text-[#2B2B2B]">${formatMoney(cartSubtotal)}</span>
                                 </div>
-                                <p className="text-[10px] text-[#6C7466] mt-1 text-right">Tax included</p>
                             </div>
 
                             <Button
