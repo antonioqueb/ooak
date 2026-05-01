@@ -5,7 +5,6 @@ import Image from "next/image";
 import { ImageZoom } from "@/components/ImageZoom";
 import Link from "next/link";
 import {
-    X,
     Package,
     TruckIcon,
     ShieldCheck,
@@ -45,16 +44,6 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
 
     return (
         <div className="min-h-screen bg-[#FDFBF7] flex flex-col md:flex-row">
-            {/* Floating Close Button (Back to Home) */}
-            {/* Floating Close Button (Back) */}
-            {/* Floating Close Button (Back) */}
-            <Link
-                href={collectionSlug ? `/collections/${collectionSlug}` : "/"}
-                className="fixed top-4 right-4 z-50 p-2 bg-white/50 hover:bg-white rounded-full transition-colors backdrop-blur-md shadow-sm"
-            >
-                <X className="w-5 h-5 text-[#2B2B2B]" strokeWidth={1.5} />
-            </Link>
-
             {/* LEFT SIDE: Image Gallery */}
             <div className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-white overflow-hidden group h-[50vh] md:h-screen sticky top-0">
                 {/* Navigation Buttons */}
@@ -110,9 +99,12 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                             Home
                         </Link>
                         <span className="h-px w-4 bg-[#6C7466]/30"></span>
-                        <span className="text-[10px] md:text-xs font-bold tracking-[0.25em] text-[#6C7466] uppercase truncate">
+                        <Link
+                            href={collectionSlug ? `/collections/${collectionSlug}` : "/"}
+                            className="text-[10px] md:text-xs font-bold tracking-[0.25em] text-[#6C7466] hover:text-[#2B2B2B] uppercase truncate transition-colors"
+                        >
                             {product.category}
-                        </span>
+                        </Link>
                     </div>
 
                     {/* Header Info */}
