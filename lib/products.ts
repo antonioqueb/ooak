@@ -20,6 +20,8 @@ export interface Product {
     material?: string;
     colors?: string;
     inStock?: boolean;
+    isSold?: boolean;
+    availabilityStatus?: string;
 }
 
 export const products: Product[] = [

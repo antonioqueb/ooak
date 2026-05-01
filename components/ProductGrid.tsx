@@ -123,15 +123,24 @@ function ProductCard({
           src={product.image}
           alt={product.name}
           fill
-          className="object-contain transition-transform duration-[1.2s] ease-out group-hover:scale-110"
+          className={cn(
+            "object-contain transition-transform duration-[1.2s] ease-out group-hover:scale-110",
+            product.isSold && "opacity-60 grayscale"
+          )}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           priority={product.featured}
         />
         <div className="absolute inset-0 bg-[#6C7466]/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
+        {product.isSold && (
+          <div className="absolute top-6 -right-10 z-20 rotate-45 bg-[#2B2B2B] text-white px-12 py-1 text-[9px] md:text-[10px] font-bold tracking-[0.3em] uppercase shadow-md pointer-events-none">
+            Sold
+          </div>
+        )}
+
         <div className="absolute top-3 left-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
           {product.featured && <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-bold tracking-widest uppercase text-[#6C7466]">Featured</span>}
-          {product.inStock && <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-bold tracking-widest uppercase text-gray-400">In Stock</span>}
+          {!product.isSold && product.inStock && <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-bold tracking-widest uppercase text-gray-400">In Stock</span>}
         </div>
 
         <button
@@ -148,16 +157,18 @@ function ProductCard({
           <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
         </button>
 
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            addItem(product);
-          }}
-          className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#6C7466] shadow-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#6C7466] hover:text-white"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
+        {!product.isSold && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              addItem(product);
+            }}
+            className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#6C7466] shadow-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#6C7466] hover:text-white"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col gap-0.5">

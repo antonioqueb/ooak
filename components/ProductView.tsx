@@ -70,6 +70,11 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                         src={images[selectedImageIndex]}
                         alt={product.name}
                     />
+                    {product.isSold && (
+                        <div className="absolute top-8 -right-12 z-30 rotate-45 bg-[#2B2B2B] text-white px-16 py-2 text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase shadow-lg pointer-events-none">
+                            Sold
+                        </div>
+                    )}
                 </div>
 
                 {/* Thumbnails */}
@@ -190,9 +195,10 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                 <div className="p-6 md:p-8 lg:p-10 border-t border-[#6C7466]/10 bg-[#FDFBF7] shrink-0 sticky bottom-0 z-40">
                     <Button
                         onClick={() => addItem(product)}
-                        className="w-full bg-[#2B2B2B] text-white hover:bg-[#6C7466] transition-colors h-12 md:h-14 rounded-none text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-3"
+                        disabled={product.isSold}
+                        className="w-full bg-[#2B2B2B] text-white hover:bg-[#6C7466] transition-colors h-12 md:h-14 rounded-none text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-3 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
                     >
-                        Add to Cart — ${product.price.toLocaleString("en-US")}
+                        {product.isSold ? "Sold" : `Add to Cart — $${product.price.toLocaleString("en-US")}`}
                     </Button>
                     <div className="flex justify-center items-center gap-3 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest">
                         <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Secure</span>

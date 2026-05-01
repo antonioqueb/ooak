@@ -43,6 +43,9 @@ export interface ApiProductDetail {
         meta_title: string;
         meta_description: string;
     };
+    is_sold?: boolean;
+    availability_status?: string;
+    sold_source?: string | null;
 }
 
 export interface ApiCollection {
@@ -125,7 +128,9 @@ export function mapApiProductDetailToProduct(apiProduct: ApiProductDetail, categ
         },
         material: apiProduct.material,
         colors: "", // API doesn't provide colors yet
-        inStock: true,
+        inStock: !apiProduct.is_sold,
+        isSold: Boolean(apiProduct.is_sold),
+        availabilityStatus: apiProduct.availability_status,
     };
 }
 
