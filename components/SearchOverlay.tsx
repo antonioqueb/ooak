@@ -72,14 +72,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
         return () => window.removeEventListener("keydown", handler);
     }, [open, onClose]);
 
-    React.useEffect(() => {
-        if (!open) return;
-        const original = document.body.style.overflow;
-        document.body.style.overflow = "hidden";
-        return () => {
-            document.body.style.overflow = original;
-        };
-    }, [open]);
+    if (!open) return null;
 
     const results = React.useMemo<Product[]>(() => {
         if (!products) return [];
@@ -117,28 +110,13 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
     const showEmpty = !loading && !isSearching && debouncedQuery.trim().length > 0 && results.length === 0;
 
     return (
-        <div
-            className={cn(
-                "fixed inset-0 z-[60] transition-opacity duration-500",
-                open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-            )}
-            aria-hidden={!open}
-        >
+        <div className="fixed inset-0 z-[60] animate-in fade-in duration-300">
             <div
-                className={cn(
-                    "absolute inset-0 bg-[#2B2B2B]/40 backdrop-blur-sm transition-opacity duration-500",
-                    open ? "opacity-100" : "opacity-0"
-                )}
+                className="absolute inset-0 bg-[#2B2B2B]/40 backdrop-blur-sm"
                 onClick={onClose}
             />
 
-            <div
-                className={cn(
-                    "absolute top-0 left-0 right-0 bg-[#FDFBF7] shadow-xl",
-                    "transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-                    open ? "translate-y-0" : "-translate-y-full"
-                )}
-            >
+            <div className="absolute top-0 left-0 right-0 bg-[#FDFBF7] shadow-xl animate-in slide-in-from-top duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
                     <div className="flex items-center justify-between mb-4">
                         <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#6C7466]">
