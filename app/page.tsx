@@ -166,12 +166,6 @@ export default async function Home() {
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
               {/* Image Column */}
               <div className={`order-2 lg:col-span-7 relative group ${heroSection.layout === 'image_right' ? 'lg:order-2' : 'lg:order-1'}`}>
-                {heroSection.content.background_text && (
-                  <div className="absolute -top-12 -left-12 text-[8rem] md:text-[10rem] font-serif font-bold text-[#6C7466]/5 select-none pointer-events-none z-0 leading-none">
-                    {heroSection.content.background_text}
-                  </div>
-                )}
-
                 <div className="relative w-full overflow-hidden rounded-sm shadow-sm z-10">
                   <Image
                     src={heroSection.content.image?.src || PLACEHOLDER_IMG}
