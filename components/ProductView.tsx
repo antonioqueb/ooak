@@ -125,22 +125,37 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
 
                     {/* Description */}
                     <div className="mb-8 text-gray-500 font-light leading-relaxed text-sm md:text-base">
-                        <div className="prose prose-sm max-w-none text-gray-500">
-                            <div dangerouslySetInnerHTML={{
-                                __html: showMoreDescription
-                                    ? (product.longDescription || product.description || "")
-                                    : (product.shortDescription || (product.description?.substring(0, 180) + "...") || "")
-                            }} />
-                        </div>
-                        {(product.longDescription || (product.description && product.description.length > 180)) && (
-                            <button
-                                onClick={() => setShowMoreDescription(!showMoreDescription)}
-                                className="text-[#6C7466] text-[10px] md:text-xs font-bold uppercase tracking-widest mt-2 flex items-center gap-2 hover:text-[#2B2B2B] transition-colors"
-                            >
-                                {showMoreDescription ? "Read Less" : "Read More"}
-                                <ChevronRight className={cn("w-3 h-3 transition-transform", showMoreDescription && "rotate-90")} />
-                            </button>
-                        )}
+                        {(() => {
+                            const shortHtml =
+                                product.shortDescription ||
+                                (product.description
+                                    ? product.description.length > 180
+                                        ? product.description.substring(0, 180) + "..."
+                                        : product.description
+                                    : "");
+                            const longHtml = product.longDescription || "";
+                            const hasMore = Boolean(longHtml);
+
+                            return (
+                                <>
+                                    <div className="prose prose-sm max-w-none text-gray-500">
+                                        <div dangerouslySetInnerHTML={{ __html: shortHtml }} />
+                                        {hasMore && showMoreDescription && (
+                                            <div className="mt-4" dangerouslySetInnerHTML={{ __html: longHtml }} />
+                                        )}
+                                    </div>
+                                    {hasMore && (
+                                        <button
+                                            onClick={() => setShowMoreDescription(!showMoreDescription)}
+                                            className="text-[#6C7466] text-[10px] md:text-xs font-bold uppercase tracking-widest mt-2 flex items-center gap-2 hover:text-[#2B2B2B] transition-colors"
+                                        >
+                                            {showMoreDescription ? "Read Less" : "Read More"}
+                                            <ChevronRight className={cn("w-3 h-3 transition-transform", showMoreDescription && "rotate-90")} />
+                                        </button>
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
 
                     <div className="border-t border-b border-[#6C7466]/10 py-4 md:py-6 mb-6">
