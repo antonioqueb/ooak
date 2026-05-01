@@ -72,8 +72,6 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
         return () => window.removeEventListener("keydown", handler);
     }, [open, onClose]);
 
-    if (!open) return null;
-
     const results = React.useMemo<Product[]>(() => {
         if (!products) return [];
         const tokens = tokenize(debouncedQuery);
@@ -108,6 +106,8 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 
     const isSearching = query !== debouncedQuery;
     const showEmpty = !loading && !isSearching && debouncedQuery.trim().length > 0 && results.length === 0;
+
+    if (!open) return null;
 
     return (
         <div className="fixed inset-0 z-[60] animate-in fade-in duration-300">
