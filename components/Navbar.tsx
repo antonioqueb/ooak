@@ -155,7 +155,7 @@ export function Navbar() {
       {/* Logo grande colapsable */}
       <div
         className={cn(
-          "hidden lg:block border-b border-white/15 overflow-hidden py-6",
+          "hidden lg:block border-b border-white/15 overflow-hidden py-5",
           "will-change-[max-height,opacity]",
           smoothTransition,
           showCompactNav
@@ -171,7 +171,7 @@ export function Navbar() {
                 alt="OOAK Logo"
                 width={490}
                 height={290}
-                className="h-24 w-auto"
+                className="h-20 w-auto"
                 priority
               />
             </Link>
@@ -186,7 +186,7 @@ export function Navbar() {
             "flex items-center justify-between",
             "will-change-[height]",
             smoothTransition,
-            showCompactNav ? "h-14" : "h-20"
+            showCompactNav ? "h-14" : "h-[68px]"
           )}>
             {/* Logo compacto */}
             <div className={cn(
