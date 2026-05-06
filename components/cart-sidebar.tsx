@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
+import { Trash2, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Sheet,
@@ -12,10 +12,9 @@ import {
     SheetTitle,
 } from "@/components/ui/sheet";
 import { useCart } from "@/context/cart-context";
-import { cn } from "@/lib/utils";
 
 export function CartSidebar() {
-    const { items, isCartOpen, toggleCart, removeItem, updateQuantity, cartSubtotal } = useCart();
+    const { items, isCartOpen, toggleCart, removeItem, cartSubtotal } = useCart();
 
     const formatMoney = (value: number) =>
         value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -73,25 +72,11 @@ export function CartSidebar() {
                                         </div>
 
                                         <div className="flex justify-between items-end">
-                                            <div className="flex items-center border border-[#6C7466]/20 rounded-sm">
-                                                <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                    className="p-1 hover:bg-[#6C7466]/5 transition-colors"
-                                                >
-                                                    <Minus className="w-3 h-3 text-[#6C7466]" />
-                                                </button>
-                                                <span className="w-8 text-center text-xs font-medium text-[#2B2B2B]">
-                                                    {item.quantity}
-                                                </span>
-                                                <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                    className="p-1 hover:bg-[#6C7466]/5 transition-colors"
-                                                >
-                                                    <Plus className="w-3 h-3 text-[#6C7466]" />
-                                                </button>
-                                            </div>
+                                            <span className="text-[10px] tracking-widest uppercase text-gray-400">
+                                                One of a Kind
+                                            </span>
                                             <p className="text-sm font-medium text-[#2B2B2B]">
-                                                ${formatMoney(item.price * item.quantity)}
+                                                ${formatMoney(item.price)}
                                             </p>
                                         </div>
                                     </div>

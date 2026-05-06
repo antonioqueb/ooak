@@ -3,13 +3,12 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, Trash2, ArrowLeft, ShieldCheck } from "lucide-react";
+import { Trash2, ArrowLeft, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
-import { cn } from "@/lib/utils";
 
 export default function CartPage() {
-    const { items, removeItem, updateQuantity, cartSubtotal } = useCart();
+    const { items, removeItem, cartSubtotal } = useCart();
 
     const formatMoney = (value: number) =>
         value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -40,16 +39,15 @@ export default function CartPage() {
                     {/* Cart Items List */}
                     <div className="lg:col-span-2 space-y-8">
                         <div className="hidden md:grid grid-cols-12 gap-4 pb-4 border-b border-[#6C7466]/10 text-xs font-bold tracking-widest uppercase text-gray-400">
-                            <div className="col-span-6">Product</div>
-                            <div className="col-span-2 text-center">Quantity</div>
-                            <div className="col-span-2 text-right">Total</div>
+                            <div className="col-span-7">Product</div>
+                            <div className="col-span-3 text-right">Price</div>
                             <div className="col-span-2"></div>
                         </div>
 
                         {items.map((item) => (
                             <div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center border-b border-[#6C7466]/10 pb-8 last:border-0">
                                 {/* Product Info */}
-                                <div className="md:col-span-6 flex gap-4">
+                                <div className="md:col-span-7 flex gap-4">
                                     <div className="relative w-24 h-32 bg-[#EBEBE8] shrink-0 rounded-sm overflow-hidden">
                                         <Image
                                             src={item.image}
@@ -61,35 +59,15 @@ export default function CartPage() {
                                     <div className="flex flex-col justify-center">
                                         <h3 className="text-lg font-serif text-[#2B2B2B] mb-1">{item.name}</h3>
                                         <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">{item.category}</p>
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">One of a Kind</p>
                                         <p className="text-sm text-[#6C7466] md:hidden">${item.price.toLocaleString("en-US")}</p>
                                     </div>
                                 </div>
 
-                                {/* Quantity */}
-                                <div className="md:col-span-2 flex justify-center">
-                                    <div className="flex items-center border border-[#6C7466]/20 rounded-sm">
-                                        <button
-                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                            className="p-2 hover:bg-[#6C7466]/5 transition-colors"
-                                        >
-                                            <Minus className="w-3 h-3 text-[#6C7466]" />
-                                        </button>
-                                        <span className="w-8 text-center text-sm font-medium text-[#2B2B2B]">
-                                            {item.quantity}
-                                        </span>
-                                        <button
-                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                            className="p-2 hover:bg-[#6C7466]/5 transition-colors"
-                                        >
-                                            <Plus className="w-3 h-3 text-[#6C7466]" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Total */}
-                                <div className="md:col-span-2 text-right hidden md:block">
+                                {/* Price */}
+                                <div className="md:col-span-3 text-right hidden md:block">
                                     <p className="text-base font-medium text-[#2B2B2B]">
-                                        ${(item.price * item.quantity).toLocaleString("en-US")}
+                                        ${item.price.toLocaleString("en-US")}
                                     </p>
                                 </div>
 

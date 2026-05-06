@@ -14,7 +14,7 @@ interface CartContextType {
     isCartOpen: boolean;
     addItem: (product: Product) => void;
     removeItem: (productId: string) => void;
-    updateQuantity: (productId: string, quantity: number) => void;
+    isInCart: (productId: string) => boolean;
     clearCart: () => void;
     toggleCart: () => void;
     cartSubtotal: number;
@@ -53,14 +53,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const addItem = (product: Product) => {
         if (product.isSold) return;
         setItems((prev) => {
-            const existing = prev.find((item) => item.id === product.id);
-            if (existing) {
-                return prev.map((item) =>
-                    item.id === product.id
-                        ? { ...item, quantity: item.quantity + 1 }
-                        : item
-                );
-            }
+            if (prev.some((item) => item.id === product.id)) return prev;
             return [...prev, { ...product, quantity: 1 }];
         });
         setIsCartOpen(true);
@@ -70,17 +63,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setItems((prev) => prev.filter((item) => item.id !== productId));
     };
 
-    const updateQuantity = (productId: string, quantity: number) => {
-        if (quantity < 1) {
-            removeItem(productId);
-            return;
-        }
-        setItems((prev) =>
-            prev.map((item) =>
-                item.id === productId ? { ...item, quantity } : item
-            )
-        );
-    };
+    const isInCart = (productId: string) =>
+        items.some((item) => item.id === productId);
 
     const clearCart = () => {
         setItems([]);
@@ -107,7 +91,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 isCartOpen,
                 addItem,
                 removeItem,
-                updateQuantity,
+                isInCart,
                 clearCart,
                 toggleCart,
                 cartSubtotal,

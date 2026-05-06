@@ -7,6 +7,7 @@ import {
   Heart,
   Star,
   Plus,
+  Check,
   ArrowRight,
   ArrowLeft,
 } from "lucide-react";
@@ -114,7 +115,8 @@ function ProductCard({
   product: Product;
 }) {
   const [isFavorite, setIsFavorite] = React.useState(false);
-  const { addItem } = useCart();
+  const { addItem, isInCart } = useCart();
+  const alreadyInCart = isInCart(product.id);
 
   return (
     <Link href={`/product/${product.slug}`} className="group cursor-pointer flex flex-col gap-4">
@@ -162,11 +164,19 @@ function ProductCard({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (alreadyInCart) return;
               addItem(product);
             }}
-            className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#6C7466] shadow-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#6C7466] hover:text-white"
+            disabled={alreadyInCart}
+            aria-label={alreadyInCart ? "In cart" : "Add to cart"}
+            className={cn(
+              "absolute bottom-4 right-4 w-10 h-10 rounded-full flex items-center justify-center shadow-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300",
+              alreadyInCart
+                ? "bg-[#6C7466] text-white cursor-not-allowed"
+                : "bg-white text-[#6C7466] hover:bg-[#6C7466] hover:text-white"
+            )}
           >
-            <Plus className="w-5 h-5" />
+            {alreadyInCart ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
           </button>
         )}
       </div>
