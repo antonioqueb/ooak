@@ -137,14 +137,6 @@ export default function ProjectsPage() {
                     ))}
                 </div>
 
-                {/* Bottom CTA */}
-                <div className="mt-24 text-center">
-                    <p className="text-xl font-serif text-[#6C7466] mb-6">Have a project in mind?</p>
-                    <button className="px-8 py-3 bg-white border border-[#6C7466] text-[#6C7466] rounded-full hover:bg-[#6C7466] hover:text-white transition-all duration-300 uppercase text-xs tracking-[0.15em] font-bold">
-                        Get in Touch
-                    </button>
-                </div>
-
             </div>
         </main>
     );
