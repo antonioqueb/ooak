@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "One Of A Kind",
   description:
-    "One Of A Kind, Unique Artefacts of Exceptional Quality for Your Home Decor and Collections. Handmade and Handcrafted by artisans in Copenhagen, Denmark.",
+    "Curated, unique & timeless pieces",
   icons: {
     icon: [
       { url: "/icon-light-32x32.png", media: "(prefers-color-scheme: light)" },

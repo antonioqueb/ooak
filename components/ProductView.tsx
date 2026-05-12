@@ -5,13 +5,10 @@ import Image from "next/image";
 import { ImageZoom } from "@/components/ImageZoom";
 import Link from "next/link";
 import {
-    Package,
-    TruckIcon,
     ShieldCheck,
     ChevronRight,
     ArrowRight,
     ArrowLeft,
-    RefreshCcw,
     Play
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +29,6 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
     const { addItem, isInCart } = useCart();
     const alreadyInCart = isInCart(product.id);
     const [selectedMediaIndex, setSelectedMediaIndex] = React.useState(0);
-    const [activeTab, setActiveTab] = React.useState<"measurements" | "shipping">("measurements");
     const [showMoreDescription, setShowMoreDescription] = React.useState(false);
     const videoRef = React.useRef<HTMLVideoElement | null>(null);
 
@@ -74,10 +70,66 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
         setSelectedMediaIndex((prev) => (prev === media.length - 1 ? 0 : prev + 1));
     };
 
+    const goToPrev = React.useCallback(() => {
+        setSelectedMediaIndex((prev) => (prev === 0 ? media.length - 1 : prev - 1));
+    }, [media.length]);
+
+    const goToNext = React.useCallback(() => {
+        setSelectedMediaIndex((prev) => (prev === media.length - 1 ? 0 : prev + 1));
+    }, [media.length]);
+
+    React.useEffect(() => {
+        if (media.length <= 1) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement | null;
+            const tag = target?.tagName;
+            if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) return;
+            if (e.key === "ArrowLeft") {
+                goToPrev();
+            } else if (e.key === "ArrowRight") {
+                goToNext();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [goToPrev, goToNext, media.length]);
+
+    const swipeRef = React.useRef<{ x: number; y: number } | null>(null);
+    const SWIPE_THRESHOLD = 50;
+
+    const handleGalleryTouchStart = (e: React.TouchEvent) => {
+        if (e.touches.length !== 1) return;
+        swipeRef.current = {
+            x: e.touches[0].clientX,
+            y: e.touches[0].clientY,
+        };
+    };
+
+    const handleGalleryTouchEnd = (e: React.TouchEvent) => {
+        const start = swipeRef.current;
+        swipeRef.current = null;
+        if (!start) return;
+        if (e.changedTouches.length === 0) return;
+        if (media.length <= 1) return;
+        const dx = e.changedTouches[0].clientX - start.x;
+        const dy = e.changedTouches[0].clientY - start.y;
+        if (Math.abs(dx) < SWIPE_THRESHOLD) return;
+        if (Math.abs(dx) < Math.abs(dy) * 1.5) return;
+        if (dx < 0) {
+            goToNext();
+        } else {
+            goToPrev();
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#FDFBF7] flex flex-col md:flex-row">
             {/* LEFT SIDE: Image Gallery */}
-            <div className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-white overflow-hidden group h-[50vh] md:h-screen sticky top-0">
+            <div
+                className="relative w-full md:w-[55%] lg:w-[60%] shrink-0 bg-white overflow-hidden group h-[50vh] md:h-screen sticky top-0"
+                onTouchStart={handleGalleryTouchStart}
+                onTouchEnd={handleGalleryTouchEnd}
+            >
                 {/* Navigation Buttons */}
                 {media.length > 1 && (
                     <>
@@ -127,39 +179,48 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                 </div>
 
                 {/* Thumbnails */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 bg-white/30 backdrop-blur-md rounded-full z-20">
-                    {media.map((item, index) => {
-                        const isActive = selectedMediaIndex === index;
-                        if (item.type === "video") {
+                {media.length > 1 && (
+                    <div className="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-2 py-2 bg-white/60 backdrop-blur-md rounded-lg shadow-sm max-w-[calc(100%-1.5rem)] overflow-x-auto scrollbar-hide">
+                        {media.map((item, index) => {
+                            const isActive = selectedMediaIndex === index;
+                            const thumbSrc = item.type === "video"
+                                ? (item.poster ?? product.image)
+                                : item.src;
+                            const ariaLabel = item.type === "video"
+                                ? "Ver video del producto"
+                                : `Ver imagen ${index + 1}`;
                             return (
                                 <button
-                                    key={`video-${index}`}
+                                    key={`thumb-${index}`}
                                     onClick={(e) => { e.stopPropagation(); setSelectedMediaIndex(index); }}
-                                    aria-label="Ver video del producto"
+                                    onTouchStart={(e) => e.stopPropagation()}
+                                    onTouchEnd={(e) => e.stopPropagation()}
+                                    aria-label={ariaLabel}
                                     className={cn(
-                                        "flex items-center justify-center rounded-full transition-all duration-300",
+                                        "relative shrink-0 w-14 h-14 md:w-16 md:h-16 overflow-hidden rounded-sm transition-all duration-200 border-2 bg-white",
                                         isActive
-                                            ? "bg-[#2B2B2B] text-white w-5 h-5"
-                                            : "bg-white/90 text-[#2B2B2B] w-4 h-4 hover:bg-white"
+                                            ? "border-[#2B2B2B] opacity-100"
+                                            : "border-transparent opacity-60 hover:opacity-100"
                                     )}
                                 >
-                                    <Play className={cn("fill-current", isActive ? "w-2.5 h-2.5" : "w-2 h-2")} />
+                                    <Image
+                                        src={thumbSrc}
+                                        alt={`Miniatura ${index + 1}`}
+                                        fill
+                                        sizes="64px"
+                                        className="object-cover"
+                                        unoptimized
+                                    />
+                                    {item.type === "video" && (
+                                        <span className="absolute inset-0 flex items-center justify-center bg-black/35">
+                                            <Play className="w-4 h-4 text-white fill-white" />
+                                        </span>
+                                    )}
                                 </button>
                             );
-                        }
-                        return (
-                            <button
-                                key={`image-${index}`}
-                                onClick={(e) => { e.stopPropagation(); setSelectedMediaIndex(index); }}
-                                aria-label={`Ver imagen ${index + 1}`}
-                                className={cn(
-                                    "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                                    isActive ? "bg-[#2B2B2B] scale-150" : "bg-white/80 hover:bg-white"
-                                )}
-                            />
-                        );
-                    })}
-                </div>
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* RIGHT SIDE: Details */}
@@ -226,37 +287,20 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                     </div>
 
                     <div className="border-t border-b border-[#6C7466]/10 py-4 md:py-6 mb-6">
-                        <div className="flex gap-6 mb-4 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                            {["measurements", "shipping"].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab as any)}
-                                    className={cn(
-                                        "text-[10px] md:text-xs font-bold tracking-widest uppercase transition-colors whitespace-nowrap pb-1 border-b-2",
-                                        activeTab === tab ? "text-[#2B2B2B] border-[#2B2B2B]" : "text-gray-400 border-transparent hover:text-[#2B2B2B]"
-                                    )}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
+                        <div className="mb-4">
+                            <span className="text-[10px] md:text-xs font-bold tracking-widest uppercase text-[#2B2B2B] pb-1 border-b-2 border-[#2B2B2B]">
+                                Details
+                            </span>
                         </div>
 
                         <div className="min-h-[80px]">
-                            {activeTab === "measurements" && (
-                                <div className="grid grid-cols-2 gap-3 text-sm animate-in fade-in slide-in-from-left-2 duration-300">
-                                    <div><span className="block text-[10px] text-gray-400 uppercase">Dimensions</span><span className="text-[#2B2B2B]">{product.dimensions?.height} x {product.dimensions?.width} x {product.dimensions?.depth}</span></div>
-                                    {product.dimensions?.weight && parseFloat(String(product.dimensions.weight)) !== 0 && !isNaN(parseFloat(String(product.dimensions.weight))) && (
-                                        <div><span className="block text-[10px] text-gray-400 uppercase">Weight</span><span className="text-[#2B2B2B]">{product.dimensions.weight}</span></div>
-                                    )}
-                                    <div className="col-span-2"><span className="block text-[10px] text-gray-400 uppercase">Material</span><span className="text-[#2B2B2B]">{product.material}</span></div>
-                                </div>
-                            )}
-                            {activeTab === "shipping" && (
-                                <div className="space-y-2 text-sm text-gray-500 font-light animate-in fade-in slide-in-from-left-2 duration-300">
-                                    <p className="flex items-center gap-2"><TruckIcon className="w-3.5 h-3.5 text-[#6C7466]" /> CDMX: 2-3 days</p>
-                                    <p className="flex items-center gap-2"><Package className="w-3.5 h-3.5 text-[#6C7466]" /> National: 3-5 days</p>
-                                </div>
-                            )}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div><span className="block text-[10px] text-gray-400 uppercase">Dimensions</span><span className="text-[#2B2B2B]">{product.dimensions?.height} x {product.dimensions?.width} x {product.dimensions?.depth}</span></div>
+                                {product.dimensions?.weight && parseFloat(String(product.dimensions.weight)) !== 0 && !isNaN(parseFloat(String(product.dimensions.weight))) && (
+                                    <div><span className="block text-[10px] text-gray-400 uppercase">Weight</span><span className="text-[#2B2B2B]">{product.dimensions.weight}</span></div>
+                                )}
+                                <div className="col-span-2"><span className="block text-[10px] text-gray-400 uppercase">Material</span><span className="text-[#2B2B2B]">{product.material}</span></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -276,8 +320,6 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
                     </Button>
                     <div className="flex justify-center items-center gap-3 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest">
                         <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Secure</span>
-                        <span>•</span>
-                        <span>Worldwide Shipping</span>
                     </div>
                 </div>
             </div>

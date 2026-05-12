@@ -45,6 +45,13 @@ export function ImageZoom({
         justOpenedFromTouch: false,
     });
 
+    const mobileTapRef = React.useRef<{
+        x: number;
+        y: number;
+        moved: boolean;
+    } | null>(null);
+    const MOBILE_TAP_THRESHOLD = 12;
+
     const rafRef = React.useRef<number | null>(null);
     const pendingTranslateRef = React.useRef<{ x: number; y: number } | null>(null);
 
@@ -320,16 +327,42 @@ export function ImageZoom({
         if (isMobileModalOpen) return;
 
         const touch = e.touches[0];
-        const nextTranslate = openMobileZoomAtPoint(touch.clientX, touch.clientY);
-
-        dragRef.current = {
-            active: true,
-            lastX: touch.clientX,
-            lastY: touch.clientY,
+        mobileTapRef.current = {
+            x: touch.clientX,
+            y: touch.clientY,
+            moved: false,
         };
+    };
 
-        mobileGestureRef.current.justOpenedFromTouch = true;
-        pendingTranslateRef.current = nextTranslate;
+    const handleContainerTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+        if (!mobileTapRef.current) return;
+        if (e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        const dx = Math.abs(touch.clientX - mobileTapRef.current.x);
+        const dy = Math.abs(touch.clientY - mobileTapRef.current.y);
+        if (dx > MOBILE_TAP_THRESHOLD || dy > MOBILE_TAP_THRESHOLD) {
+            mobileTapRef.current.moved = true;
+        }
+    };
+
+    const handleContainerTouchEnd = () => {
+        if (!isTouchDevice) {
+            mobileTapRef.current = null;
+            return;
+        }
+        if (isMobileModalOpen) {
+            mobileTapRef.current = null;
+            return;
+        }
+        const tap = mobileTapRef.current;
+        mobileTapRef.current = null;
+        if (!tap) return;
+        if (tap.moved) return;
+        openMobileZoomAtPoint(tap.x, tap.y);
+    };
+
+    const handleContainerTouchCancel = () => {
+        mobileTapRef.current = null;
     };
 
     // ---------- Mobile pan ----------
@@ -414,6 +447,9 @@ export function ImageZoom({
             onMouseMove={handleMouseMove}
             onClick={handleContainerClick}
             onTouchStart={handleContainerTouchStart}
+            onTouchMove={handleContainerTouchMove}
+            onTouchEnd={handleContainerTouchEnd}
+            onTouchCancel={handleContainerTouchCancel}
         >
             <Image
                 src={src}

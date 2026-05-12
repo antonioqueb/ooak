@@ -89,8 +89,8 @@ export async function generateMetadata() {
   
   // Fallback si falla la API
   if (!pageData?.data?.seo) return {
-    title: "One Of A Kind | Jasper",
-    description: "Luxury stones and crystals."
+    title: "One Of A Kind",
+    description: "Curated, unique & timeless pieces"
   };
 
   const { seo } = pageData.data;
