@@ -170,12 +170,21 @@ export default function CraftStoriesPage() {
                       </ul>
                     )}
 
-                    {/* Video Button (Conditional - solo ejemplo visual si no hay features) */}
+                    {/* Scroll-to-CTA Button (Conditional - cuando no hay features) */}
                     {(!chapter.features || chapter.features.length === 0) && (
                       <div className="flex gap-4">
-                        <div className="px-6 py-3 border border-[#6C7466]/30 text-[#6C7466] text-xs font-bold uppercase tracking-widest hover:bg-[#6C7466] hover:text-white transition-all cursor-pointer">
-                          Watch Video
-                        </div>
+                        <a
+                          href="#next-chapter-cta"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            document
+                              .getElementById("next-chapter-cta")
+                              ?.scrollIntoView({ behavior: "smooth", block: "center" });
+                          }}
+                          className="px-6 py-3 border border-[#6C7466]/30 text-[#6C7466] text-xs font-bold uppercase tracking-widest hover:bg-[#6C7466] hover:text-white transition-all cursor-pointer"
+                        >
+                          Explore the Collection
+                        </a>
                       </div>
                     )}
 
@@ -229,7 +238,7 @@ export default function CraftStoriesPage() {
         </section>
 
         {/* 7. FOOTER CTA */}
-        <div className="pb-20 text-center relative z-10">
+        <div id="next-chapter-cta" className="pb-20 text-center relative z-10 scroll-mt-24">
           <div className="inline-block relative group">
             <div className="absolute inset-0 bg-[#6C7466] rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
             <Link href={content.footer.link || "#"} className="relative z-10 flex items-center gap-6 px-12 py-6 bg-[#2B2B2B] rounded-full text-[#FDFBF7] overflow-hidden transition-transform active:scale-95">
