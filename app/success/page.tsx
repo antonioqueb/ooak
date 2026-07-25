@@ -14,6 +14,7 @@ function SuccessContent() {
     const [orderName, setOrderName] = useState<string | null>(null);
     const { clearCart } = useCart();
     const cartCleared = useRef(false);
+    const syncStarted = useRef(false);
 
     // Clear the cart once when the order is confirmed
     useEffect(() => {
@@ -28,6 +29,11 @@ function SuccessContent() {
             setStatus('success'); // Assume success if no session_id (e.g. direct visit or dev)
             return;
         }
+
+        // Guard: React Strict Mode ejecuta este efecto dos veces en dev,
+        // lo que disparaba dos llamadas a /api/checkout/confirm.
+        if (syncStarted.current) return;
+        syncStarted.current = true;
 
         // Call our internal API to confirm order and sync with Odoo
         fetch('/api/checkout/confirm', {
