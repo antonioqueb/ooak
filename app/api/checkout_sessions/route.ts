@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getCartShipping } from '@/lib/shipping';
+import { fetchShippingRates } from '@/lib/shipping-rates';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-10-28.acacia',
@@ -59,7 +60,8 @@ export async function POST(req: Request) {
             });
         }
 
-        const shippingCents = Math.round(getCartShipping(items) * 100);
+        const shippingRates = await fetchShippingRates();
+        const shippingCents = Math.round(getCartShipping(items, shippingRates) * 100);
 
         if (shippingCents > 0) {
             lineItems.push({

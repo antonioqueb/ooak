@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, User, MapPin, ChevronRight, ShieldCheck, Lock, ChevronDown, Search, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
-import { getItemShipping, getItemUnitShipping, getCartShipping } from "@/lib/shipping";
+import { getItemShipping, getItemUnitShipping, getCartShipping, ShippingRate, DEFAULT_SHIPPING_RATES } from "@/lib/shipping";
 import { loadStripe } from "@stripe/stripe-js";
 import {
     EmbeddedCheckoutProvider,
@@ -216,7 +216,21 @@ export default function CheckoutPage() {
     const formatMoney = (value: number) =>
         value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    const cartShipping = getCartShipping(items);
+    // Tabla de tarifas administrada en Odoo; DEFAULT como respaldo inicial.
+    const [shippingRates, setShippingRates] = React.useState<ShippingRate[]>(DEFAULT_SHIPPING_RATES);
+
+    React.useEffect(() => {
+        fetch("/api/shipping-rates")
+            .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+            .then((data) => {
+                if (Array.isArray(data.rates) && data.rates.length > 0) {
+                    setShippingRates(data.rates);
+                }
+            })
+            .catch((err) => console.error("Error loading shipping rates:", err));
+    }, []);
+
+    const cartShipping = getCartShipping(items, shippingRates);
     const grandTotal = cartTotal + cartShipping;
     const [step, setStep] = React.useState<"details" | "payment">("details");
     const [clientSecret, setClientSecret] = React.useState<string | null>(null);
@@ -528,8 +542,8 @@ export default function CheckoutPage() {
                             <h2 className="text-lg font-serif text-[#2B2B2B] mb-6">Order Summary</h2>
                             <div className="space-y-4 mb-6">
                                 {items.map((item) => {
-                                    const itemUnitShipping = getItemUnitShipping(item);
-                                    const itemShipping = getItemShipping(item);
+                                    const itemUnitShipping = getItemUnitShipping(item, shippingRates);
+                                    const itemShipping = getItemShipping(item, shippingRates);
                                     return (
                                         <div key={item.id} className="flex justify-between items-start text-sm">
                                             <div className="flex items-start gap-3 min-w-0">
