@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isValidSlug } from '@/lib/validation';
 
 // Fallback event details
 const FALLBACK_EVENTS: Record<string, any> = {
@@ -52,8 +53,12 @@ export async function GET(
     try {
         const { slug } = await params;
 
+        if (!isValidSlug(slug)) {
+            return NextResponse.json({ error: 'Invalid slug' }, { status: 400 });
+        }
+
         // Use the live API endpoint provided by the user
-        const res = await fetch(`https://erp.oneofakind.com.mx/api/news-events/${slug}`, {
+        const res = await fetch(`https://erp.oneofakind.com.mx/api/news-events/${encodeURIComponent(slug)}`, {
             headers: {
                 'Content-Type': 'application/json',
             },

@@ -112,6 +112,40 @@ export async function fetchCollectionDetails(key: string): Promise<ApiCollection
     }
 }
 
+// Precio y peso AUTORITATIVOS desde Odoo por slug. Se usa en el servidor
+// (checkout) para no confiar nunca en el precio que envía el navegador.
+export interface ProductPricing {
+    slug: string;
+    name: string;
+    price: number;
+    currency: string;
+    weight_kg: number;
+    is_sold: boolean;
+}
+
+// Base del ERP (siempre server-side; el checkout corre en el servidor).
+const ERP_BASE_URL = "https://erp.oneofakind.com.mx";
+
+export async function fetchProductPricing(slug: string): Promise<ProductPricing | null> {
+    // Validación estricta del slug antes de construir la URL upstream.
+    if (!/^[a-z0-9-]+$/i.test(slug)) {
+        return null;
+    }
+    try {
+        const response = await fetch(
+            `${ERP_BASE_URL}/api/product/${encodeURIComponent(slug)}/pricing`,
+            { cache: 'no-store' }
+        );
+        if (!response.ok) {
+            return null;
+        }
+        return response.json();
+    } catch (error) {
+        console.error("Error fetching product pricing");
+        return null;
+    }
+}
+
 export function mapApiProductDetailToProduct(apiProduct: ApiProductDetail, category: string, collectionKey?: string): Product {
     // Helper to ensure HTTPS
     const toHttps = (url: string) => url ? url.replace(/^http:\/\//, "https://") : "";

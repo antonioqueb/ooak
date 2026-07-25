@@ -47,8 +47,7 @@ async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.
         }))
     };
 
-    console.log('📦 Sending payload to Odoo (Webhook):', JSON.stringify(payload, null, 2));
-
+    // No registrar el payload: contiene PII del cliente.
     const response = await fetch(ODOO_URL, {
         method: 'POST',
         headers: {

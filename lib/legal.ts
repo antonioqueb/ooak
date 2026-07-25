@@ -1,3 +1,5 @@
+import { isValidSlug } from './validation';
+
 const API_BASE_URL = "https://erp.oneofakind.com.mx/api/legal";
 
 export interface LegalPageSummary {
@@ -32,8 +34,9 @@ export async function getLegalPages(): Promise<LegalPageSummary[]> {
 }
 
 export async function getLegalPage(slug: string): Promise<LegalPageDetail | null> {
+    if (!isValidSlug(slug)) return null;
     try {
-        const res = await fetch(`${API_BASE_URL}/page/${slug}`, {
+        const res = await fetch(`${API_BASE_URL}/page/${encodeURIComponent(slug)}`, {
             next: { revalidate: 3600 }
         });
 

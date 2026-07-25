@@ -45,8 +45,8 @@ async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.
         }))
     };
 
-    console.log('📦 Sending payload to Odoo:', JSON.stringify(payload, null, 2));
-
+    // No registrar el payload: contiene PII del cliente (nombre, email,
+    // teléfono, dirección).
     const response = await fetch(ODOO_URL, {
         method: 'POST',
         headers: {
@@ -95,14 +95,15 @@ export async function POST(req: Request) {
 
         const result = await syncWithOdoo(session, lineItems);
 
+        // No devolvemos la dirección de envío: el endpoint es replayable con
+        // cualquier session_id pagado y expondría PII de otros compradores.
         return NextResponse.json({
             success: true,
             odoo_order: result.data?.order_name,
-            shipping_address: result.data?.shipping_address,
         });
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('🔴 Error confirming checkout:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Unable to confirm order' }, { status: 500 });
     }
 }

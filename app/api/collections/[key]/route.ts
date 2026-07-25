@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isValidSlug } from '@/lib/validation';
 
 const UPSTREAM_BASE = 'https://erp.oneofakind.com.mx/api/collection';
 
@@ -8,6 +9,9 @@ export async function GET(
 ) {
     try {
         const { key } = await params;
+        if (!isValidSlug(key)) {
+            return NextResponse.json({ error: 'Invalid key' }, { status: 400 });
+        }
         const res = await fetch(`${UPSTREAM_BASE}/${encodeURIComponent(key)}`, {
             cache: 'no-store',
         });
@@ -19,7 +23,8 @@ export async function GET(
         }
         const data = await res.json();
         return NextResponse.json(data);
-    } catch (err: any) {
-        return NextResponse.json({ error: err?.message || 'Fetch failed' }, { status: 502 });
+    } catch (err) {
+        console.error('Error fetching collection');
+        return NextResponse.json({ error: 'Fetch failed' }, { status: 502 });
     }
 }
