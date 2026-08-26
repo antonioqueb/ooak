@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, User, MapPin, ChevronRight, ShieldCheck, Lock, ChevronDown, Search, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
@@ -11,8 +12,12 @@ import {
     EmbeddedCheckoutProvider,
     EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
+
+type PaymentMethod = "card" | "paypal";
 
 interface CustomerData {
     name: string;
@@ -235,6 +240,12 @@ export default function CheckoutPage() {
     const [step, setStep] = React.useState<"details" | "payment">("details");
     const [clientSecret, setClientSecret] = React.useState<string | null>(null);
     const [isLoadingPayment, setIsLoadingPayment] = React.useState(false);
+    const [paymentMethod, setPaymentMethod] = React.useState<PaymentMethod>("card");
+    const [paypalError, setPaypalError] = React.useState<string | null>(null);
+    const [isCapturingPaypal, setIsCapturingPaypal] = React.useState(false);
+    // Datos del cliente ya validados (se reutilizan para PayPal).
+    const [finalCustomer, setFinalCustomer] = React.useState<CustomerData | null>(null);
+    const router = useRouter();
     const [errors, setErrors] = React.useState<Partial<Record<keyof CustomerData, string>>>({});
 
     const [customerData, setCustomerData] = React.useState<CustomerData>({
@@ -300,6 +311,8 @@ export default function CheckoutPage() {
             shipping_name: sameAsShipping ? customerData.name : (customerData.shipping_name || customerData.name),
         };
 
+        setFinalCustomer(finalData);
+        setPaypalError(null);
         setIsLoadingPayment(true);
 
         try {
@@ -524,12 +537,112 @@ export default function CheckoutPage() {
                                         <p className="text-xs text-gray-500 mt-1">{customerData.email} · {customerData.phone}</p>
                                     </div>
 
-                                    {clientSecret ? (
-                                        <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
-                                            <EmbeddedCheckout />
-                                        </EmbeddedCheckoutProvider>
-                                    ) : (
-                                        <div className="flex justify-center py-12"><p className="text-gray-500">Loading payment form...</p></div>
+                                    {/* Selector de método de pago */}
+                                    <div className="grid grid-cols-2 gap-3 mb-6">
+                                        {([
+                                            { id: "card", label: "Credit / Debit Card" },
+                                            { id: "paypal", label: "PayPal" },
+                                        ] as { id: PaymentMethod; label: string }[]).map((m) => (
+                                            <button
+                                                key={m.id}
+                                                type="button"
+                                                onClick={() => { setPaymentMethod(m.id); setPaypalError(null); }}
+                                                disabled={isCapturingPaypal}
+                                                className={`flex items-center justify-center gap-2 h-12 rounded-sm border text-[10px] font-bold tracking-[0.15em] uppercase transition-colors ${
+                                                    paymentMethod === m.id
+                                                        ? "border-[#2B2B2B] bg-[#2B2B2B] text-white"
+                                                        : "border-[#6C7466]/20 bg-white text-[#6C7466] hover:border-[#2B2B2B]"
+                                                }`}
+                                            >
+                                                {paymentMethod === m.id && <Check className="w-3 h-3" />}
+                                                {m.label}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {paymentMethod === "card" && (
+                                        clientSecret ? (
+                                            <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
+                                                <EmbeddedCheckout />
+                                            </EmbeddedCheckoutProvider>
+                                        ) : (
+                                            <div className="flex justify-center py-12"><p className="text-gray-500">Loading payment form...</p></div>
+                                        )
+                                    )}
+
+                                    {paymentMethod === "paypal" && (
+                                        <div className="py-2">
+                                            {!PAYPAL_CLIENT_ID ? (
+                                                <p className="text-sm text-red-600 text-center py-8">PayPal is not available right now.</p>
+                                            ) : (
+                                                <PayPalScriptProvider
+                                                    options={{
+                                                        clientId: PAYPAL_CLIENT_ID,
+                                                        currency: "MXN",
+                                                        intent: "capture",
+                                                        components: "buttons",
+                                                    }}
+                                                >
+                                                    <PayPalButtons
+                                                        style={{ layout: "vertical", shape: "rect", color: "black", label: "paypal", height: 48 }}
+                                                        disabled={isCapturingPaypal}
+                                                        forceReRender={[items, finalCustomer]}
+                                                        createOrder={async () => {
+                                                            setPaypalError(null);
+                                                            const res = await fetch("/api/paypal/orders", {
+                                                                method: "POST",
+                                                                headers: { "Content-Type": "application/json" },
+                                                                body: JSON.stringify({ items, customer: finalCustomer }),
+                                                            });
+                                                            const data = await res.json();
+                                                            if (!res.ok || !data.id) {
+                                                                throw new Error(data.error || "Unable to start PayPal checkout");
+                                                            }
+                                                            return data.id as string;
+                                                        }}
+                                                        onApprove={async (data, actions) => {
+                                                            setIsCapturingPaypal(true);
+                                                            try {
+                                                                const res = await fetch(`/api/paypal/orders/${encodeURIComponent(data.orderID)}/capture`, {
+                                                                    method: "POST",
+                                                                });
+                                                                const result = await res.json();
+
+                                                                // Fondos rechazados: PayPal permite elegir otro método sin salir del flujo.
+                                                                if (result.issue === "INSTRUMENT_DECLINED" && actions.restart) {
+                                                                    setIsCapturingPaypal(false);
+                                                                    return actions.restart();
+                                                                }
+                                                                if (!res.ok || !result.success) {
+                                                                    throw new Error(result.error || "Payment could not be completed");
+                                                                }
+
+                                                                const params = new URLSearchParams({ paypal_order_id: result.paypal_order_id });
+                                                                if (result.odoo_order) params.set("order", result.odoo_order);
+                                                                if (result.sync_error) params.set("sync", "error");
+                                                                router.push(`/success?${params.toString()}`);
+                                                            } catch (err: any) {
+                                                                console.error("PayPal capture error:", err);
+                                                                setPaypalError(err?.message || "Payment could not be completed. Please try again.");
+                                                                setIsCapturingPaypal(false);
+                                                            }
+                                                        }}
+                                                        onError={(err) => {
+                                                            console.error("PayPal error:", err);
+                                                            setPaypalError(String((err as any)?.message || "PayPal encountered an error. Please try again."));
+                                                            setIsCapturingPaypal(false);
+                                                        }}
+                                                        onCancel={() => setIsCapturingPaypal(false)}
+                                                    />
+                                                </PayPalScriptProvider>
+                                            )}
+                                            {isCapturingPaypal && (
+                                                <p className="text-xs text-gray-500 text-center mt-4">Completing your payment, please wait...</p>
+                                            )}
+                                            {paypalError && (
+                                                <p className="text-sm text-red-600 text-center mt-4">{paypalError}</p>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>

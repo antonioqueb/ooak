@@ -10,6 +10,11 @@ import { useCart } from "@/context/cart-context";
 function SuccessContent() {
     const searchParams = useSearchParams();
     const sessionId = searchParams.get('session_id');
+    // PayPal: la captura y la sincronización con Odoo ya ocurrieron en el
+    // checkout (/api/paypal/orders/[id]/capture); aquí solo mostramos el resultado.
+    const paypalOrderId = searchParams.get('paypal_order_id');
+    const paypalOrderName = searchParams.get('order');
+    const paypalSyncError = searchParams.get('sync') === 'error';
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
     const [orderName, setOrderName] = useState<string | null>(null);
     const { clearCart } = useCart();
@@ -25,6 +30,12 @@ function SuccessContent() {
     }, [status, clearCart]);
 
     useEffect(() => {
+        if (paypalOrderId) {
+            setOrderName(paypalOrderName);
+            setStatus(paypalSyncError ? 'error' : 'success');
+            return;
+        }
+
         if (!sessionId) {
             setStatus('success'); // Assume success if no session_id (e.g. direct visit or dev)
             return;
@@ -55,7 +66,7 @@ function SuccessContent() {
                 console.error("Sync error:", err);
                 setStatus('error');
             });
-    }, [sessionId]);
+    }, [sessionId, paypalOrderId, paypalOrderName, paypalSyncError]);
 
     if (status === 'loading') {
         return (

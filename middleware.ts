@@ -11,6 +11,7 @@ const buckets = new Map<string, Bucket>();
 const LIMITS: { prefix: string; max: number }[] = [
     { prefix: '/api/checkout_sessions', max: 10 },
     { prefix: '/api/checkout/confirm', max: 15 },
+    { prefix: '/api/paypal/orders', max: 15 },
     { prefix: '/api/newsletter/subscribe', max: 5 },
 ];
 
@@ -23,8 +24,8 @@ function getClientIp(req: NextRequest): string {
 }
 
 export function middleware(req: NextRequest) {
-    // El webhook de Stripe NO se limita (Stripe reintenta legítimamente y ya
-    // está protegido por firma).
+    // Los webhooks (Stripe/PayPal) NO se limitan: reintentan legítimamente y
+    // ya están protegidos por firma.
     const path = req.nextUrl.pathname;
     const rule = LIMITS.find((r) => path.startsWith(r.prefix));
 
@@ -54,5 +55,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/api/checkout_sessions', '/api/checkout/confirm', '/api/newsletter/subscribe'],
+    matcher: ['/api/checkout_sessions', '/api/checkout/confirm', '/api/paypal/orders/:path*', '/api/newsletter/subscribe'],
 };
