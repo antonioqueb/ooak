@@ -27,7 +27,16 @@ export interface PricedCart {
 
 export type PricingError = { error: string; status: number };
 
+// Método de entrega: envío a domicilio (default) o recoger en tienda (sin
+// costo de envío y sin dirección obligatoria).
+export type DeliveryMethod = 'shipping' | 'pickup';
+
+export function parseDeliveryMethod(raw: unknown): DeliveryMethod {
+    return raw === 'pickup' ? 'pickup' : 'shipping';
+}
+
 export interface CustomerInput {
+    delivery_method: DeliveryMethod;
     name: string;
     email: string;
     phone?: string;
@@ -56,14 +65,38 @@ function parseItem(raw: any): { slug: string; quantity: number } | null {
 }
 
 // Valida los datos del cliente y los normaliza (recortados) para guardarlos en
-// la pasarela. Devuelve null si faltan datos obligatorios.
-export function normalizeCustomer(customer: any): CustomerInput | null {
+// la pasarela. Devuelve null si faltan datos obligatorios. Con envío a
+// domicilio la dirección es obligatoria; con pickup se ignora.
+export function normalizeCustomer(customer: any, deliveryMethod: DeliveryMethod = 'shipping'): CustomerInput | null {
     if (!customer || typeof customer.name !== 'string' || typeof customer.email !== 'string'
         || !customer.name.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(customer.email)) {
         return null;
     }
     const s = (v: unknown, max: number) => String(v ?? '').substring(0, max);
+
+    if (deliveryMethod === 'pickup') {
+        return {
+            delivery_method: 'pickup',
+            name: s(customer.name, 200),
+            email: s(customer.email, 200),
+            phone: s(customer.phone, 50),
+            shipping_name: s(customer.name, 200),
+            shipping_line1: '',
+            shipping_line2: '',
+            shipping_city: '',
+            shipping_state: '',
+            shipping_postal_code: '',
+            shipping_country: '',
+        };
+    }
+
+    const required = ['shipping_line1', 'shipping_city', 'shipping_state', 'shipping_postal_code', 'shipping_country'];
+    if (required.some((k) => typeof customer[k] !== 'string' || !customer[k].trim())) {
+        return null;
+    }
+
     return {
+        delivery_method: 'shipping',
         name: s(customer.name, 200),
         email: s(customer.email, 200),
         phone: s(customer.phone, 50),
@@ -77,7 +110,10 @@ export function normalizeCustomer(customer: any): CustomerInput | null {
     };
 }
 
-export async function priceCart(items: unknown): Promise<PricedCart | PricingError> {
+export async function priceCart(
+    items: unknown,
+    deliveryMethod: DeliveryMethod = 'shipping',
+): Promise<PricedCart | PricingError> {
     if (!Array.isArray(items) || items.length === 0 || items.length > MAX_ITEMS) {
         return { error: 'Invalid cart', status: 400 };
     }
@@ -115,7 +151,8 @@ export async function priceCart(items: unknown): Promise<PricedCart | PricingErr
     }
 
     const taxCents = Math.round(subtotalCents * TAX_RATE);
-    const shippingCents = Math.round(shippingTotal * 100);
+    // Recoger en tienda: no se cobra envío.
+    const shippingCents = deliveryMethod === 'pickup' ? 0 : Math.round(shippingTotal * 100);
 
     return {
         lines,

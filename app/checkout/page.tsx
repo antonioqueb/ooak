@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, User, MapPin, ChevronRight, ShieldCheck, Lock, ChevronDown, Search, Check } from "lucide-react";
+import { ArrowLeft, User, MapPin, ChevronRight, ShieldCheck, Lock, ChevronDown, Search, Check, Truck, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
 import { getItemShipping, getItemUnitShipping, getCartShipping, ShippingRate, DEFAULT_SHIPPING_RATES } from "@/lib/shipping";
@@ -18,6 +18,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
 
 type PaymentMethod = "card" | "paypal";
+type DeliveryMethod = "shipping" | "pickup";
 
 interface CustomerData {
     name: string;
@@ -235,7 +236,10 @@ export default function CheckoutPage() {
             .catch((err) => console.error("Error loading shipping rates:", err));
     }, []);
 
-    const cartShipping = getCartShipping(items, shippingRates);
+    const [deliveryMethod, setDeliveryMethod] = React.useState<DeliveryMethod>("shipping");
+    const isPickup = deliveryMethod === "pickup";
+    // Recoger en tienda: sin costo de envío (el servidor aplica la misma regla).
+    const cartShipping = isPickup ? 0 : getCartShipping(items, shippingRates);
     const grandTotal = cartTotal + cartShipping;
     const [step, setStep] = React.useState<"details" | "payment">("details");
     const [clientSecret, setClientSecret] = React.useState<string | null>(null);
@@ -293,11 +297,13 @@ export default function CheckoutPage() {
         if (!customerData.email.trim()) newErrors.email = "Email is required";
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) newErrors.email = "Invalid email";
         if (!customerData.phone.trim()) newErrors.phone = "Phone is required";
-        if (!customerData.shipping_line1.trim()) newErrors.shipping_line1 = "Address is required";
-        if (!customerData.shipping_city.trim()) newErrors.shipping_city = "City is required";
-        if (!customerData.shipping_state.trim()) newErrors.shipping_state = "State is required";
-        if (!customerData.shipping_postal_code.trim()) newErrors.shipping_postal_code = "Postal code is required";
-        if (!customerData.shipping_country) newErrors.shipping_country = "Country is required";
+        if (!isPickup) {
+            if (!customerData.shipping_line1.trim()) newErrors.shipping_line1 = "Address is required";
+            if (!customerData.shipping_city.trim()) newErrors.shipping_city = "City is required";
+            if (!customerData.shipping_state.trim()) newErrors.shipping_state = "State is required";
+            if (!customerData.shipping_postal_code.trim()) newErrors.shipping_postal_code = "Postal code is required";
+            if (!customerData.shipping_country) newErrors.shipping_country = "Country is required";
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -319,7 +325,7 @@ export default function CheckoutPage() {
             const res = await fetch("/api/checkout_sessions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ items, customer: finalData }),
+                body: JSON.stringify({ items, customer: finalData, delivery_method: deliveryMethod }),
             });
 
             const data = await res.json();
@@ -421,6 +427,52 @@ export default function CheckoutPage() {
 
                                 <div className="h-px bg-[#6C7466]/10" />
 
+                                {/* Delivery Method */}
+                                <div>
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <Truck className="w-4 h-4 text-[#6C7466]" />
+                                        <h2 className="text-lg font-serif text-[#2B2B2B]">Delivery Method</h2>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {([
+                                            { id: "shipping", label: "Ship to my address", hint: "Shipping calculated by weight", icon: Truck },
+                                            { id: "pickup", label: "Pick up in store", hint: "Free · No shipping charge", icon: Store },
+                                        ] as { id: DeliveryMethod; label: string; hint: string; icon: typeof Truck }[]).map((m) => {
+                                            const selected = deliveryMethod === m.id;
+                                            return (
+                                                <button
+                                                    key={m.id}
+                                                    type="button"
+                                                    onClick={() => { setDeliveryMethod(m.id); setErrors({}); }}
+                                                    className={`flex items-start gap-3 p-4 text-left border rounded-sm transition-colors ${
+                                                        selected
+                                                            ? "border-[#2B2B2B] bg-white"
+                                                            : "border-[#6C7466]/20 bg-white hover:border-[#6C7466]"
+                                                    }`}
+                                                >
+                                                    <span className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${selected ? "border-[#2B2B2B] bg-[#2B2B2B]" : "border-[#6C7466]/40"}`}>
+                                                        {selected && <Check className="w-3 h-3 text-white" />}
+                                                    </span>
+                                                    <span className="min-w-0">
+                                                        <span className="flex items-center gap-2 text-sm font-medium text-[#2B2B2B]">
+                                                            <m.icon className="w-4 h-4 text-[#6C7466]" />{m.label}
+                                                        </span>
+                                                        <span className="block text-xs text-gray-500 mt-1">{m.hint}</span>
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    {isPickup && (
+                                        <p className="mt-4 text-xs text-gray-500 leading-relaxed">
+                                            We will contact you by email or phone as soon as your order is ready to be picked up at our store.
+                                        </p>
+                                    )}
+                                </div>
+
+                                {!isPickup && (<>
+                                <div className="h-px bg-[#6C7466]/10" />
+
                                 {/* Shipping Address */}
                                 <div>
                                     <div className="flex items-center gap-3 mb-6">
@@ -501,6 +553,7 @@ export default function CheckoutPage() {
                                         </div>
                                     </div>
                                 </div>
+                                </>)}
 
                                 {/* Continue */}
                                 <Button onClick={handleContinueToPayment} disabled={isLoadingPayment}
@@ -526,14 +579,23 @@ export default function CheckoutPage() {
                                 <div className="bg-white p-6 rounded-sm shadow-sm border border-[#6C7466]/10">
                                     <div className="mb-6 p-4 bg-[#FDFBF7] border border-[#6C7466]/10 rounded-sm">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#6C7466]">Shipping to</span>
+                                            <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#6C7466]">{isPickup ? "Pick up in store" : "Shipping to"}</span>
                                             <button onClick={() => setStep("details")}
                                                 className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#6C7466] hover:text-[#2B2B2B] transition-colors underline underline-offset-2">Edit</button>
                                         </div>
-                                        <p className="text-sm text-[#2B2B2B] font-medium">{sameAsShipping ? customerData.name : (customerData.shipping_name || customerData.name)}</p>
-                                        <p className="text-xs text-gray-500 mt-1">{customerData.shipping_line1}{customerData.shipping_line2 && `, ${customerData.shipping_line2}`}</p>
-                                        <p className="text-xs text-gray-500">{customerData.shipping_city}, {getStateName()} {customerData.shipping_postal_code}</p>
-                                        <p className="text-xs text-gray-500">{getCountryName()}</p>
+                                        {isPickup ? (
+                                            <>
+                                                <p className="text-sm text-[#2B2B2B] font-medium">{customerData.name}</p>
+                                                <p className="text-xs text-gray-500 mt-1">No shipping charge. We will let you know when your order is ready for pickup.</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="text-sm text-[#2B2B2B] font-medium">{sameAsShipping ? customerData.name : (customerData.shipping_name || customerData.name)}</p>
+                                                <p className="text-xs text-gray-500 mt-1">{customerData.shipping_line1}{customerData.shipping_line2 && `, ${customerData.shipping_line2}`}</p>
+                                                <p className="text-xs text-gray-500">{customerData.shipping_city}, {getStateName()} {customerData.shipping_postal_code}</p>
+                                                <p className="text-xs text-gray-500">{getCountryName()}</p>
+                                            </>
+                                        )}
                                         <p className="text-xs text-gray-500 mt-1">{customerData.email} · {customerData.phone}</p>
                                     </div>
 
@@ -592,7 +654,7 @@ export default function CheckoutPage() {
                                                             const res = await fetch("/api/paypal/orders", {
                                                                 method: "POST",
                                                                 headers: { "Content-Type": "application/json" },
-                                                                body: JSON.stringify({ items, customer: finalCustomer }),
+                                                                body: JSON.stringify({ items, customer: finalCustomer, delivery_method: deliveryMethod }),
                                                             });
                                                             const data = await res.json();
                                                             if (!res.ok || !data.id) {
@@ -620,6 +682,7 @@ export default function CheckoutPage() {
                                                                 const params = new URLSearchParams({ paypal_order_id: result.paypal_order_id });
                                                                 if (result.odoo_order) params.set("order", result.odoo_order);
                                                                 if (result.sync_error) params.set("sync", "error");
+                                                                if (result.delivery_method === "pickup") params.set("delivery", "pickup");
                                                                 router.push(`/success?${params.toString()}`);
                                                             } catch (err: any) {
                                                                 console.error("PayPal capture error:", err);
@@ -666,7 +729,7 @@ export default function CheckoutPage() {
                                                 <div className="min-w-0">
                                                     <p className="font-medium text-[#2B2B2B] text-sm leading-tight">{item.name}</p>
                                                     <p className="text-xs text-gray-500">Pieces: {item.quantity}</p>
-                                                    {itemUnitShipping > 0 && (
+                                                    {!isPickup && itemUnitShipping > 0 && (
                                                         <p className="text-xs text-gray-500">
                                                             Shipping: ${formatMoney(itemUnitShipping)}
                                                             {item.quantity > 1 && (
@@ -684,17 +747,20 @@ export default function CheckoutPage() {
                             <div className="border-t border-[#6C7466]/10 pt-4 space-y-2 text-sm">
                                 <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>${formatMoney(cartSubtotal)}</span></div>
                                 <div className="flex justify-between text-gray-600"><span>VAT (IVA 16%)</span><span>${formatMoney(cartTax)}</span></div>
-                                <div className="flex justify-between text-gray-600"><span>Shipping</span><span>${formatMoney(cartShipping)}</span></div>
+                                <div className="flex justify-between text-gray-600">
+                                    <span>{isPickup ? "Pick up in store" : "Shipping"}</span>
+                                    <span>{isPickup ? "Free" : `$${formatMoney(cartShipping)}`}</span>
+                                </div>
                             </div>
                             <div className="border-t border-[#6C7466]/10 pt-4 mt-4">
                                 <div className="flex justify-between items-end">
                                     <span className="text-base font-bold text-[#2B2B2B]">Total</span>
                                     <span className="text-2xl font-serif text-[#2B2B2B]">${formatMoney(grandTotal)}</span>
                                 </div>
-                                <p className="text-[10px] text-[#6C7466] mt-1 text-right">VAT & shipping included</p>
+                                <p className="text-[10px] text-[#6C7466] mt-1 text-right">{isPickup ? "VAT included · No shipping" : "VAT & shipping included"}</p>
                             </div>
                             <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-gray-400 uppercase tracking-widest">
-                                <ShieldCheck className="w-3 h-3" /><span>Secure Checkout · Powered by Stripe</span>
+                                <ShieldCheck className="w-3 h-3" /><span>Secure Checkout · Stripe & PayPal</span>
                             </div>
                         </div>
                     </div>

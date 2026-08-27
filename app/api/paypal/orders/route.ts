@@ -1,19 +1,20 @@
 import { NextResponse } from 'next/server';
-import { priceCart, isPricingError, normalizeCustomer } from '@/lib/checkout-pricing';
+import { priceCart, isPricingError, normalizeCustomer, parseDeliveryMethod } from '@/lib/checkout-pricing';
 import { createPayPalOrder, PayPalApiError } from '@/lib/paypal';
 
 // Crea una orden de PayPal con el monto calculado en el servidor.
 // Devuelve { id } para que los botones de PayPal abran el flujo de aprobación.
 export async function POST(req: Request) {
     try {
-        const { items, customer: rawCustomer } = await req.json();
+        const { items, customer: rawCustomer, delivery_method } = await req.json();
 
-        const customer = normalizeCustomer(rawCustomer);
+        const deliveryMethod = parseDeliveryMethod(delivery_method);
+        const customer = normalizeCustomer(rawCustomer, deliveryMethod);
         if (!customer) {
             return NextResponse.json({ error: 'Missing or invalid customer information' }, { status: 400 });
         }
 
-        const priced = await priceCart(items);
+        const priced = await priceCart(items, deliveryMethod);
         if (isPricingError(priced)) {
             return NextResponse.json({ error: priced.error }, { status: priced.status });
         }

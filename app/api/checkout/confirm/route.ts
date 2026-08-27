@@ -13,6 +13,8 @@ async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.
 
     const payload = {
         stripe_session_id: session.id,
+        // 'shipping' (envío a domicilio) o 'pickup' (recoger en tienda, sin envío).
+        delivery_method: meta.delivery_method === 'pickup' ? 'pickup' : 'shipping',
         customer: {
             name: meta.customer_name || session.customer_details?.name || 'Unknown',
             email: meta.customer_email || session.customer_details?.email || '',
@@ -100,6 +102,7 @@ export async function POST(req: Request) {
         return NextResponse.json({
             success: true,
             odoo_order: result.data?.order_name,
+            delivery_method: session.metadata?.delivery_method === 'pickup' ? 'pickup' : 'shipping',
         });
 
     } catch (error) {

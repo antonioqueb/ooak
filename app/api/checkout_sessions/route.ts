@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { priceCart, isPricingError, normalizeCustomer } from '@/lib/checkout-pricing';
+import { priceCart, isPricingError, normalizeCustomer, parseDeliveryMethod } from '@/lib/checkout-pricing';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-10-28.acacia',
@@ -8,15 +8,16 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: Request) {
     try {
-        const { items, customer: rawCustomer } = await req.json();
+        const { items, customer: rawCustomer, delivery_method } = await req.json();
 
-        const customer = normalizeCustomer(rawCustomer);
+        const deliveryMethod = parseDeliveryMethod(delivery_method);
+        const customer = normalizeCustomer(rawCustomer, deliveryMethod);
         if (!customer) {
             return NextResponse.json({ error: 'Missing or invalid customer information' }, { status: 400 });
         }
 
         // Precio, IVA y envío AUTORITATIVOS desde Odoo (nunca del cliente).
-        const priced = await priceCart(items);
+        const priced = await priceCart(items, deliveryMethod);
         if (isPricingError(priced)) {
             return NextResponse.json({ error: priced.error }, { status: priced.status });
         }
@@ -66,6 +67,7 @@ export async function POST(req: Request) {
             customer_email: customer.email,
             return_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
             metadata: {
+                delivery_method: customer.delivery_method,
                 customer_name: customer.name,
                 customer_email: customer.email,
                 customer_phone: customer.phone || '',

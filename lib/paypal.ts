@@ -110,20 +110,37 @@ function splitName(full: string): { given_name: string; surname: string } {
     return { given_name: parts[0], surname: parts.slice(1).join(' ') };
 }
 
+// PayPal no tiene metadata libre: guardamos teléfono y método de entrega en
+// custom_id (máx. 127 chars) con formato querystring.
+export function encodeCustomId(customer: CustomerInput): string {
+    const params = new URLSearchParams();
+    params.set('d', customer.delivery_method);
+    params.set('p', customer.phone || '');
+    return params.toString().substring(0, 127);
+}
+
+export function decodeCustomId(customId: string | undefined): { phone: string; delivery_method: 'shipping' | 'pickup' } {
+    const params = new URLSearchParams(customId || '');
+    return {
+        phone: params.get('p') || '',
+        delivery_method: params.get('d') === 'pickup' ? 'pickup' : 'shipping',
+    };
+}
+
 // Crea una orden con intent CAPTURE. El monto es el calculado en el servidor.
-// El teléfono va en custom_id porque PayPal no tiene metadata libre.
 export async function createPayPalOrder(
     priced: PricedCart,
     customer: CustomerInput,
     origin: string,
 ): Promise<PayPalOrder> {
+    const isPickup = customer.delivery_method === 'pickup';
     const body = {
         intent: 'CAPTURE',
         purchase_units: [
             {
                 reference_id: 'default',
-                description: `${PAYPAL_BRAND_NAME} order`,
-                custom_id: `phone:${customer.phone || ''}`.substring(0, 127),
+                description: isPickup ? `${PAYPAL_BRAND_NAME} order (store pickup)` : `${PAYPAL_BRAND_NAME} order`,
+                custom_id: encodeCustomId(customer),
                 amount: {
                     ...money(priced.totalCents),
                     breakdown: {
@@ -139,7 +156,7 @@ export async function createPayPalOrder(
                     unit_amount: money(line.unitAmountCents),
                     category: 'PHYSICAL_GOODS',
                 })),
-                shipping: {
+                shipping: isPickup ? undefined : {
                     name: { full_name: (customer.shipping_name || customer.name).substring(0, 300) },
                     address: {
                         address_line_1: customer.shipping_line1 || '',
@@ -158,7 +175,7 @@ export async function createPayPalOrder(
                 name: splitName(customer.name),
                 experience_context: {
                     brand_name: PAYPAL_BRAND_NAME,
-                    shipping_preference: 'SET_PROVIDED_ADDRESS',
+                    shipping_preference: isPickup ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
                     user_action: 'PAY_NOW',
                     return_url: `${origin}/success`,
                     cancel_url: `${origin}/cancel`,

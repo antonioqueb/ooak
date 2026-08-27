@@ -3,7 +3,7 @@
 // identificador: `paypal_order_id` en lugar de `stripe_session_id`.
 // Odoo debe deduplicar por `paypal_order_id`, ya que puede llegar tanto desde
 // /api/paypal/orders/[id]/capture como desde el webhook.
-import type { PayPalOrder } from '@/lib/paypal';
+import { decodeCustomId, type PayPalOrder } from '@/lib/paypal';
 
 const ODOO_PAYPAL_URL = process.env.ODOO_PAYPAL_SALES_URL
     || 'https://erp.oneofakind.com.mx/api/sales/create_from_paypal';
@@ -20,8 +20,8 @@ export async function syncPayPalOrderWithOdoo(order: PayPalOrder) {
     const customerName = [payer.name?.given_name, payer.name?.surname].filter(Boolean).join(' ')
         || pu?.shipping?.name?.full_name
         || 'Unknown';
-    const customPhone = pu?.custom_id?.startsWith('phone:') ? pu.custom_id.slice(6) : '';
-    const phone = customPhone || payer.phone?.phone_number?.national_number || null;
+    const custom = decodeCustomId(pu?.custom_id);
+    const phone = custom.phone || payer.phone?.phone_number?.national_number || null;
 
     const address = {
         line1: addr.address_line_1 || null,
@@ -52,6 +52,8 @@ export async function syncPayPalOrderWithOdoo(order: PayPalOrder) {
         payment_provider: 'paypal',
         paypal_order_id: order.id,
         paypal_capture_id: captureId,
+        // 'shipping' (envío a domicilio) o 'pickup' (recoger en tienda, sin envío).
+        delivery_method: custom.delivery_method,
         customer: {
             name: customerName,
             email: payer.email_address || '',

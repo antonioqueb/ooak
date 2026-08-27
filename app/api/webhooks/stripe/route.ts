@@ -15,6 +15,8 @@ async function syncWithOdoo(session: Stripe.Checkout.Session, lineItems: Stripe.
 
     const payload = {
         stripe_session_id: session.id,
+        // 'shipping' (envío a domicilio) o 'pickup' (recoger en tienda, sin envío).
+        delivery_method: meta.delivery_method === 'pickup' ? 'pickup' : 'shipping',
         customer: {
             name: meta.customer_name || session.customer_details?.name || 'Unknown',
             email: meta.customer_email || session.customer_details?.email || '',

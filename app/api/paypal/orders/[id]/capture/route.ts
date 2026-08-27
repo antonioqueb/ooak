@@ -5,6 +5,7 @@ import {
     capturePayPalOrder,
     isOrderCaptured,
     PayPalApiError,
+    decodeCustomId,
     type PayPalOrder,
 } from '@/lib/paypal';
 import { syncPayPalOrderWithOdoo } from '@/lib/odoo-paypal-sync';
@@ -65,15 +66,17 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
 
     // El pago ya está hecho: cualquier fallo de aquí en adelante no debe
     // reportarse como fallo de pago.
+    const deliveryMethod = decodeCustomId(order.purchase_units[0]?.custom_id).delivery_method;
     try {
         const result = await syncPayPalOrderWithOdoo(order);
         return NextResponse.json({
             success: true,
             paypal_order_id: order.id,
             odoo_order: result.data?.order_name,
+            delivery_method: deliveryMethod,
         });
     } catch (error) {
         console.error('🔴 Error syncing PayPal order with Odoo:', error);
-        return NextResponse.json({ success: true, paypal_order_id: order.id, sync_error: true });
+        return NextResponse.json({ success: true, paypal_order_id: order.id, sync_error: true, delivery_method: deliveryMethod });
     }
 }

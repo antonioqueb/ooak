@@ -15,6 +15,7 @@ function SuccessContent() {
     const paypalOrderId = searchParams.get('paypal_order_id');
     const paypalOrderName = searchParams.get('order');
     const paypalSyncError = searchParams.get('sync') === 'error';
+    const [isPickup, setIsPickup] = useState(searchParams.get('delivery') === 'pickup');
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
     const [orderName, setOrderName] = useState<string | null>(null);
     const { clearCart } = useCart();
@@ -56,6 +57,7 @@ function SuccessContent() {
             .then(data => {
                 if (data.success) {
                     setOrderName(data.odoo_order);
+                    if (data.delivery_method === 'pickup') setIsPickup(true);
                     setStatus('success');
                 } else {
                     console.error("Sync failed:", data.error);
@@ -103,7 +105,10 @@ function SuccessContent() {
             </div>
             <h1 className="text-4xl md:text-5xl font-serif text-[#2B2B2B] mb-6">Payment Successful!</h1>
             <p className="text-gray-500 max-w-md mb-10 text-lg leading-relaxed">
-                Thank you for your purchase. Your order {orderName ? `(${orderName})` : ''} has been confirmed and will be shipped shortly.
+                Thank you for your purchase. Your order {orderName ? `(${orderName})` : ''} has been confirmed
+                {isPickup
+                    ? ' and will be ready for pickup at our store. We will contact you as soon as it is ready.'
+                    : ' and will be shipped shortly.'}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild className="bg-[#2B2B2B] text-white hover:bg-[#6C7466] h-12 px-8 rounded-full text-xs font-bold tracking-[0.2em] uppercase">
