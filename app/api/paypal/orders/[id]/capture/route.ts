@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { anyItemSold } from '@/lib/checkout-pricing';
+import { findUnavailableItem } from '@/lib/checkout-pricing';
 import {
     getPayPalOrder,
     capturePayPalOrder,
@@ -33,11 +33,13 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
             return NextResponse.json({ error: 'Order not approved by payer' }, { status: 400 });
         }
 
-        // Piezas únicas: re-verificar en Odoo antes de cobrar.
-        const skus = (order.purchase_units[0]?.items || []).map((i) => i.sku).filter(Boolean) as string[];
-        const soldSlug = await anyItemSold(skus);
-        if (soldSlug) {
-            return NextResponse.json({ error: `Product already sold: ${soldSlug}` }, { status: 409 });
+        // Re-verificar disponibilidad (pieza única o cantidad) en Odoo antes de cobrar.
+        const orderItems = (order.purchase_units[0]?.items || [])
+            .filter((i) => Boolean(i.sku))
+            .map((i) => ({ slug: i.sku as string, quantity: Number(i.quantity) || 1 }));
+        const unavailable = await findUnavailableItem(orderItems);
+        if (unavailable) {
+            return NextResponse.json({ error: unavailable }, { status: 409 });
         }
 
         try {

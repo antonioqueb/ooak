@@ -14,7 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Product } from "@/lib/products";
-import { useCart } from "@/context/cart-context";
+import { useCart, getMaxQuantity, isSinglePiece } from "@/context/cart-context";
+import { QuantityStepper } from "@/components/QuantityStepper";
 
 interface ProductViewProps {
     product: Product;
@@ -26,8 +27,14 @@ type MediaItem =
     | { type: "video"; src: string; poster?: string; mimetype?: string };
 
 export function ProductView({ product, collectionSlug }: ProductViewProps) {
-    const { addItem, isInCart } = useCart();
+    const { addItem, isInCart, getItemQuantity, showStockNotice } = useCart();
     const alreadyInCart = isInCart(product.id);
+    const maxQty = getMaxQuantity(product);
+    const singlePiece = isSinglePiece(product);
+    const inCartQty = getItemQuantity(product.id);
+    // Unidades que todavía caben en el carrito para este producto.
+    const remainingQty = Math.max(maxQty - inCartQty, 0);
+    const [selectedQty, setSelectedQty] = React.useState(1);
     const [selectedMediaIndex, setSelectedMediaIndex] = React.useState(0);
     const [showMoreDescription, setShowMoreDescription] = React.useState(false);
     const videoRef = React.useRef<HTMLVideoElement | null>(null);
@@ -53,6 +60,40 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
     }, [product.image, product.images, product.hasVideo, product.video]);
 
     const currentMedia = media[selectedMediaIndex] ?? media[0];
+
+    // Si el usuario pide más de lo disponible, regresa al máximo y avisa.
+    const handleQtyChange = (next: number) => {
+        if (remainingQty <= 0) return;
+        if (next > remainingQty) {
+            showStockNotice(product.id, maxQty);
+            setSelectedQty(remainingQty);
+            return;
+        }
+        setSelectedQty(Math.max(next, 1));
+    };
+
+    React.useEffect(() => {
+        if (remainingQty > 0 && selectedQty > remainingQty) {
+            setSelectedQty(remainingQty);
+        }
+    }, [remainingQty, selectedQty]);
+
+    const handleAddToCart = () => {
+        addItem(product, singlePiece ? 1 : selectedQty);
+        setSelectedQty(1);
+    };
+
+    const canAdd = !product.isSold && (singlePiece ? !alreadyInCart : remainingQty > 0);
+
+    const addButtonLabel = product.isSold
+        ? "Sold"
+        : singlePiece
+            ? alreadyInCart
+                ? "In Cart — One of a Kind"
+                : `Add to Cart — $${product.price.toLocaleString("en-US")}`
+            : remainingQty <= 0
+                ? "In Cart"
+                : `Add to Cart — $${(product.price * selectedQty).toLocaleString("en-US")}`;
 
     React.useEffect(() => {
         if (currentMedia?.type !== "video" && videoRef.current) {
@@ -304,16 +345,29 @@ export function ProductView({ product, collectionSlug }: ProductViewProps) {
 
                 {/* Footer Actions (Fixed at bottom right on desktop, fixed bottom on mobile) */}
                 <div className="p-6 md:p-8 lg:p-10 border-t border-[#6C7466]/10 bg-[#FDFBF7] shrink-0 sticky bottom-0 z-40">
+                    {!product.isSold && !singlePiece && remainingQty > 0 && (
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-[10px] md:text-xs font-bold tracking-widest uppercase text-gray-400">
+                                Quantity
+                                {inCartQty > 0 && (
+                                    <span className="ml-2 text-[#6C7466] normal-case tracking-normal font-normal">
+                                        ({inCartQty} in cart)
+                                    </span>
+                                )}
+                            </span>
+                            <QuantityStepper
+                                value={selectedQty}
+                                max={remainingQty}
+                                onChange={handleQtyChange}
+                            />
+                        </div>
+                    )}
                     <Button
-                        onClick={() => addItem(product)}
-                        disabled={product.isSold || alreadyInCart}
+                        onClick={handleAddToCart}
+                        disabled={!canAdd}
                         className="w-full bg-[#2B2B2B] text-white hover:bg-[#6C7466] transition-colors h-12 md:h-14 rounded-none text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-3 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
                     >
-                        {product.isSold
-                            ? "Sold"
-                            : alreadyInCart
-                                ? "In Cart — One of a Kind"
-                                : `Add to Cart — $${product.price.toLocaleString("en-US")}`}
+                        {addButtonLabel}
                     </Button>
                     <div className="flex justify-center items-center gap-3 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest">
                         <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Secure</span>

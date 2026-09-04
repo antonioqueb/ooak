@@ -246,6 +246,9 @@ export default function CheckoutPage() {
     const [isLoadingPayment, setIsLoadingPayment] = React.useState(false);
     const [paymentMethod, setPaymentMethod] = React.useState<PaymentMethod>("card");
     const [paypalError, setPaypalError] = React.useState<string | null>(null);
+    // Error del servidor al preparar el pago (p.ej. pieza vendida o cantidad
+    // ya no disponible). Se muestra debajo de "Continue to Payment".
+    const [checkoutError, setCheckoutError] = React.useState<string | null>(null);
     const [isCapturingPaypal, setIsCapturingPaypal] = React.useState(false);
     // Datos del cliente ya validados (se reutilizan para PayPal).
     const [finalCustomer, setFinalCustomer] = React.useState<CustomerData | null>(null);
@@ -319,6 +322,7 @@ export default function CheckoutPage() {
 
         setFinalCustomer(finalData);
         setPaypalError(null);
+        setCheckoutError(null);
         setIsLoadingPayment(true);
 
         try {
@@ -332,6 +336,7 @@ export default function CheckoutPage() {
 
             if (data.error) {
                 console.error("Checkout session error:", data.error);
+                setCheckoutError(data.error);
                 setIsLoadingPayment(false);
                 return;
             }
@@ -340,6 +345,7 @@ export default function CheckoutPage() {
             setStep("payment");
         } catch (err) {
             console.error("Error creating checkout session:", err);
+            setCheckoutError("Unable to prepare payment. Please try again.");
         } finally {
             setIsLoadingPayment(false);
         }
@@ -567,6 +573,10 @@ export default function CheckoutPage() {
                                         <span className="flex items-center gap-2">Continue to Payment <ChevronRight className="w-4 h-4" /></span>
                                     )}
                                 </Button>
+
+                                {checkoutError && (
+                                    <p className="text-sm text-red-600 text-center" role="alert">{checkoutError}</p>
+                                )}
 
                                 <div className="flex items-center justify-center gap-2 text-[10px] text-gray-400 uppercase tracking-widest">
                                     <Lock className="w-3 h-3" /><span>Your data is encrypted and secure</span>

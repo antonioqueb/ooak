@@ -51,6 +51,7 @@ export interface ApiProductDetail {
         meta_description: string;
     };
     is_sold?: boolean;
+    available_qty?: number;
     availability_status?: string;
     sold_source?: string | null;
     media_type?: "image" | "video";
@@ -121,6 +122,21 @@ export interface ProductPricing {
     currency: string;
     weight_kg: number;
     is_sold: boolean;
+    // Máximo de unidades vendibles. Puede faltar si el backend es anterior.
+    available_qty?: number;
+}
+
+// Unidades que el carrito/checkout puede aceptar para un producto. Si el
+// backend no manda available_qty, se conserva la regla original: una pieza.
+export function resolveAvailableQty(
+    isSold: boolean | undefined,
+    availableQty: number | undefined,
+): number {
+    if (isSold) return 0;
+    if (typeof availableQty === "number" && Number.isFinite(availableQty)) {
+        return Math.max(Math.floor(availableQty), 0);
+    }
+    return 1;
 }
 
 // Base del ERP (siempre server-side; el checkout corre en el servidor).
@@ -193,6 +209,7 @@ export function mapApiProductDetailToProduct(apiProduct: ApiProductDetail, categ
         colors: "", // API doesn't provide colors yet
         inStock: !apiProduct.is_sold,
         isSold: Boolean(apiProduct.is_sold),
+        availableQty: resolveAvailableQty(apiProduct.is_sold, apiProduct.available_qty),
         availabilityStatus: apiProduct.availability_status,
         hasVideo,
         video,

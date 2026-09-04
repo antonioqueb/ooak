@@ -11,10 +11,11 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
-import { useCart } from "@/context/cart-context";
+import { useCart, getMaxQuantity, isSinglePiece } from "@/context/cart-context";
+import { QuantityStepper } from "@/components/QuantityStepper";
 
 export function CartSidebar() {
-    const { items, isCartOpen, toggleCart, removeItem, cartSubtotal } = useCart();
+    const { items, isCartOpen, toggleCart, removeItem, updateQuantity, cartSubtotal } = useCart();
 
     const formatMoney = (value: number) =>
         value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -72,11 +73,20 @@ export function CartSidebar() {
                                         </div>
 
                                         <div className="flex justify-between items-end">
-                                            <span className="text-[10px] tracking-widest uppercase text-gray-400">
-                                                One of a Kind
-                                            </span>
+                                            {isSinglePiece(item) ? (
+                                                <span className="text-[10px] tracking-widest uppercase text-gray-400">
+                                                    One of a Kind
+                                                </span>
+                                            ) : (
+                                                <QuantityStepper
+                                                    size="sm"
+                                                    value={item.quantity}
+                                                    max={getMaxQuantity(item)}
+                                                    onChange={(next) => updateQuantity(item.id, next)}
+                                                />
+                                            )}
                                             <p className="text-sm font-medium text-[#2B2B2B]">
-                                                ${formatMoney(item.price)}
+                                                ${formatMoney(item.price * item.quantity)}
                                             </p>
                                         </div>
                                     </div>

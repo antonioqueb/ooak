@@ -27,6 +27,10 @@ export interface Product {
     colors?: string;
     inStock?: boolean;
     isSold?: boolean;
+    // Máximo de unidades que se pueden agregar al carrito (a la mano menos lo
+    // ya comprometido en ventas confirmadas). No se muestra en la página; solo
+    // limita el selector de cantidad. Piezas únicas: 1.
+    availableQty?: number;
     availabilityStatus?: string;
     hasVideo?: boolean;
     video?: ProductVideo;

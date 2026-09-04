@@ -5,10 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Trash2, ArrowLeft, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/context/cart-context";
+import { useCart, getMaxQuantity, isSinglePiece } from "@/context/cart-context";
+import { QuantityStepper } from "@/components/QuantityStepper";
 
 export default function CartPage() {
-    const { items, removeItem, cartSubtotal } = useCart();
+    const { items, removeItem, updateQuantity, cartSubtotal } = useCart();
 
     const formatMoney = (value: number) =>
         value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -39,15 +40,16 @@ export default function CartPage() {
                     {/* Cart Items List */}
                     <div className="lg:col-span-2 space-y-8">
                         <div className="hidden md:grid grid-cols-12 gap-4 pb-4 border-b border-[#6C7466]/10 text-xs font-bold tracking-widest uppercase text-gray-400">
-                            <div className="col-span-7">Product</div>
+                            <div className="col-span-6">Product</div>
+                            <div className="col-span-2 text-center">Qty</div>
                             <div className="col-span-3 text-right">Price</div>
-                            <div className="col-span-2"></div>
+                            <div className="col-span-1"></div>
                         </div>
 
                         {items.map((item) => (
                             <div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center border-b border-[#6C7466]/10 pb-8 last:border-0">
                                 {/* Product Info */}
-                                <div className="md:col-span-7 flex gap-4">
+                                <div className="md:col-span-6 flex gap-4">
                                     <div className="relative w-24 h-32 bg-[#EBEBE8] shrink-0 rounded-sm overflow-hidden">
                                         <Image
                                             src={item.image}
@@ -59,20 +61,50 @@ export default function CartPage() {
                                     <div className="flex flex-col justify-center">
                                         <h3 className="text-lg font-serif text-[#2B2B2B] mb-1">{item.name}</h3>
                                         <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">{item.category}</p>
-                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">One of a Kind</p>
-                                        <p className="text-sm text-[#6C7466] md:hidden">${item.price.toLocaleString("en-US")}</p>
+                                        {isSinglePiece(item) ? (
+                                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">One of a Kind</p>
+                                        ) : (
+                                            <div className="md:hidden mb-2">
+                                                <QuantityStepper
+                                                    size="sm"
+                                                    value={item.quantity}
+                                                    max={getMaxQuantity(item)}
+                                                    onChange={(next) => updateQuantity(item.id, next)}
+                                                />
+                                            </div>
+                                        )}
+                                        <p className="text-sm text-[#6C7466] md:hidden">${formatMoney(item.price * item.quantity)}</p>
                                     </div>
+                                </div>
+
+                                {/* Quantity */}
+                                <div className="md:col-span-2 hidden md:flex justify-center">
+                                    {isSinglePiece(item) ? (
+                                        <span className="text-sm text-[#2B2B2B]">1</span>
+                                    ) : (
+                                        <QuantityStepper
+                                            size="sm"
+                                            value={item.quantity}
+                                            max={getMaxQuantity(item)}
+                                            onChange={(next) => updateQuantity(item.id, next)}
+                                        />
+                                    )}
                                 </div>
 
                                 {/* Price */}
                                 <div className="md:col-span-3 text-right hidden md:block">
                                     <p className="text-base font-medium text-[#2B2B2B]">
-                                        ${item.price.toLocaleString("en-US")}
+                                        ${formatMoney(item.price * item.quantity)}
                                     </p>
+                                    {item.quantity > 1 && (
+                                        <p className="text-xs text-gray-400">
+                                            {item.quantity} × ${formatMoney(item.price)}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Remove */}
-                                <div className="md:col-span-2 flex justify-end">
+                                <div className="md:col-span-1 flex justify-end">
                                     <button
                                         onClick={() => removeItem(item.id)}
                                         className="p-2 text-gray-400 hover:text-red-500 transition-colors"

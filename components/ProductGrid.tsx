@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { products, Product } from "@/lib/products";
-import { useCart } from "@/context/cart-context";
+import { useCart, getMaxQuantity, isSinglePiece } from "@/context/cart-context";
 
 // ========================================
 // 🧩 MAIN COMPONENT
@@ -115,8 +115,13 @@ function ProductCard({
   product: Product;
 }) {
   const [isFavorite, setIsFavorite] = React.useState(false);
-  const { addItem, isInCart } = useCart();
+  const { addItem, isInCart, getItemQuantity } = useCart();
   const alreadyInCart = isInCart(product.id);
+  // Piezas únicas: un solo clic. Varias piezas: cada clic suma una unidad
+  // hasta agotar lo disponible.
+  const quickAddDisabled = isSinglePiece(product)
+    ? alreadyInCart
+    : getItemQuantity(product.id) >= getMaxQuantity(product);
 
   return (
     <Link href={`/product/${product.slug}`} className="group cursor-pointer flex flex-col gap-4">
@@ -164,19 +169,19 @@ function ProductCard({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              if (alreadyInCart) return;
+              if (quickAddDisabled) return;
               addItem(product);
             }}
-            disabled={alreadyInCart}
-            aria-label={alreadyInCart ? "In cart" : "Add to cart"}
+            disabled={quickAddDisabled}
+            aria-label={quickAddDisabled ? "In cart" : "Add to cart"}
             className={cn(
               "absolute bottom-4 right-4 w-10 h-10 rounded-full flex items-center justify-center shadow-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300",
-              alreadyInCart
+              quickAddDisabled
                 ? "bg-[#6C7466] text-white cursor-not-allowed"
                 : "bg-white text-[#6C7466] hover:bg-[#6C7466] hover:text-white"
             )}
           >
-            {alreadyInCart ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+            {quickAddDisabled ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
           </button>
         )}
       </div>

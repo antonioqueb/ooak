@@ -4,7 +4,7 @@
 // peso se obtienen siempre de Odoo.
 import { getShippingCostForWeight } from '@/lib/shipping';
 import { fetchShippingRates } from '@/lib/shipping-rates';
-import { fetchProductPricing } from '@/lib/api';
+import { fetchProductPricing, resolveAvailableQty } from '@/lib/api';
 
 export const TAX_RATE = 0.16;
 export const MAX_ITEMS = 50;
@@ -138,6 +138,11 @@ export async function priceCart(
         if (pricing.is_sold) {
             return { error: `Product already sold: ${item.slug}`, status: 409 };
         }
+        // Tope de unidades por producto (a la mano menos lo ya comprometido).
+        const availableQty = resolveAvailableQty(pricing.is_sold, pricing.available_qty);
+        if (item.quantity > availableQty) {
+            return { error: formatAvailabilityError(pricing.name, availableQty), status: 409 };
+        }
         if (!(pricing.price > 0)) {
             return { error: `Invalid product price: ${item.slug}`, status: 400 };
         }
@@ -163,12 +168,27 @@ export async function priceCart(
     };
 }
 
-// Re-verifica en Odoo que ninguna pieza del pedido se haya vendido entre la
-// creación de la orden y la captura del pago (piezas únicas).
-export async function anyItemSold(slugs: string[]): Promise<string | null> {
-    for (const slug of slugs) {
-        const pricing = await fetchProductPricing(slug);
-        if (!pricing || pricing.is_sold) return slug;
+export function formatAvailabilityError(name: string, availableQty: number): string {
+    return availableQty === 1
+        ? `Only 1 piece available: ${name}`
+        : `Only ${availableQty} pieces available: ${name}`;
+}
+
+// Re-verifica en Odoo que cada línea del pedido siga disponible en la cantidad
+// pedida entre la creación de la orden y la captura del pago. Devuelve el
+// mensaje de error de la primera línea que ya no se puede surtir, o null.
+export async function findUnavailableItem(
+    items: { slug: string; quantity: number }[],
+): Promise<string | null> {
+    for (const item of items) {
+        const pricing = await fetchProductPricing(item.slug);
+        if (!pricing || pricing.is_sold) {
+            return `Product already sold: ${item.slug}`;
+        }
+        const availableQty = resolveAvailableQty(pricing.is_sold, pricing.available_qty);
+        if (item.quantity > availableQty) {
+            return formatAvailabilityError(pricing.name, availableQty);
+        }
     }
     return null;
 }
